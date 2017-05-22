@@ -383,6 +383,7 @@ class ProfileAnalyser():
     def get_best_ranges(self, results_days, results_profit, best_range = 2, weight_multiplyer=0.6, period = 10):
         best_days=[]
         best_prof=[]
+        max_prof_proc=0
         """for single_result in results_days:
             if single_result[1] == 100000 and single_result[2] == 111000 and single_result[3] == 143000 and single_result[4] == 180000:
                 log.info("!!!!14301800 %s" % single_result)"""
@@ -393,6 +394,8 @@ class ProfileAnalyser():
         for single_result in results_profit:
             if single_result[0]>1:
                 best_prof.append(single_result[0])
+            if single_result[6] > max_prof_proc:
+                max_prof_proc = single_result[6] 
         days_limit=int(numpy.median(numpy.array(best_days[-int(len(best_days)/best_range):])))
         profit_limit=int(numpy.median(numpy.array(best_prof[-int(len(best_prof)/best_range):])))
         print "Days limit %s" % days_limit
@@ -403,7 +406,7 @@ class ProfileAnalyser():
         for result_part in results_days:
             if result_part[0] >= days_limit and result_part[5] >= profit_limit:
                 if self.time_range.index(result_part[2]) - self.time_range.index(result_part[1]) > 5 and self.time_range.index(result_part[3]) - self.time_range.index(result_part[2]) > 2 and self.time_range.index(result_part[4]) - self.time_range.index(result_part[3]) > 2:
-                    results_timeline_days.append([(result_part[6]-1)]+result_part)
+                    results_timeline_days.append([(result_part[0]*2/period)*(result_part[6]/max_prof_proc)]+result_part)
             #results_timeline_days.append([result_part[0]]+result_part)
         results_timeline_days.sort()
         if len(results_timeline_days) < 1:
@@ -415,7 +418,7 @@ class ProfileAnalyser():
         end_times=[]
         trade_direct=[]
         
-        for single_result in results_timeline_days[-20:]:
+        for single_result in results_timeline_days[-5:]:
             begin_times.append(single_result[2])
             check_times.append(single_result[3])
             start_times.append(single_result[4])
@@ -457,7 +460,7 @@ class ProfileAnalyser():
             #print result_part[7]
             if result_part[0] >= days_limit and result_part[5] >= profit_limit:
                 if self.time_range.index(result_part[2]) - self.time_range.index(result_part[1]) > 5 and self.time_range.index(result_part[3]) - self.time_range.index(result_part[2]) > 2 and self.time_range.index(result_part[4]) - self.time_range.index(result_part[3]) > 2:
-                    results_timeline_days.append([numpy.median(numpy.array(result_part[7]))*(result_part[0]*2/period)]+result_part)
+                    results_timeline_days.append([numpy.mean(numpy.array(result_part[7]))*(result_part[0]*2/period)/numpy.std(numpy.array(result_part[7]))]+result_part)
             #results_timeline_days.append([result_part[0]]+result_part)
         results_timeline_days.sort()
         if len(results_timeline_days) < 1:
@@ -498,7 +501,7 @@ class ProfileAnalyser():
         if curr_date_pos <= period:
             return -1, -1, -1
         results_days,results_profit = self.start_analyzer_threaded(self.days[curr_date_pos-period-1],self.days[curr_date_pos-1],thread_count)
-        best_ranges = self.get_best_ranges_profit_stats(results_days, results_profit,8,0.6,period)
+        best_ranges = self.get_best_ranges(results_days, results_profit,8,0.6,period)
         if not best_ranges:
             log.info("No best ranges found")
             return -1, -1, -1
