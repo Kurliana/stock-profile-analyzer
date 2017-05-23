@@ -626,7 +626,7 @@ if __name__ == "__main__":
     #print pa.analyze_by_day(pa.tickers, 111000, 143000, 175000, 0, 0.0015)
     #print pa.analyze_by_day(pa.tickers, 111000, 144000, 175000, 0, 0.0015)
     #print pa.analyze_by_day(pa.tickers, 111000, 142000, 175000, 0, 0.0015)
-    pa.robot(20160104,30)
+    pa.robot(20160104,90)
     #print pa.start_analyzer_threaded()
     """day_tickers = pa.filter_tickers(pa.tickers, 100000,184000,20160104,-1)
     results_days, results_profit = pa.start_analyzer_threaded(day_start=20160104,day_end=-1,threads=16)
