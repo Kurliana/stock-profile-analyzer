@@ -460,7 +460,7 @@ class ProfileAnalyser():
             #print result_part[7]
             if result_part[0] >= days_limit and result_part[5] >= profit_limit:
                 if self.time_range.index(result_part[2]) - self.time_range.index(result_part[1]) > 5 and self.time_range.index(result_part[3]) - self.time_range.index(result_part[2]) > 2 and self.time_range.index(result_part[4]) - self.time_range.index(result_part[3]) > 2:
-                    results_timeline_days.append([numpy.percentile(numpy.array(result_part[7]),90)]+result_part)
+                    results_timeline_days.append([numpy.percentile(numpy.array(result_part[7]),80)]+result_part)
             #results_timeline_days.append([result_part[0]]+result_part)
         results_timeline_days.sort()
         if len(results_timeline_days) < 1:
@@ -754,7 +754,7 @@ class ProfileAnalyser():
         day_procent_list=[]
         day_list_profit_list=[]
         trade_direction_list=[]
-        thread_period_dict={"0":2,"1":2,"2":2,"5":3,"10":4,"15":5,"30":6,"180":12}
+        thread_period_dict={"0":2,"1":2,"2":2,"3":2,"5":3,"10":4,"15":5,"30":6,"180":12}
         if "%s" % period in thread_period_dict.keys():
             thread_count = thread_period_dict["%s" % period]
         else:
@@ -766,7 +766,7 @@ class ProfileAnalyser():
         results_days,results_profit = self.start_analyzer_threaded(self.days[curr_date_pos-period-1],self.days[curr_date_pos-1],thread_count)
         best_ranges1 = self.get_best_ranges_profit_median(results_days, results_profit,8,0.6,period,-5)
         best_ranges2 = self.get_best_ranges_profit_percentile(results_days, results_profit,8,0.6,period,-10)
-        best_ranges3 = self.get_best_ranges_profit_percentile(results_days, results_profit,8,0.6,period,-20)
+        best_ranges3 = self.get_best_ranges_profit_percentile2(results_days, results_profit,8,0.6,period,-10)
         best_ranges4 = self.get_best_ranges_profit_std(results_days, results_profit,8,0.6,period,-10)
         best_ranges5 = self.get_best_ranges_profit_std_median(results_days, results_profit,8,0.6,period,-5)
         best_ranges6 = self.get_best_ranges_profit_std_percentile(results_days, results_profit,8,0.6,period,-10)
@@ -835,7 +835,7 @@ if __name__ == "__main__":
     #print pa.analyze_by_day(pa.tickers, 111000, 143000, 175000, 0, 0.0015)
     #print pa.analyze_by_day(pa.tickers, 111000, 144000, 175000, 0, 0.0015)
     #print pa.analyze_by_day(pa.tickers, 111000, 142000, 175000, 0, 0.0015)
-    pa.robot(20160104,10)
+    pa.robot(20170104,5)
     #print pa.start_analyzer_threaded()
     """day_tickers = pa.filter_tickers(pa.tickers, 100000,184000,20160104,-1)
     results_days, results_profit = pa.start_analyzer_threaded(day_start=20160104,day_end=-1,threads=16)
