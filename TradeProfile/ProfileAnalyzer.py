@@ -85,6 +85,24 @@ class ProfileAnalyser():
         total_ticker[6]=min(high_low)
         return total_ticker
     
+    def _get_list_weight_stat(self, result_list):
+        result=[]
+        x=[]
+        for single_result in result_list:
+            x.append(single_result[0])
+            
+        _x=numpy.array(x)    
+        result.append(numpy.mean(_x))
+        result.append((numpy.min(_x), numpy.max(_x)))
+        result.append(numpy.std(_x))
+        result.append(result[0]/result[-1])
+        result.append((numpy.percentile(_x, 25), numpy.percentile(_x, 50), numpy.percentile(_x, 75)))
+        log.info("List statistic: %s" % result)
+        return result
+
+    def get_list_weight_stat(self, result_list):
+        pass
+    
 
     def is_up_direction(self, tickers_by_day, check_time=102000, direction_delta = 0):
         self.ticker1=self.combine_multi_tickers(tickers_by_day,-1,check_time)
@@ -128,7 +146,7 @@ class ProfileAnalyser():
                 else:
                     return self.ticker2[4]/self.ticker2[7]
 
-    def analyze_by_day(self, tickers, check_time=102000, start_time=102000, end_time=120000, delta=0, direction_delta = 0.001, stop_loss = 0.015):
+    def analyze_by_day(self, tickers, check_time=102000, start_time=102000, end_time=120000, delta=0, direction_delta = 0.001, stop_loss = 0.015, reverse_trade=1):
         day_count=0
         day_tickers=[tickers[0]]
         day_stat=[]
@@ -142,7 +160,7 @@ class ProfileAnalyser():
                 day_tickers.append(single_ticker) 
             else:
                 day_count+=1
-                is_up = self.is_up_direction(day_tickers,check_time,direction_delta)
+                is_up = self.is_up_direction(day_tickers,check_time,direction_delta)*reverse_trade
                 if not is_up == 0:
                     tmp_profit = self.check_direction(day_tickers, is_up, start_time, end_time, delta, stop_loss)
                     #print single_ticker[2], tmp_profit, count_profit, procn_profit
@@ -160,7 +178,7 @@ class ProfileAnalyser():
                     zero_days+=1    
                 day_tickers=[single_ticker]
         day_count+=1
-        is_up = self.is_up_direction(day_tickers,check_time,direction_delta)
+        is_up = self.is_up_direction(day_tickers,check_time,direction_delta)*reverse_trade
         if not is_up == 0:
             tmp_profit = self.check_direction(day_tickers, is_up, start_time, end_time, delta, stop_loss)
             #print single_ticker[2], tmp_profit, count_profit, procn_profit
@@ -185,10 +203,11 @@ class ProfileAnalyser():
         #print zero_days
         return total_profit, count_profit, procn_profit, list_profit
     
-    def main_analyzer(self, begin_list, check_list, start_list, end_list, date_start, date_end, delta, direction_delta, results_days_dict, results_profit_dict, thread=0):
+    def main_analyzer(self, begin_list, check_list, start_list, end_list, date_start, date_end, delta, direction_delta, results_days_dict, results_profit_dict, results_procent_dict, thread=0):
         #pythoncom.CoInitialize()
         results_days=[]
         results_profit=[]
+        results_procent=[]
         stop_loss=0.015
         
         #print "thread %s started: %s" % (thread,check_list)
@@ -210,8 +229,10 @@ class ProfileAnalyser():
                                         list_profit=[]
                                     results_days.append([days,begin,check,start,end,profit,procent,list_profit,stop_loss,direction_delta])
                                     results_profit.append([profit,begin,check,start,end,days,procent,list_profit,stop_loss,direction_delta])
+                                    results_procent.append([procent,begin,check,start,end,days,profit,list_profit,stop_loss,direction_delta])
         results_days_dict[thread]=results_days   
-        results_profit_dict[thread]=results_profit                       
+        results_profit_dict[thread]=results_profit         
+        results_procent_dict[thread]=results_procent               
         #print "thread %s finished %s %s" % (thread,self.results_days,self.results_profit)
         
     def start_analyzer_threaded(self,day_start=-1,day_end=-1, threads = 16):
@@ -222,12 +243,14 @@ class ProfileAnalyser():
         thread_list=[]
         results_days=[]
         results_profit=[]
+        results_procent=[]
         manager = Manager()
         results_days_dict = manager.dict()
         results_profit_dict = manager.dict()
+        results_procent_dict = manager.dict()
         for thread_num in range(thread_counter):
-            thread_list.append(Process(target=self.main_analyzer, name="t%s" % thread_num, args=[[self.time_range[0]], start_time_range[thread_num*len(start_time_range)/thread_counter:(thread_num+1)*len(start_time_range)/thread_counter], self.time_range, self.time_range[:-3], day_start, day_end, delta, direction_delta, results_days_dict, results_profit_dict, thread_num]))
-        thread_list.append(Process(target=self.main_analyzer, name="t%s" % thread_counter, args=[[self.time_range[0]], start_time_range[len(start_time_range)/thread_counter*thread_counter:], self.time_range, self.time_range[:-3], day_start, day_end, delta, direction_delta, results_days_dict, results_profit_dict, thread_counter]))
+            thread_list.append(Process(target=self.main_analyzer, name="t%s" % thread_num, args=[[self.time_range[0]], start_time_range[thread_num*len(start_time_range)/thread_counter:(thread_num+1)*len(start_time_range)/thread_counter], self.time_range, self.time_range[:-3], day_start, day_end, delta, direction_delta, results_days_dict, results_profit_dict, results_procent_dict, thread_num]))
+        thread_list.append(Process(target=self.main_analyzer, name="t%s" % thread_counter, args=[[self.time_range[0]], start_time_range[len(start_time_range)/thread_counter*thread_counter:], self.time_range, self.time_range[:-3], day_start, day_end, delta, direction_delta, results_days_dict, results_profit_dict, results_procent_dict, thread_counter]))
         for thread_num in range(thread_counter):
             thread_list[thread_num].start()
             
@@ -243,13 +266,17 @@ class ProfileAnalyser():
         for thread_name in results_days_dict.keys():
             results_days+=results_days_dict[thread_name]
             results_profit+=results_profit_dict[thread_name]
+            results_procent+=results_procent_dict[thread_name]
         results_days.sort()
         log.info(results_days[0:20])
         log.info(results_days[-22:-1])
         results_profit.sort()
         log.info(results_profit[0:20])
         log.info(results_profit[-22:-1])
-        return results_days,results_profit
+        results_procent.sort()
+        log.info(results_procent[0:20])
+        log.info(results_procent[-22:-1])
+        return results_days,results_profit,results_procent
     
     def get_best_ranges_weight(self, results_days, results_profit, best_range = 2, weight_multiplyer=0.6):
         best_days=[]
@@ -394,8 +421,12 @@ class ProfileAnalyser():
         for single_result in results_profit:
             if single_result[0]>1:
                 best_prof.append(single_result[0])
-            if single_result[6] > max_prof_proc:
-                max_prof_proc = single_result[6] 
+            if max_stat<=0:
+                if single_result[6] > max_prof_proc:
+                    max_prof_proc = single_result[6]
+            else:
+                if 1/single_result[6] > max_prof_proc:
+                    max_prof_proc = 1/single_result[6]
         days_limit=int(numpy.median(numpy.array(best_days[-int(len(best_days)/best_range):])))
         profit_limit=int(numpy.median(numpy.array(best_prof[-int(len(best_prof)/best_range):])))
         print "Days limit %s" % days_limit
@@ -404,21 +435,27 @@ class ProfileAnalyser():
         results_timeline_days=[]
         results_timeline_prof=[]
         for result_part in results_days:
-            if result_part[0] >= days_limit and result_part[5] >= profit_limit:
+            if max_stat<=0:
+                if result_part[0] >= days_limit and result_part[5] >= profit_limit:
+                    if self.time_range.index(result_part[2]) - self.time_range.index(result_part[1]) > 5 and self.time_range.index(result_part[3]) - self.time_range.index(result_part[2]) > 2 and self.time_range.index(result_part[4]) - self.time_range.index(result_part[3]) > 2:
+                        results_timeline_days.append([(float(result_part[0])*2/period)*(float(result_part[6])/max_prof_proc)]+result_part)
+            else:
                 if self.time_range.index(result_part[2]) - self.time_range.index(result_part[1]) > 5 and self.time_range.index(result_part[3]) - self.time_range.index(result_part[2]) > 2 and self.time_range.index(result_part[4]) - self.time_range.index(result_part[3]) > 2:
-                    results_timeline_days.append([(float(result_part[0])*2/period)*(float(result_part[6])/max_prof_proc)]+result_part)
+                    results_timeline_days.append([(float(-result_part[0])*2/period)*(1/float(result_part[6])/max_prof_proc)]+result_part)
             #results_timeline_days.append([result_part[0]]+result_part)
         results_timeline_days.sort()
         if len(results_timeline_days) < 1:
+            log.info("No best range for get_best_ranges")
             return None 
         log.info(results_timeline_days[-20:])
+        self.get_list_weight_stat(results_timeline_days[-20:])
         begin_times=[]
         check_times=[]
         start_times=[]
         end_times=[]
         trade_direct=[]
-        
-        for single_result in results_timeline_days[max_stat:]:
+        selected_timelines=results_timeline_days[-abs(max_stat):]
+        for single_result in selected_timelines:
             begin_times.append(single_result[2])
             check_times.append(single_result[3])
             start_times.append(single_result[4])
@@ -465,14 +502,15 @@ class ProfileAnalyser():
         results_timeline_days.sort()
         if len(results_timeline_days) < 1:
             return None 
-        log.info(results_timeline_days[max_stat:])
+        log.info(results_timeline_days[20:])
+        self.get_list_weight_stat(results_timeline_days[-20:])
         begin_times=[]
         check_times=[]
         start_times=[]
         end_times=[]
         trade_direct=[]
         
-        for single_result in results_timeline_days[-5:]:
+        for single_result in results_timeline_days[max_stat:]:
             begin_times.append(single_result[2])
             check_times.append(single_result[3])
             start_times.append(single_result[4])
@@ -491,6 +529,10 @@ class ProfileAnalyser():
     def get_best_ranges_profit_std_percentile(self, results_days, results_profit, best_range = 2, weight_multiplyer=0.6, period = 10 ,max_stat=-5):
         best_days=[]
         best_prof=[]
+        if max_stat<0:
+            trade_sign=1
+        else:
+            trade_sign=-1
         """for single_result in results_days:
             if single_result[1] == 100000 and single_result[2] == 111000 and single_result[3] == 143000 and single_result[4] == 180000:
                 log.info("!!!!14301800 %s" % single_result)"""
@@ -509,22 +551,26 @@ class ProfileAnalyser():
         results_timeline_days=[]
         results_timeline_prof=[]
         for result_part in results_days:
-            #print result_part[7]
+            if trade_sign<0:
+                for result_day_index in range(len(result_part[7])-1):
+                    result_part[7][result_day_index]=-result_part[7][result_day_index]
             if result_part[0] >= days_limit and result_part[5] >= profit_limit:
                 if self.time_range.index(result_part[2]) - self.time_range.index(result_part[1]) > 5 and self.time_range.index(result_part[3]) - self.time_range.index(result_part[2]) > 2 and self.time_range.index(result_part[4]) - self.time_range.index(result_part[3]) > 2:
-                    results_timeline_days.append([numpy.percentile(numpy.array(result_part[7]),75)/numpy.std(numpy.array(result_part[7]))]+result_part)
+                    results_timeline_days.append([numpy.percentile(numpy.array(result_part[7]),75)*(float(result_part[6]))]+result_part)
             #results_timeline_days.append([result_part[0]]+result_part)
         results_timeline_days.sort()
         if len(results_timeline_days) < 1:
+            log.info("No best range for get_best_ranges_profit_std_percentile")
             return None 
         log.info(results_timeline_days[max_stat:])
+        self.get_list_weight_stat(results_timeline_days[-20:])
         begin_times=[]
         check_times=[]
         start_times=[]
         end_times=[]
         trade_direct=[]
         
-        for single_result in results_timeline_days[-5:]:
+        for single_result in results_timeline_days[max_stat:]:
             begin_times.append(single_result[2])
             check_times.append(single_result[3])
             start_times.append(single_result[4])
@@ -543,6 +589,10 @@ class ProfileAnalyser():
     def get_best_ranges_profit_median(self, results_days, results_profit, best_range = 2, weight_multiplyer=0.6, period = 10, max_stat = -5):
         best_days=[]
         best_prof=[]
+        if max_stat<0:
+            trade_sign=1
+        else:
+            trade_sign=-1
         """for single_result in results_days:
             if single_result[1] == 100000 and single_result[2] == 111000 and single_result[3] == 143000 and single_result[4] == 180000:
                 log.info("!!!!14301800 %s" % single_result)"""
@@ -561,7 +611,10 @@ class ProfileAnalyser():
         results_timeline_days=[]
         results_timeline_prof=[]
         for result_part in results_days:
-            #print result_part[7]
+            if trade_sign<0:
+                for result_day_index in range(len(result_part[7])-1):
+                    result_part[7][result_day_index]=-result_part[7][result_day_index]
+            
             if result_part[0] >= days_limit and result_part[5] >= profit_limit:
                 if self.time_range.index(result_part[2]) - self.time_range.index(result_part[1]) > 5 and self.time_range.index(result_part[3]) - self.time_range.index(result_part[2]) > 2 and self.time_range.index(result_part[4]) - self.time_range.index(result_part[3]) > 2:
                     results_timeline_days.append([numpy.median(numpy.array(result_part[7]))]+result_part)
@@ -570,13 +623,17 @@ class ProfileAnalyser():
         if len(results_timeline_days) < 1:
             return None 
         log.info(results_timeline_days[-20:])
+        self.get_list_weight_stat(results_timeline_days[-20:])
         begin_times=[]
         check_times=[]
         start_times=[]
         end_times=[]
         trade_direct=[]
-        
-        for single_result in results_timeline_days[max_stat:]:
+        if max_stat <= 0:
+            selected_timelines=results_timeline_days[max_stat:]
+        else:
+            selected_timelines=results_timeline_days[:max_stat]
+        for single_result in selected_timelines:
             begin_times.append(single_result[2])
             check_times.append(single_result[3])
             start_times.append(single_result[4])
@@ -595,6 +652,11 @@ class ProfileAnalyser():
     def get_best_ranges_profit_percentile(self, results_days, results_profit, best_range = 2, weight_multiplyer=0.6, period = 10, max_stat = -5):
         best_days=[]
         best_prof=[]
+        result_days_list=[]
+        if max_stat<0:
+            trade_sign=1
+        else:
+            trade_sign=-1
         """for single_result in results_days:
             if single_result[1] == 100000 and single_result[2] == 111000 and single_result[3] == 143000 and single_result[4] == 180000:
                 log.info("!!!!14301800 %s" % single_result)"""
@@ -612,23 +674,31 @@ class ProfileAnalyser():
         results_timeline=[]
         results_timeline_days=[]
         results_timeline_prof=[]
+
         for result_part in results_days:
             #print result_part[7]
+            #if result_part[0] >= days_limit and result_part[5] >= profit_limit:
+            if trade_sign<0:
+                for result_day_index in range(len(result_part[7])-1):
+                    result_part[7][result_day_index]=-result_part[7][result_day_index]
             if result_part[0] >= days_limit and result_part[5] >= profit_limit:
                 if self.time_range.index(result_part[2]) - self.time_range.index(result_part[1]) > 5 and self.time_range.index(result_part[3]) - self.time_range.index(result_part[2]) > 2 and self.time_range.index(result_part[4]) - self.time_range.index(result_part[3]) > 2:
                     results_timeline_days.append([numpy.percentile(numpy.array(result_part[7]),75)]+result_part)
             #results_timeline_days.append([result_part[0]]+result_part)
         results_timeline_days.sort()
         if len(results_timeline_days) < 1:
+            log.info("No best range for get_best_ranges_profit_percentile")
             return None 
         log.info(results_timeline_days[-20:])
+        self.get_list_weight_stat(results_timeline_days[-20:])
         begin_times=[]
         check_times=[]
         start_times=[]
         end_times=[]
         trade_direct=[]
         
-        for single_result in results_timeline_days[max_stat:]:
+        selected_timelines=results_timeline_days[-abs(max_stat):]
+        for single_result in selected_timelines:
             begin_times.append(single_result[2])
             check_times.append(single_result[3])
             start_times.append(single_result[4])
@@ -647,40 +717,52 @@ class ProfileAnalyser():
     def get_best_ranges_profit_std(self, results_days, results_profit, best_range = 2, weight_multiplyer=0.6, period = 10,max_stat = -5):
         best_days=[]
         best_prof=[]
+        if max_stat<0:
+            trade_sign=1
+        else:
+            trade_sign=-1
         """for single_result in results_days:
             if single_result[1] == 100000 and single_result[2] == 111000 and single_result[3] == 143000 and single_result[4] == 180000:
                 log.info("!!!!14301800 %s" % single_result)"""
-
         for single_result in results_days:
-            if single_result[0]>0:
+            if single_result[0]*trade_sign>0:
                 best_days.append(single_result[0])
-        for single_result in results_profit:
-            if single_result[0]>1:
-                best_prof.append(single_result[0])
+        #for single_result in results_profit:
+        #    if single_result[0]>1 and trade_sign > 0:
+        #        best_prof.append(single_result[0])
+        #    elif single_result[0]<1 and trade_sign < 0:
+        #        best_prof.append(single_result[0])
         days_limit=int(numpy.median(numpy.array(best_days[-int(len(best_days)/best_range):])))
-        profit_limit=int(numpy.median(numpy.array(best_prof[-int(len(best_prof)/best_range):])))
+        #profit_limit=int(numpy.median(numpy.array(best_prof[-int(len(best_prof)/best_range):])))
         print "Days limit %s" % days_limit
-        print "Prof limit %s" % profit_limit
+        #print "Prof limit %s" % profit_limit
         results_timeline=[]
         results_timeline_days=[]
         results_timeline_prof=[]
         for result_part in results_days:
+            if trade_sign<0:
+                for result_day_index in range(len(result_part[7])-1):
+                    result_part[7][result_day_index]=-result_part[7][result_day_index]
             #print result_part[7]
-            if result_part[0] >= days_limit and result_part[5] >= profit_limit:
+            if result_part[0] >= days_limit:# and result_part[5] >= profit_limit:
                 if self.time_range.index(result_part[2]) - self.time_range.index(result_part[1]) > 5 and self.time_range.index(result_part[3]) - self.time_range.index(result_part[2]) > 2 and self.time_range.index(result_part[4]) - self.time_range.index(result_part[3]) > 2:
                     results_timeline_days.append([numpy.mean(numpy.array(result_part[7]))/numpy.std(numpy.array(result_part[7]))]+result_part)
             #results_timeline_days.append([result_part[0]]+result_part)
         results_timeline_days.sort()
-        if len(results_timeline_days) < 1:
+        if len(results_timeline_days) < 20:
+            log.info("No best range for get_best_ranges_profit_std")
             return None 
+        #if results_timeline_days[-20][0] > 2:
+            #return None
         log.info(results_timeline_days[-20:])
+        self.get_list_weight_stat(results_timeline_days[-20:])
         begin_times=[]
         check_times=[]
         start_times=[]
         end_times=[]
         trade_direct=[]
-        
-        for single_result in results_timeline_days[max_stat:]:
+         
+        for single_result in results_timeline_days[-abs(max_stat):]:
             begin_times.append(single_result[2])
             check_times.append(single_result[3])
             start_times.append(single_result[4])
@@ -693,46 +775,58 @@ class ProfileAnalyser():
         end_dict=Counter(end_times).most_common()
         trade_dict=Counter(trade_direct).most_common()
         #print begin_dict
-                        
+                                
         return [[begin_dict[0][0],check_dict[0][0],start_dict[0][0],end_dict[0][0],trade_dict[0][0]]]
     
     def get_best_ranges_profit_std_median(self, results_days, results_profit, best_range = 2, weight_multiplyer=0.6, period = 10 ,max_stat=-5):
         best_days=[]
         best_prof=[]
+        if max_stat<0:
+            trade_sign=1
+        else:
+            trade_sign=-1
         """for single_result in results_days:
             if single_result[1] == 100000 and single_result[2] == 111000 and single_result[3] == 143000 and single_result[4] == 180000:
                 log.info("!!!!14301800 %s" % single_result)"""
-
         for single_result in results_days:
-            if single_result[0]>0:
-                best_days.append(single_result[0])
-        for single_result in results_profit:
-            if single_result[0]>1:
-                best_prof.append(single_result[0])
+            if single_result[0]*trade_sign>0:
+                best_days.append(single_result[0]*trade_sign)
+        best_days.sort()
+        #for single_result in results_profit:
+        #    if single_result[0]>1 and trade_sign > 0:
+        #        best_prof.append(single_result[0])
+        #    elif single_result[0]<1 and trade_sign < 0:
+        #        best_prof.append(single_result[0])
         days_limit=int(numpy.median(numpy.array(best_days[-int(len(best_days)/best_range):])))
-        profit_limit=int(numpy.median(numpy.array(best_prof[-int(len(best_prof)/best_range):])))
+        #profit_limit=int(numpy.median(numpy.array(best_prof[-int(len(best_prof)/best_range):])))
         print "Days limit %s" % days_limit
-        print "Prof limit %s" % profit_limit
+        #print "Prof limit %s" % profit_limit
         results_timeline=[]
         results_timeline_days=[]
         results_timeline_prof=[]
         for result_part in results_days:
+            if trade_sign<0:
+                for result_day_index in range(len(result_part[7])-1):
+                    result_part[7][result_day_index]=-result_part[7][result_day_index]
             #print result_part[7]
-            if result_part[0] >= days_limit and result_part[5] >= profit_limit:
+            if result_part[0]*trade_sign >= days_limit:# and result_part[5]*trade_sign >= profit_limit:
                 if self.time_range.index(result_part[2]) - self.time_range.index(result_part[1]) > 5 and self.time_range.index(result_part[3]) - self.time_range.index(result_part[2]) > 2 and self.time_range.index(result_part[4]) - self.time_range.index(result_part[3]) > 2:
                     results_timeline_days.append([numpy.median(numpy.array(result_part[7]))/numpy.std(numpy.array(result_part[7]))]+result_part)
             #results_timeline_days.append([result_part[0]]+result_part)
         results_timeline_days.sort()
         if len(results_timeline_days) < 1:
+            log.info("No best range for get_best_ranges_profit_std_median")
             return None 
         log.info(results_timeline_days[-20:])
+        self.get_list_weight_stat(results_timeline_days[-20:])
         begin_times=[]
         check_times=[]
         start_times=[]
         end_times=[]
         trade_direct=[]
         
-        for single_result in results_timeline_days[max_stat:]:
+        selected_timelines=results_timeline_days[-abs(max_stat):]
+        for single_result in selected_timelines:
             begin_times.append(single_result[2])
             check_times.append(single_result[3])
             start_times.append(single_result[4])
@@ -749,6 +843,9 @@ class ProfileAnalyser():
         return [[begin_dict[0][0],check_dict[0][0],start_dict[0][0],end_dict[0][0],trade_dict[0][0]]]
     
     def get_day_profit(self, curr_date, period = 30):
+        profit_delta=0.25
+        procent_delta=1.25
+        trade_dir=0
         day_profit_list=[]
         day_count_list=[]
         day_procent_list=[]
@@ -763,14 +860,20 @@ class ProfileAnalyser():
         log.info("Get day profit %s" % curr_date)
         if curr_date_pos <= period:
             return [-1], [-1], [-1]
-        results_days,results_profit = self.start_analyzer_threaded(self.days[curr_date_pos-period-1],self.days[curr_date_pos-1],thread_count)
-        best_ranges1 = self.get_best_ranges_profit_median(results_days, results_profit,8,0.6,period,-5)
-        best_ranges2 = self.get_best_ranges_profit_percentile(results_days, results_profit,8,0.6,period,-10)
-        best_ranges3 = self.get_best_ranges_profit_percentile2(results_days, results_profit,8,0.6,period,-10)
-        best_ranges4 = self.get_best_ranges_profit_std(results_days, results_profit,8,0.6,period,-10)
-        best_ranges5 = self.get_best_ranges_profit_std_median(results_days, results_profit,8,0.6,period,-5)
+        results_days,results_profit,results_procent = self.start_analyzer_threaded(self.days[curr_date_pos-period-1],self.days[curr_date_pos-1],thread_count)
+        if abs(results_procent[-1][0]) < abs(1/results_procent[0][0])*procent_delta and abs(results_profit[-1][0]-1) < abs(results_profit[0][0]-1) + profit_delta:
+            log.info("Not good period")
+            trade_dir=-1
+        #if abs(results_procent[-1][0]) > abs(1/results_procent[0][0])*procent_delta and abs(results_profit[-1][0]-1) > abs(results_profit[0][0]-1) + profit_delta:
+        #    log.info("Good period")
+        #    trade_dir=1
+        best_ranges1 = self.get_best_ranges_profit_median(results_days, results_profit,8,0.6,period,-5*trade_dir)
+        best_ranges2 = self.get_best_ranges_profit_percentile(results_days, results_profit,8,0.6,period,-10*trade_dir)
+        best_ranges3 = self.get_best_ranges_profit_std(results_days, results_profit,8,0.6,period,-5*trade_dir)
+        best_ranges4 = self.get_best_ranges_profit_std(results_days, results_profit,8,0.6,period,-20*trade_dir)
+        best_ranges5 = self.get_best_ranges_profit_std_median(results_days, results_profit,8,0.6,period,-10*trade_dir)
         best_ranges6 = self.get_best_ranges_profit_std_percentile(results_days, results_profit,8,0.6,period,-10)
-        best_ranges7 = self.get_best_ranges(results_days, results_profit,8,0.6,period,-5)
+        best_ranges7 = self.get_best_ranges(results_days, results_profit,8,0.6,period,-5*trade_dir)
         if not best_ranges1 or not best_ranges2 or not best_ranges3 or not best_ranges4 or not best_ranges5 or not best_ranges6 or not best_ranges7:
             log.info("No some best ranges, lets skip")
             return [-1], [-1], [-1]
@@ -781,11 +884,12 @@ class ProfileAnalyser():
             begin_time,check_time,start_time,end_time = best_range[0], best_range[1], best_range[2], best_range[3]
             log.info("Begin %s, check %s, start %s, end %s,trade direct %s" % (begin_time,check_time,start_time,end_time,best_range[4]))
             day_tickers = self.filter_tickers(self.tickers, begin_time,end_time,curr_date,curr_date)
-            day_profit, day_count, day_procent, day_list_profit = self.analyze_by_day(day_tickers, check_time, start_time, end_time, 0, 0.0015, 0.015)
+            day_profit, day_count, day_procent, day_list_profit = self.analyze_by_day(day_tickers, check_time, start_time, end_time, 0, 0.0015, 0.015, trade_dir)
             day_profit_list.append(day_profit)
             day_count_list.append(day_count)
             log.info("day_profit %s, day_count %s, day_procent %s" % (day_profit, day_count, day_procent))
-            trade_direction_list.append(best_range[4])
+            #trade_direction_list.append(best_range[4])
+            trade_direction_list.append(trade_dir)
 
         return day_profit_list, day_count_list,trade_direction_list
         
@@ -811,18 +915,18 @@ class ProfileAnalyser():
                         total_count.append(0)
                         total_procent_profit.append(1)
                     if day_count > 0:
-                        if trade_direction > 0:
+                        #if trade_direction > 0:
                             log.info("Date %s, profit %s, count %s" % (single_day, day_profit, day_count))
                             total_profit[check_func]=total_profit[check_func]+(day_count-1)
                             total_procent_profit[check_func] = total_procent_profit[check_func]*day_count
                             total_count[check_func]+=day_profit
-                        """else:
-                            log.info("Date %s, profit %s, count %s" % (single_day, -day_profit, day_count))
+                        #elif trade_direction < 0:
+                        #    log.info("Date %s, profit %s, count %s" % (single_day, -day_profit, day_count))
                             #total_profit=total_profit+(day_count-1)
                             #total_procent_profit = total_procent_profit*day_count
-                            total_profit=total_profit+(1/day_count-1)
-                            total_procent_profit = total_procent_profit*(1/day_count)
-                            total_count-=day_profit"""
+                        #    total_profit[check_func]=total_profit[check_func]+(1/day_count-1)
+                        #    total_procent_profit[check_func] = total_procent_profit[check_func]*(1/day_count)
+                        #    total_count[check_func]-=day_profit
                     log.info("Method %s!!! Total profit %s, total procent profit %s, total count %s, time %s" % (check_func,total_profit[check_func],total_procent_profit[check_func],total_count[check_func], time.time()-day_analyze_time_start))
         return total_profit, total_count
 
@@ -835,22 +939,26 @@ if __name__ == "__main__":
     #print pa.analyze_by_day(pa.tickers, 111000, 143000, 175000, 0, 0.0015)
     #print pa.analyze_by_day(pa.tickers, 111000, 144000, 175000, 0, 0.0015)
     #print pa.analyze_by_day(pa.tickers, 111000, 142000, 175000, 0, 0.0015)
-    pa.robot(20170104,5)
+    log.info(pa.robot(20150105,5))
     #print pa.start_analyzer_threaded()
-    """day_tickers = pa.filter_tickers(pa.tickers, 100000,184000,20160104,-1)
-    results_days, results_profit = pa.start_analyzer_threaded(day_start=20160104,day_end=-1,threads=16)
-    begin_time,check_time,start_time,end_time,trade = pa.get_best_ranges_profit_stats(results_days, results_profit,8,0.6,10)[0]
+    #day_tickers = pa.filter_tickers(pa.tickers, 100000,184000)
+    #log.info( pa.analyze_by_day(day_tickers, 111000, 143000, 180000, 0, 0.0015))
+    """dates=[20150105,20150401,20150701,20151001,20160101,20160401,20160701,20161001,20170101,20170505]
+    #for sdi in range(len(dates)-2):
+    day_tickers = pa.filter_tickers(pa.tickers, 100000,184000,-1,-1)
+    results_days, results_profit = pa.start_analyzer_threaded(day_start=-1,day_end=-1,threads=16)
+    begin_time,check_time,start_time,end_time,trade = pa.get_best_ranges_profit_std(results_days, results_profit,8,0.6,-10)[0]
     log.info("Time 1")
     log.info( "%s. %s. %s, %s" % (begin_time,check_time,start_time,end_time))
     log.info( "Result 1")
     log.info( pa.analyze_by_day(day_tickers, check_time, start_time, end_time, 0, 0.0015))
-    begin_time,check_time,start_time,end_time,trade = pa.get_best_ranges_profit_median(results_days, results_profit,8,0.6,10)[0]
+    begin_time,check_time,start_time,end_time,trade = pa.get_best_ranges_profit_percentile(results_days, results_profit,8,0.6,-5)[0]
     log.info( "Time 2")
     log.info( "%s. %s. %s, %s" % (begin_time,check_time,start_time,end_time))
     log.info( "Result 2")
     log.info( pa.analyze_by_day(day_tickers, check_time, start_time, end_time, 0, 0.0015))
     log.info( "Result 3")
-    log.info( pa.analyze_by_day(day_tickers, 120000, 135000, 170000, 0, 0.0015))
+    log.info( pa.analyze_by_day(day_tickers, 124000, 132000, 152000, 0, 0.0015))
     #results_days, results_profit = pa.start_analyzer_threaded(day_start=20160225,day_end=20160225,threads=1)
     print "2, 0.6"
     begin_time,check_time,start_time,end_time = pa.get_best_ranges(results_days, results_profit,2,0.6)
@@ -906,6 +1014,24 @@ if __name__ == "__main__":
     print "%s %s" % pa.analyze_by_day(filtered_tickers, 115000, 143000, 164000, 0, 0)
     print "%s %s" % pa.analyze_by_day(filtered_tickers, 115000, 143000, 164000, 0, 0.5)
     print "%s %s" % pa.analyze_by_day(filtered_tickers, 115000, 143000, 161000, 0, 0)
-    print "%s %s" % pa.analyze_by_day(filtered_tickers, 115000, 143000, 161000, 0, 0.5)"""
+    print "%s %s" % pa.analyze_by_day(filtered_tickers, 115000, 143000, 161000, 0, 0.5)
+    day_tickers = pa.filter_tickers(pa.tickers, 100000,184000,20150105,20150401)
+    log.info( pa.analyze_by_day(day_tickers, 124000, 132000, 152000, 0, 0.0015))
+    day_tickers = pa.filter_tickers(pa.tickers, 100000,184000,20150401,20150701)
+    log.info( pa.analyze_by_day(day_tickers, 124000, 132000, 152000, 0, 0.0015))
+    day_tickers = pa.filter_tickers(pa.tickers, 100000,184000,20150705,20151001)
+    log.info( pa.analyze_by_day(day_tickers, 124000, 132000, 152000, 0, 0.0015))
+    day_tickers = pa.filter_tickers(pa.tickers, 100000,184000,20151001,20160101)
+    log.info( pa.analyze_by_day(day_tickers, 124000, 132000, 152000, 0, 0.0015))
+    day_tickers = pa.filter_tickers(pa.tickers, 100000,184000,20160101,20160401)
+    log.info( pa.analyze_by_day(day_tickers, 124000, 132000, 152000, 0, 0.0015))
+    day_tickers = pa.filter_tickers(pa.tickers, 100000,184000,20160401,20160701)
+    log.info( pa.analyze_by_day(day_tickers, 124000, 132000, 152000, 0, 0.0015))
+    day_tickers = pa.filter_tickers(pa.tickers, 100000,184000,20160705,20161001)
+    log.info( pa.analyze_by_day(day_tickers, 124000, 132000, 152000, 0, 0.0015))
+    day_tickers = pa.filter_tickers(pa.tickers, 100000,184000,20161001,20170101)
+    log.info( pa.analyze_by_day(day_tickers, 124000, 132000, 152000, 0, 0.0015))
+    day_tickers = pa.filter_tickers(pa.tickers, 100000,184000,20170101,-1)
+    log.info( pa.analyze_by_day(day_tickers, 124000, 132000, 152000, 0, 0.0015))"""
 
     log.info( time.time()-start_timer)
