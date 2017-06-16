@@ -16,7 +16,7 @@ from multiprocessing import Process, Manager
 from collections import Counter
 #import pythoncom
 
-logging.config.fileConfig('log.conf')
+logging.config.fileConfig('log_tatn.conf')
 log=logging.getLogger('main')
 
 class ProfileAnalyser():
@@ -127,6 +127,8 @@ class ProfileAnalyser():
 
     def is_up_direction(self, tickers_by_day, check_time=102000, direction_delta = 0):
         self.ticker1=self.combine_multi_tickers(tickers_by_day,-1,check_time)
+        if not self.ticker1:
+            return [0,0,0]
         if (direction_delta == 0 or abs(self.ticker1[4] - self.ticker1[7]) > min(self.ticker1[4],self.ticker1[7])*direction_delta) and self.ticker1[4] < self.ticker1[7]:# and self.ticker1[9] > 0: #upstream
             return [1,self.ticker1[9]/(self.time_range.index(check_time)),self.ticker1[5],self.ticker1[6]] 
         elif (direction_delta == 0 or abs(self.ticker1[4] - self.ticker1[7]) > min(self.ticker1[4],self.ticker1[7])*direction_delta) and self.ticker1[4] > self.ticker1[7]:# and self.ticker1[9] < 0:
@@ -1206,6 +1208,10 @@ class ProfileAnalyser():
             end_times.append(single_result[5])
             trade_direct.append(single_result[6]/abs(single_result[6]))
 
+        log.info(Counter(begin_times))
+        log.info(Counter(check_times))
+        log.info(Counter(start_times))
+        log.info(Counter(end_times))
         begin_dict=Counter(begin_times).most_common()
         check_dict=Counter(check_times).most_common()
         start_dict=Counter(start_times).most_common()
@@ -2212,7 +2218,7 @@ if __name__ == "__main__":
         
     pa = ProfileAnalyser(temp_file_name)
     pa.filter_tickers(pa.tickers, 100000,184000)
-    results_days_all, results_profit_all, results_procent = pa.start_analyzer_threaded(day_start=pa.days[-5],day_end=-1,threads=4,direction_delta=0.001,stop_loss=0.015)
+    results_days_all, results_profit_all, results_procent = pa.start_analyzer_threaded(day_start=pa.days[-5],day_end=-1,threads=4,direction_delta=0.0015,stop_loss=0.015)
     for result in results_days_all:
         if result[10] == 1:
             results_days_dir.append(result)
@@ -2223,12 +2229,31 @@ if __name__ == "__main__":
             results_profit_dir.append(result)
         else:
             results_profit_rev.append(result)
-                    
-    begin_time,check_time,start_time,end_time,trade = pa.get_best_ranges_profit_std_extra_limits2(results_days_dir, results_profit_dir,8,0.6,-5)[0]
-    with open(result_file, 'wb') as f:
-        f.write(str(check_time)[:2]+"\n")
-        f.write(str(check_time)[2:4]+"\n")
-        f.write(str(start_time)[:2]+"\n")
-        f.write(str(start_time)[2:4]+"\n")
-        f.write(str(end_time)[:2]+"\n")
-        f.write(str(end_time)[2:4]+"\n")
+    if not pa.get_best_ranges_profit_std_extra_limits2(results_days_dir, results_profit,8,0.6,5,-5) or not pa.get_best_ranges_profit_std_extra_limits(results_days_dir, results_profit,8,0.6,5,-5):
+        with open(result_file, 'wb') as f:
+            f.write("00\n")
+            f.write("00\n")
+            f.write("00\n")
+            f.write("00\n")
+            f.write("00\n")
+            f.write("00\n")
+    else:                    
+        begin_time,check_time,start_time,end_time,trade = pa.get_best_ranges_profit_std_extra_limits2(results_days_dir, results_profit_dir,8,0.6,-5)[0]
+        period_day_tickers = pa.filter_tickers(pa.tickers, 100000,184000,pa.days[-6],pa.days[-1])
+        day_profit, day_count, day_procent, day_list_profit, is_up_volume = pa.analyze_by_day(period_day_tickers, check_time, start_time, end_time, 0, 0.0015, 0.015, 1, 200, True)
+        if day_count < 2 and day_profit < 6:
+            with open(result_file, 'wb') as f:
+                f.write(str(check_time)[:2]+"\n")
+                f.write(str(check_time)[2:4]+"\n")
+                f.write(str(start_time)[:2]+"\n")
+                f.write(str(start_time)[2:4]+"\n")
+                f.write(str(end_time)[:2]+"\n")
+                f.write(str(end_time)[2:4]+"\n")
+        else:
+            with open(result_file, 'wb') as f:
+                f.write("00\n")
+                f.write("00\n")
+                f.write("00\n")
+                f.write("00\n")
+                f.write("00\n")
+                f.write("00\n")
