@@ -162,7 +162,7 @@ class ProfileAnalyser():
         best_timeline=[]
         
         for single_result in selected_timelines:
-            sum_weights=0
+            sum_weights=[]
             begin_times_index=self.time_range.index(single_result[2])
             check_times_index=self.time_range.index(single_result[3])
             start_times_index=self.time_range.index(single_result[4])
@@ -177,8 +177,10 @@ class ProfileAnalyser():
                             end_time = self.time_range[end_index]
                             tmp_result = self._get_result_day_by_time(result_days, begin_time, check_time, start_time, end_time)
                             if tmp_result:
-                                sum_weights+=tmp_result[0]
+                                sum_weights.append(tmp_result[0])
+            #[numpy.mean(numpy.array(result_part[7]))/numpy.std(numpy.array(result_part[7]))
             if sum_weights >= max_weight:
+                max_weight = sum_weights
                 best_timeline=[single_result[2],single_result[3],single_result[4],single_result[5],single_result[6]]
                 
         return [best_timeline]
@@ -1469,7 +1471,6 @@ class ProfileAnalyser():
             log.info("Period %s: day_profit %s, day_count %s, day_procent %s, isup volume %s" % (ranges_counter,day_profit, day_count, day_procent,is_up_volume))
             log.info("Begin %s, check %s, start %s, end %s,trade direct %s" % (begin_time,check_time,start_time,end_time,best_range[4]))
             day_tickers = self.filter_tickers(self.tickers, begin_time,end_time,curr_date,curr_date)
-            day_profit, day_count, day_procent, day_list_profit, is_up_volume = self.analyze_by_day(day_tickers, check_time, start_time, end_time, 0, 0.0015, 0.015, best_range[4], 200, True)
             day_profit_list.append(day_profit)
             day_count_list.append(day_count)
             log.info("day_profit %s %s, day_count %s, day_procent %s, isup volume %s" % (ranges_counter,day_profit, day_count, day_procent, is_up_volume))
