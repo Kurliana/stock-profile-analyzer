@@ -17,6 +17,8 @@ class ProfileAnalyser():
     
     def __init__(self, tick_file = ""):
         self.tickers=[]
+        self.days=[]
+        current_day=0
         with open(tick_file,"r+") as f:
             single_ticker = f.readline()
             while single_ticker:
@@ -30,6 +32,9 @@ class ProfileAnalyser():
                 candle[7]=float(candle[7])
                 candle[8]=int(candle[8])
                 self.tickers.append(candle)
+                if not current_day == candle[2]:
+                    current_day = candle[2]
+                    self.days.append(current_day)
                 single_ticker = f.readline()
         self.time_range=range(100000,184000,1000)
         for one_time_counter in range(len(self.time_range)-1,-1,-1):
@@ -38,17 +43,13 @@ class ProfileAnalyser():
 
     def filter_tickers(self, tikers, begin_time=100000, end_time=120000, date_start=-1,date_end=-1):
         filtered_tickers=[]
-        self.days=[]
-        current_day=0
         for single_ticker in tikers:
-            if not current_day == single_ticker[2]:
-                current_day = single_ticker[2]
-                self.days.append(current_day)
             single_ticker_time=single_ticker[3]
             if single_ticker_time >= begin_time and single_ticker_time <= end_time:
                 if date_start < 0 or date_start <= single_ticker[2]:
                     if date_end < 0 or date_end >= single_ticker[2]:
                         filtered_tickers.append(single_ticker)
+                        
         return filtered_tickers
     
     def group_tickers(self, tickers, group_time=3000):
@@ -85,8 +86,7 @@ class ProfileAnalyser():
                 #high_low.append(ticker[6])
                 if not total_ticker:
                     total_ticker+=ticker
-                else:
-                    close_time=ticker[7]
+                close_time=ticker[7]
         if not total_ticker:
             return []
         total_ticker[3]=max_time
@@ -116,7 +116,7 @@ class ProfileAnalyser():
     def get_list_weight_stat(self, result_list):
         pass
     
-    def get_candle_ranges_old(self, selected_timelines, result_days = None):
+    def get_candle_ranges(self, selected_timelines, result_days = None):
 
         begin_times=[]
         check_times=[]
@@ -146,7 +146,7 @@ class ProfileAnalyser():
                 return single_result
         return None
 
-    def get_candle_ranges(self, selected_timelines, result_days = None):
+    def get_candle_ranges_new(self, selected_timelines, result_days = None):
         max_weight = 0
         best_timeline=[[183000,183000,183000,183000,1]]
         
@@ -175,46 +175,45 @@ class ProfileAnalyser():
         return best_timeline
 
     def is_up_direction(self, tickers_by_day, check_time=102000, direction_delta = 0):
-        self.ticker1=self.combine_multi_tickers(tickers_by_day,-1,check_time)
-        if not self.ticker1:
+        ticker1=self.combine_multi_tickers(tickers_by_day,-1,check_time)
+        if not ticker1:
             return 0
-        if (abs(self.ticker1[4] - self.ticker1[7]) > min(self.ticker1[4],self.ticker1[7])*direction_delta) and self.ticker1[4] < self.ticker1[7]:# and self.ticker1[9] > 0: #upstream
+        if (abs(ticker1[4] - ticker1[7]) > min(ticker1[4],ticker1[7])*direction_delta) and ticker1[4] < ticker1[7]:# and self.ticker1[9] > 0: #upstream
             return 1
-        elif (abs(self.ticker1[4] - self.ticker1[7]) > min(self.ticker1[4],self.ticker1[7])*direction_delta) and self.ticker1[4] > self.ticker1[7]:# and self.ticker1[9] < 0:
+        elif (abs(ticker1[4] - ticker1[7]) > min(ticker1[4],ticker1[7])*direction_delta) and ticker1[4] > ticker1[7]:# and self.ticker1[9] < 0:
             return -1
         else:
             return 0
 
     def check_direction(self, ticker2, up_direction, start_time=102000, end_time=120000, delta=0, stop_loss=0.015, take_profit=200):
         if not ticker2:
-            #print "Failed to found self.ticker2 in case: %s, %s, %s" % (tickers_by_day, start_time, end_time)
+            #print "Failed to found ticker2 in case: %s, %s, %s" % (tickers_by_day, start_time, end_time)
             return None
-        self.ticker2 = ticker2
 
         if up_direction > 0: #upstream
-            if self.ticker2[6] < self.ticker2[4]*(1-stop_loss) and self.ticker2[5] > self.ticker2[4]*(1+take_profit):
-                if self.ticker2[3] > self.ticker2[8]:
-                    return (self.ticker2[4]*(1+take_profit))/self.ticker2[4]
+            if ticker2[6] < ticker2[4]*(1-stop_loss) and ticker2[5] > ticker2[4]*(1+take_profit):
+                if ticker2[3] > ticker2[8]:
+                    return (ticker2[4]*(1+take_profit))/ticker2[4]
                 else:
-                    return (self.ticker2[4]*(1-stop_loss))/self.ticker2[4]
-            elif self.ticker2[6] < self.ticker2[4]*(1-stop_loss):
-                return (self.ticker2[4]*(1-stop_loss))/self.ticker2[4]
-            elif self.ticker2[5] > self.ticker2[4]*(1+take_profit):
-                return (self.ticker2[4]*(1+take_profit))/self.ticker2[4]
+                    return (ticker2[4]*(1-stop_loss))/ticker2[4]
+            elif ticker2[6] < ticker2[4]*(1-stop_loss):
+                return (ticker2[4]*(1-stop_loss))/ticker2[4]
+            elif ticker2[5] > ticker2[4]*(1+take_profit):
+                return (ticker2[4]*(1+take_profit))/ticker2[4]
             else:
-                return self.ticker2[7]/self.ticker2[4]
+                return ticker2[7]/ticker2[4]
         else:
-            if self.ticker2[6] < self.ticker2[4]*(1-take_profit) and self.ticker2[5] > self.ticker2[4]*(1+stop_loss):
-                if self.ticker2[3] < self.ticker2[8]:
-                    return self.ticker2[4]/(self.ticker2[4]*(1+stop_loss))
+            if ticker2[6] < ticker2[4]*(1-take_profit) and ticker2[5] > ticker2[4]*(1+stop_loss):
+                if ticker2[3] < ticker2[8]:
+                    return ticker2[4]/(ticker2[4]*(1+stop_loss))
                 else:
-                    return self.ticker2[4]/(self.ticker2[4]*(1-take_profit))
-            elif self.ticker2[6] < self.ticker2[4]*(1-take_profit):
-                return self.ticker2[4]/(self.ticker2[4]*(1-take_profit))
-            elif self.ticker2[5] > self.ticker2[4]*(1+stop_loss):
-                return self.ticker2[4]/(self.ticker2[4]*(1+stop_loss))
+                    return ticker2[4]/(ticker2[4]*(1-take_profit))
+            elif ticker2[6] < ticker2[4]*(1-take_profit):
+                return ticker2[4]/(ticker2[4]*(1-take_profit))
+            elif ticker2[5] > ticker2[4]*(1+stop_loss):
+                return ticker2[4]/(ticker2[4]*(1+stop_loss))
             else:
-                return self.ticker2[4]/self.ticker2[7]
+                return ticker2[4]/ticker2[7]
                 
     def analyze_by_day(self, tickers, check_time=102000, start_time=102000, end_time=120000, delta=0, direction_delta = 0.001, stop_loss = 0.015, reverse_trade=1, take_profit = 200, ignore_check_limit = True):
         day_count=0
@@ -524,12 +523,16 @@ class ProfileAnalyser():
                 results_procent_rev.append(result)
                 sum_procent_rev+=(result[0]-1)
                 
-        self.real_trade_decisoner(results_days_dir,results_profit_dir,results_days_rev,results_profit_rev,8,0.6,period,-5)
-        
+        #trade_dir = self.real_trade_decisoner(results_days_dir,results_profit_dir,results_days_rev,results_profit_rev,8,0.6,period,-5)
+        #if trade_dir < 0:
+        #    results_days=results_days_rev
+        #    results_profit=results_profit_rev
+        #    results_procent=results_procent_rev
+        #else:
         results_days=results_days_dir
         results_profit=results_profit_dir
         results_procent=results_procent_dir
-   
+       
         best_ranges1 = self.get_best_ranges_new_gen("median",results_days, results_profit,8,0.6,period,-5)
         best_ranges2 = self.get_best_ranges_new_gen("extra2",results_days, results_profit,8,0.6,period,-5)
         best_ranges3 = self.get_best_ranges_new_gen("std",results_days, results_profit,8,0.6,period,-20)
