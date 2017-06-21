@@ -545,11 +545,11 @@ class ProfileAnalyser():
 
     def get_ranges_by_dayweek(self,date):
         day_of_week = datetime.datetime(int(str(date)[:4]), int(str(date)[4:6]), int(str(date)[6:8]), 23, 55, 55, 173504).weekday()
-        day_ranges={0:[100000, 130000, 132000, 170000,1],
-                    1:[100000, 105000, 130000, 165000,1],
-                    2:[100000, 151000, 170000, 173000,1],
-                    3:[100000, 124000, 130000, 154000,1],
-                    4:[100000, 124000, 132000, 165000,1],
+        day_ranges={0:[100000, 110000, 115000, 142000,1],
+                    1:[100000, 145000, 151000, 155000,1],
+                    2:[100000, 122000, 123000, 143000,1],
+                    3:[100000, 134000, 135000, 145000,1],
+                    4:[100000, 142000, 144000, 161000,1],
                     5:[183000, 183000, 183000, 183000,1],
                     6:[183000, 183000, 183000, 183000,1]}
         return [day_ranges[day_of_week]]
@@ -763,8 +763,8 @@ class ProfileAnalyser():
 
 if __name__ == "__main__":
     start_timer=time.time()
-    temp_file_name="daily_TATN.txt"
-    result_file="C:\Just2Trade Client\TATN.txt"
+    temp_file_name="daily_GMKN.txt"
+    result_file="C:\Just2Trade Client\GMKN.txt"
     if os.path.exists(temp_file_name):
         os.remove(temp_file_name)
     cur_date=time.localtime()
@@ -783,8 +783,8 @@ if __name__ == "__main__":
     get_file_string="http://export.finam.ru/export9.out"
     
     stock_params={"market":"1",
-                  "em":"825",
-                  "code":"TATN",
+                  "em":"795",
+                  "code":"GMKN",
                   "apply":"0",
                   "df":"1",
                   "mf":"0",
@@ -797,7 +797,7 @@ if __name__ == "__main__":
                   "p":"4", # period means 10 minutes
                   "e":".txt", # export format
                   "f":"%s" % temp_file_name.split(".")[0],
-                  "cn":"TATN",
+                  "cn":"GMKN",
                   "dtf":"1",
                   "tmf":"1",
                   "sep":"1",
@@ -812,7 +812,7 @@ if __name__ == "__main__":
         
     pa = ProfileAnalyser(temp_file_name)
     pa.filter_tickers(pa.tickers, 100000,184000)
-    results_days_all, results_profit_all, results_procent = pa.start_analyzer_threaded(day_start=pa.days[-5],day_end=-1,threads=4,direction_delta=0.0015,stop_loss=0.015)
+    results_days_all, results_profit_all, results_procent = pa.start_analyzer_threaded(day_start=pa.days[-5],day_end=-1,threads=4,direction_delta=0.0005,stop_loss=0.015)
     for result in results_days_all:
         if result[10] == 1:
             results_days_dir.append(result)
