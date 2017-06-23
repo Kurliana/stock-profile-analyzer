@@ -2217,7 +2217,8 @@ if __name__ == "__main__":
                   "datf":"1",
                   "at":"0",
                   "fsp":"1",
-                  "mstimever":"0"                  
+                  "mstimever":"0",
+                  "MSOR":"1",                   
                   }
     r = requests.post(get_file_string, stock_params,stream=True,allow_redirects=True)
     with open(temp_file_name, 'wb') as f:

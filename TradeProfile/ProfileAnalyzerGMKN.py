@@ -804,7 +804,8 @@ if __name__ == "__main__":
                   "sep2":"1",
                   "datf":"1",
                   "at":"0",
-                  "fsp":"1"                  
+                  "fsp":"1",
+                  "MSOR":"1",                   
                   }
     r = requests.post(get_file_string, stock_params,stream=True,allow_redirects=True)
     with open(temp_file_name, 'wb') as f:
@@ -823,7 +824,7 @@ if __name__ == "__main__":
             results_profit_dir.append(result)
         else:
             results_profit_rev.append(result)
-    if not pa.get_best_ranges_new_gen("extra2",results_days_dir, results_profit_dir,8,0.6,70,-5) or not pa.get_best_ranges_new_gen("extra",results_days_dir, results_profit_dir,8,0.6,24,-5):
+    if not pa.get_best_ranges_new_gen("extra2",results_days_dir, results_profit_dir,8,0.6,98,-5):
         with open(result_file, 'wb') as f:
             f.write("\n")
             #f.write("00\n")
