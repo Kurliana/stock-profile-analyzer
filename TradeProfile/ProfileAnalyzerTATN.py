@@ -812,6 +812,7 @@ if __name__ == "__main__":
         shutil.copyfileobj(r.raw, f)
         
     pa = ProfileAnalyser(temp_file_name)
+    #pa.robot(20170501)
     pa.filter_tickers(pa.tickers, 100000,184000)
     results_days_all, results_profit_all, results_procent = pa.start_analyzer_threaded(day_start=pa.days[-5],day_end=-1,threads=4,direction_delta=0.0015,stop_loss=0.015)
     for result in results_days_all:
