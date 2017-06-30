@@ -845,5 +845,6 @@ if __name__ == "__main__":
             f.write(str(start_time)[2:4]+"\n")
             f.write(str(end_time)[:2]+"\n")
             f.write(str(end_time)[2:4]+"\n")
+            f.write(str(trade)+"\n")
 
     log.info( time.time()-start_timer)
