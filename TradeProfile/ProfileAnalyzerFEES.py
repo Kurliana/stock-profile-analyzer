@@ -814,7 +814,7 @@ if __name__ == "__main__":
     pa = ProfileAnalyser(temp_file_name)
     pa.filter_tickers(pa.tickers, 100000,184000)
     #pa.robot(20170502,5)
-    results_days_all, results_profit_all, results_procent = pa.start_analyzer_threaded(day_start=pa.days[-5],day_end=-1,threads=4,direction_delta=0.0015,stop_loss=0.015)
+    results_days_all, results_profit_all, results_procent = pa.start_analyzer_threaded(day_start=pa.days[-5],day_end=-1,threads=4,direction_delta=0.0015,stop_loss=0.01)
     for result in results_days_all:
         if result[10] == 1:
             results_days_dir.append(result)
