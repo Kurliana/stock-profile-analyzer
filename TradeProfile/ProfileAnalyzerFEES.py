@@ -20,6 +20,32 @@ from ProfileAnalyzer import ProfileAnalyser
 
 class ProfileAnalyserFEES(ProfileAnalyser):
     
+    def get_ranges_by_dayweek(self,curr_date):
+        day_of_week = datetime.datetime(int(str(curr_date)[:4]), int(str(curr_date)[4:6]), int(str(curr_date)[6:8]), 23, 55, 55, 173504).weekday()
+        """day_ranges={0:[100000, 110000, 115000, 142000,1],
+                    1:[100000, 145000, 151000, 155000,-1],
+                    2:[100000, 122000, 123000, 143000,1],
+                    3:[100000, 134000, 135000, 145000,1],
+                    4:[100000, 142000, 144000, 161000,1],
+                    5:[183000, 183000, 183000, 183000,1],
+                    6:[183000, 183000, 183000, 183000,1]}"""
+        day_ranges={0:[100000, 112000, 155000, 180000,1],
+                    1:[100000, 171000, 172000, 175000,1],
+                    2:[100000, 112000, 141000, 172000,-1],
+                    3:[100000, 113000, 163000, 170000,1],
+                    4:[100000, 132000, 135000, 162000,1],
+                    5:[183000, 183000, 183000, 183000,1],
+                    6:[183000, 183000, 183000, 183000,1]}
+        """day_ranges={0:[100000, 130000, 132000, 170000,1],
+                    1:[100000, 105000, 130000, 165000,1],
+                    2:[183000, 183000, 183000, 183000,1],
+                    3:[183000, 183000, 183000, 183000,1],
+                    4:[100000, 124000, 132000, 165000,1],
+                    5:[183000, 183000, 183000, 183000,1],
+                    6:[183000, 183000, 183000, 183000,1]}"""
+
+        return [day_ranges[day_of_week]]
+    
     def get_ranges_by_dayweek_new(self,curr_date):
         day_of_week = datetime.datetime(int(str(curr_date)[:4]), int(str(curr_date)[4:6]), int(str(curr_date)[6:8]), 23, 55, 55, 173504).weekday()
         day_ranges={0:[100000, 112000, 155000, 180000,1],
@@ -31,7 +57,7 @@ class ProfileAnalyserFEES(ProfileAnalyser):
                     6:[183000, 183000, 183000, 183000,1]}
         return [day_ranges[day_of_week]]
 
-    def get_day_profit_old(self, curr_date, period = 30,period2 = 30, simulate_trade=True):
+    def get_day_profit_old(self, curr_date, period = 30,period2 = 30,simulate_trade=True):
         used_ranges=[]
         ranges_counter=0
         profit_delta=0.25
@@ -125,10 +151,14 @@ class ProfileAnalyserFEES(ProfileAnalyser):
             else:
                 trade_dir=1"""
 
-        if self.get_ranges_by_dayweek_new(curr_date)[0][4] == 1:
-            results_days=results_days_dir
-        else:
-            results_days=results_days_rev
+        #if self.get_ranges_by_dayweek_new(curr_date)[0][4] == 1:
+        results_days=results_days_dir
+        #else:
+        #    results_days=results_days_rev
+        #    results_profit=results_profit_rev
+        #    results_procent=results_procent_rev
+        #else:
+            #return  [-1], [-1], [-1], []
         #else:
         #    return  [-1], [-1], [-1]
        
@@ -140,7 +170,7 @@ class ProfileAnalyserFEES(ProfileAnalyser):
         best_ranges6 = self.get_best_ranges_new_gen("extra",results_days, 8,0.6,10,-5)
         best_ranges7 = self.get_best_ranges_new_gen("best_ranges",results_days,8,0.6,period,-5)
         best_ranges8 = self.get_best_ranges_new_gen("period_profit",results_days, 8,0.6,period,-5)
-        best_ranges9 = self.get_ranges_by_dayweek_new(curr_date)
+        best_ranges9 = self.get_ranges_by_dayweek(curr_date)
         best_ranges10 = self.get_ranges_by_dayweek_new(curr_date)
         if not best_ranges1 or not best_ranges2 or not best_ranges3 or not best_ranges4 or not best_ranges5 or not best_ranges6 or not best_ranges7 or not best_ranges8:
             log.info("No some best ranges, lets skip")
@@ -226,12 +256,12 @@ class ProfileAnalyserFEES(ProfileAnalyser):
             used_ranges.append(best_range)
             ranges_counter+=1
             begin_time,check_time,start_time,end_time = best_range[0], best_range[1], best_range[2], best_range[3]
-            day_profit, day_count, day_procent, day_list_profit = self.analyze_by_day(period_day_tickers, check_time, start_time, end_time, 0, 0.0015, 0.01, best_range[4], 200, True)
+            day_profit, day_count, day_procent, day_list_profit = self.analyze_by_day(period_day_tickers, check_time, start_time, end_time, 0, 0.0015, 0.02, best_range[4], 200, True)
             log.info("Period %s: day_profit %s, day_count %s, day_procent %s" % (ranges_counter,day_profit, day_count, day_procent))
             log.info("Begin %s, check %s, start %s, end %s,trade direct %s" % (begin_time,check_time,start_time,end_time,best_range[4]))
             if simulate_trade:
                 day_tickers = self.filter_tickers(self.tickers, begin_time,end_time,curr_date,curr_date)
-                day_profit, day_count, day_procent, day_list_profit = self.analyze_by_day(day_tickers, check_time, start_time, end_time, 0, 0.0015, 0.01, best_range[4], 200, True)
+                day_profit, day_count, day_procent, day_list_profit = self.analyze_by_day(day_tickers, check_time, start_time, end_time, 0, 0.0015, 0.02, best_range[4], 200, True)
                 day_profit_list.append(day_profit)
                 day_count_list.append(day_count)
                 log.info("day_profit %s %s, day_count %s, day_procent %s" % (ranges_counter,day_profit, day_count, day_procent))
@@ -264,12 +294,12 @@ class ProfileAnalyserFEES(ProfileAnalyser):
             used_ranges.append(best_range)
             ranges_counter+=1
             begin_time,check_time,start_time,end_time = best_range[0], best_range[1], best_range[2], best_range[3]
-            day_profit, day_count, day_procent, day_list_profit = self.analyze_by_day(period_day_tickers, check_time, start_time, end_time, 0, 0.01,0.01, best_range[4], 200, True)
+            day_profit, day_count, day_procent, day_list_profit = self.analyze_by_day(period_day_tickers, check_time, start_time, end_time, 0, 0.0015, 0.01, best_range[4], 200, True)
             log.info("Period %s: day_profit %s, day_count %s, day_procent %s" % (ranges_counter,day_profit, day_count, day_procent))
             log.info("Begin %s, check %s, start %s, end %s,trade direct %s" % (begin_time,check_time,start_time,end_time,best_range[4]))
             if simulate_trade:
                 day_tickers = self.filter_tickers(self.tickers, begin_time,end_time,curr_date,curr_date)
-                day_profit, day_count, day_procent, day_list_profit = self.analyze_by_day(day_tickers, check_time, start_time, end_time, 0, 0.01, 0.01, best_range[4], 200, True)
+                day_profit, day_count, day_procent, day_list_profit = self.analyze_by_day(day_tickers, check_time, start_time, end_time, 0, 0.0015, 0.01, best_range[4], 200, True)
                 day_profit_list.append(day_profit)
                 day_count_list.append(day_count)
                 log.info("day_profit %s %s, day_count %s, day_procent %s" % (ranges_counter,day_profit, day_count, day_procent))
@@ -280,6 +310,7 @@ class ProfileAnalyserFEES(ProfileAnalyser):
                 log.info("day_profit %s, day_count %s, day_procent %s" % (0, 1, 1))
                 trade_direction_list.append(1)
 
+        
         return day_profit_list, day_count_list,trade_direction_list,used_ranges
            
     def robot(self, date_start=-1, period = 10, period2 = 0, day_end = -1):
@@ -299,7 +330,7 @@ class ProfileAnalyserFEES(ProfileAnalyser):
                 day_profit_list, day_count_list,trade_direction_list,used_ranges=self.get_day_profit_old(single_day, period,period2)
                 if len(total_profit_list) > changer_period:           
                     accumul_prof=1
-                    best_prof=0
+                    best_prof=1.9
                     if len(day_count_list) > 18: 
                         for saved_prof_ind in range(min(len(day_count_list),39)):
                             method_per_prof=1
@@ -310,7 +341,7 @@ class ProfileAnalyserFEES(ProfileAnalyser):
                                 #if method_per_prof > 1.9 and saved_prof_ind in [0,2]:
                                 #    accumul_prof = 1
                                 #    break
-                                if saved_prof_ind in [4, 9, 10, 15, 17] and method_per_prof < 7: #[0,8,10,14]
+                                if saved_prof_ind in [8, 9, 15, 39] and method_per_prof < 7: #[0,8,10,14]
                                     log.info("Let's use method %s with times %s" % (saved_prof_ind,used_ranges[saved_prof_ind]))
                                     best_prof = method_per_prof
                                     accumul_prof = day_count_list[saved_prof_ind]
@@ -354,7 +385,7 @@ class ProfileAnalyserFEES(ProfileAnalyser):
             day_profit_list, day_count_list,trade_direction_list,used_ranges=self.get_day_profit_old(day_end, period,period2,simulate_trade=False)
             if len(total_profit_list) > changer_period:           
                 accumul_prof=1
-                best_prof=0.3
+                best_prof=1.9
                 if len(day_count_list) > 18: 
                     for saved_prof_ind in range(min(len(day_count_list),39)):
                         method_per_prof=1
@@ -365,7 +396,7 @@ class ProfileAnalyserFEES(ProfileAnalyser):
                             #if method_per_prof > 1.9 and saved_prof_ind in [0,2]:
                             #    accumul_prof = 1
                             #    break
-                             if saved_prof_ind in [1, 9, 15] and method_per_prof < 3: #[0,8,10,14]
+                            if saved_prof_ind in [8, 9, 15, 39] and method_per_prof < 7: #[0,8,10,14]
                                 log.info("Let's finally use method %s with times %s" % (saved_prof_ind,used_ranges[saved_prof_ind]))
                                 best_prof = method_per_prof
                                 accumul_prof = day_count_list[saved_prof_ind]

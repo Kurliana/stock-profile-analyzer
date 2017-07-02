@@ -23,10 +23,10 @@ class ProfileAnalyserTATN(ProfileAnalyser):
     
     def get_ranges_by_dayweek_new(self,curr_date):
         day_of_week = datetime.datetime(int(str(curr_date)[:4]), int(str(curr_date)[4:6]), int(str(curr_date)[6:8]), 23, 55, 55, 173504).weekday()
-        day_ranges={0:[100000, 120000, 133000, 170000,1],
-                    1:[100000, 110000, 130000, 165000,1],
-                    2:[100000, 151000, 170000, 173000,1],
-                    3:[100000, 113000, 131000, 154000,1],
+        day_ranges={0:[100000, 111000, 112000, 122000,1],
+                    1:[100000, 105000, 130000, 180000,1],
+                    2:[100000, 151000, 165000, 173000,1],
+                    3:[100000, 124000, 130000, 154000,1],
                     4:[100000, 124000, 133000, 152000,1],
                     5:[183000, 183000, 183000, 183000,1],
                     6:[183000, 183000, 183000, 183000,1]}
@@ -293,14 +293,14 @@ class ProfileAnalyserTATN(ProfileAnalyser):
         total_count = []
         total_procent_profit = []
         total_extra_profit = []
-        changer_period=120
+        changer_period=3
         for single_day in self.days:
             if day_end < 0 or day_end > single_day:
                 day_analyze_time_start=time.time()
                 day_profit_list, day_count_list,trade_direction_list,used_ranges=self.get_day_profit_old(single_day, period,period2)
                 if len(total_profit_list) > changer_period:           
                     accumul_prof=1
-                    best_prof=0
+                    best_prof=0.7
                     if len(day_count_list) > 18: 
                         for saved_prof_ind in range(min(len(day_count_list),39)):
                             method_per_prof=1
@@ -311,7 +311,7 @@ class ProfileAnalyserTATN(ProfileAnalyser):
                                 #if method_per_prof > 1.9 and saved_prof_ind in [0,2]:
                                 #    accumul_prof = 1
                                 #    break
-                                if saved_prof_ind in [4, 9, 10, 15, 17] and method_per_prof < 7: #[0,8,10,14]
+                                if saved_prof_ind in [3, 8, 13, 14] and method_per_prof < 1.9: #[0,8,10,14]
                                     log.info("Let's use method %s with times %s" % (saved_prof_ind,used_ranges[saved_prof_ind]))
                                     best_prof = method_per_prof
                                     accumul_prof = day_count_list[saved_prof_ind]
@@ -355,7 +355,7 @@ class ProfileAnalyserTATN(ProfileAnalyser):
             day_profit_list, day_count_list,trade_direction_list,used_ranges=self.get_day_profit_old(day_end, period,period2,simulate_trade=False)
             if len(total_profit_list) > changer_period:           
                 accumul_prof=1
-                best_prof=0
+                best_prof=0.7
                 if len(day_count_list) > 18: 
                     for saved_prof_ind in range(min(len(day_count_list),39)):
                         method_per_prof=1
@@ -366,7 +366,7 @@ class ProfileAnalyserTATN(ProfileAnalyser):
                             #if method_per_prof > 1.9 and saved_prof_ind in [0,2]:
                             #    accumul_prof = 1
                             #    break
-                            if saved_prof_ind in [4, 9, 10, 15, 17] and method_per_prof < 7: #[0,8,10,14]
+                            if saved_prof_ind in [3, 8, 13, 14] and method_per_prof < 1.9: #[0,8,10,14]
                                 log.info("Let's finally use method %s with times %s" % (saved_prof_ind,used_ranges[saved_prof_ind]))
                                 best_prof = method_per_prof
                                 accumul_prof = day_count_list[saved_prof_ind]
@@ -457,8 +457,8 @@ if __name__ == "__main__":
         
     pa = ProfileAnalyserTATN(temp_file_name)
     log.info("All saved dayes %s " % len(pa.days))
-    start_date=pa.days[-123]
-    best_range = pa.robot(start_date, 30, day_end = pa.days[-1])[0]
+    start_date=pa.days[-10]
+    best_range = pa.robot(start_date, 5, day_end = pa.days[-1])[0]
     
     if not best_range:
         with open(result_file, 'wb') as f:
