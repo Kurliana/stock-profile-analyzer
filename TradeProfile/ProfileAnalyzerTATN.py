@@ -149,7 +149,7 @@ class ProfileAnalyserTATN(ProfileAnalyser):
         best_ranges = best_ranges1 + best_ranges2 + best_ranges3 + best_ranges4 + best_ranges5 + best_ranges6 + best_ranges7 + best_ranges8+best_ranges9+best_ranges10
 
         for best_range in best_ranges:
-            used_ranges.append(best_range)
+            used_ranges.append(best_range+[0.0015, loss, 200])
             ranges_counter+=1
             begin_time,check_time,start_time,end_time = best_range[0], best_range[1], best_range[2], best_range[3]
             day_profit, day_count, day_procent, day_list_profit = self.analyze_by_day(period_day_tickers, check_time, start_time, end_time, 0, 0.0015, loss, best_range[4], 200, True)
@@ -169,7 +169,7 @@ class ProfileAnalyserTATN(ProfileAnalyser):
                 trade_direction_list.append(1)
 
         for best_range in best_ranges:
-            used_ranges.append(best_range)
+            used_ranges.append(best_range+[0.01, loss, 200])
             ranges_counter+=1
             begin_time,check_time,start_time,end_time = best_range[0], best_range[1], best_range[2], best_range[3]
             day_profit, day_count, day_procent, day_list_profit = self.analyze_by_day(period_day_tickers, check_time, start_time, end_time, 0, 0.01, loss, best_range[4],  200, True)
@@ -224,7 +224,7 @@ class ProfileAnalyserTATN(ProfileAnalyser):
         log.info(best_ranges)"""
 
         for best_range in best_ranges:
-            used_ranges.append(best_range)
+            used_ranges.append(best_range+[0.0015, 0.01, 200])
             ranges_counter+=1
             begin_time,check_time,start_time,end_time = best_range[0], best_range[1], best_range[2], best_range[3]
             day_profit, day_count, day_procent, day_list_profit = self.analyze_by_day(period_day_tickers, check_time, start_time, end_time, 0, 0.0015, 0.01, best_range[4], 200, True)
@@ -262,7 +262,7 @@ class ProfileAnalyserTATN(ProfileAnalyser):
         best_ranges = best_ranges1 + best_ranges2 + best_ranges3 + best_ranges4 + best_ranges5 + best_ranges6 + best_ranges7 + best_ranges8+best_ranges9+best_ranges10
 """
         for best_range in best_ranges:
-            used_ranges.append(best_range)
+            used_ranges.append(best_range+[0.01, 0.01, 200])
             ranges_counter+=1
             begin_time,check_time,start_time,end_time = best_range[0], best_range[1], best_range[2], best_range[3]
             day_profit, day_count, day_procent, day_list_profit = self.analyze_by_day(period_day_tickers, check_time, start_time, end_time, 0, 0.01,0.01, best_range[4], 200, True)
@@ -288,6 +288,8 @@ class ProfileAnalyserTATN(ProfileAnalyser):
         if date_start > 0:
             date_start_index=self.days.index(date_start)
             self.days=self.days[-len(self.days)+date_start_index-max(period,period2*5)-1:]
+        if day_end > 0 and day_end not in self.days:
+            self.days.append(day_end)
         total_profit_list=[]
         total_profit = []
         total_count = []
@@ -458,7 +460,7 @@ if __name__ == "__main__":
     pa = ProfileAnalyserTATN(temp_file_name)
     log.info("All saved dayes %s " % len(pa.days))
     start_date=pa.days[-10]
-    best_range = pa.robot(start_date, 5, day_end = pa.days[-1])[0]
+    best_range = pa.robot(start_date, 5, day_end = int("%d%.2d%.2d" % (cur_year,cur_month,cur_day)))[0]
     
     if not best_range:
         with open(result_file, 'wb') as f:
@@ -469,7 +471,7 @@ if __name__ == "__main__":
             #f.write("00\n")
             #f.write("00\n")
     else:    
-        begin_time,check_time,start_time,end_time = best_range[0], best_range[1], best_range[2], best_range[3]                
+        begin_time,check_time,start_time,end_time,trade,delta,loss,take = best_range[0], best_range[1], best_range[2], best_range[3], best_range[4], best_range[5], best_range[6], best_range[7]               
         #current_date=datetime.date.today().strftime("%Y%m%d")
         #begin_time,check_time,start_time,end_time,trade = pa.get_ranges_by_dayweek(int(current_date))[0]
         #log.info("Current date %s" % current_date)
@@ -482,5 +484,9 @@ if __name__ == "__main__":
             f.write(str(start_time)[2:4]+"\n")
             f.write(str(end_time)[:2]+"\n")
             f.write(str(end_time)[2:4]+"\n")
+            f.write(str(trade)+"\n")
+            f.write(str(delta)+"\n")
+            f.write(str(loss)+"\n")
+            f.write(str(take)+"\n")
 
     log.info( time.time()-start_timer)
