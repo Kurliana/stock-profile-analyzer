@@ -30,6 +30,7 @@ class ProfileAnalyser():
         self.results_profit=[]
         self.results_procent=[]
         current_day=0
+        self.success_ranges=[]
         with open(tick_file,"r+") as f:
             single_ticker = f.readline()
             while single_ticker:
@@ -775,6 +776,11 @@ class ProfileAnalyser():
                 results_days_rev.append(result)
         log.info("Success periods %s" % success_day_counter)
         log.info("Reverse periods %s" % reverse_day_counter)
+        self.success_ranges.append(success_day_counter)
+        if len(self.success_ranges) > 1:
+            if success_day_counter - self.success_ranges[-2] > 2000:
+                log.info("Too big increase of success ranges %s" % (success_day_counter - self.success_ranges[-2]))
+                return [-1], [-1], [-1], []
         """for result in results_profit_all:
             if result[10] == 1:
                 results_profit_dir.append(result)

@@ -174,6 +174,9 @@ class ProfileAnalyser():
                 return single_result
         return None
     
+    def get_day_week(self, date_int):
+        return datetime.datetime(int(str(date_int)[:4]), int(str(date_int)[4:6]), int(str(date_int)[6:8]), 23, 55, 55, 173504).weekday()
+    
     def get_candle_ranges_new2(self, selected_timelines, result_days = None):
         max_weight = 0
         best_timeline=[[160000,160000,160000,160000,1]]
@@ -608,7 +611,7 @@ class ProfileAnalyser():
                 
         if len(best_days) == 0:
             log.info("No best days for %s" % logic_key)
-            return None
+            return [[160000, 160000, 160000, 160000,0]] 
         
         days_limit=int(numpy.median(numpy.array(best_days[-int(len(best_days)/best_range):])))
 
@@ -621,7 +624,7 @@ class ProfileAnalyser():
 
         if len(results_timeline_days) < max(abs(max_stat),period):
             log.info("No best range for %s" % logic_key)
-            return None 
+            return [[160000, 160000, 160000, 160000,0]] 
         #if results_timeline_days[-20][0] > 2:
             #return None
             

@@ -45,13 +45,11 @@ class ProfileAnalyserCAT(ProfileAnalyser):
                     6:[160000, 160000, 160000, 160000,1]}
         return [day_ranges[day_of_week]]
 
-    def get_day_profit_old(self, curr_date, period = 30,period2 = 30,simulate_trade=True):
+    def get_day_profit_old(self, curr_date, period = 30,period2 = 30,simulate_trade=True,delta=0.005,loss=0.015):
         used_ranges=[]
         ranges_counter=0
         profit_delta=0.25
         procent_delta=1.25
-        loss=0.0075
-        delta=0.0015
         trade_dir=1
         day_profit_list=[]
         day_count_list=[]
@@ -188,277 +186,144 @@ class ProfileAnalyserCAT(ProfileAnalyser):
             
         return day_profit_list, day_count_list,trade_direction_list,used_ranges
            
-    def robot(self, date_start=-1, period = 10, period2 = 0, day_end = -1):
-        self.tickers = self.filter_tickers(self.tickers, 94000,160000,-1,-1)
+    def robot(self, date_start=-1, period = 10, period2 = 0, day_end = -1, delta = 0.0015, loss = 0.015):
+        self.tickers = self.filter_tickers(self.tickers, 100000,184000,-1,-1)
+        best_prof=0.7
+        max_prof=1.7
+        methods_list=[28,38]
         if date_start > 0:
             date_start_index=self.days.index(date_start)
+            """for i in range(10):
+                reserv_tickers=[]
+                results_procent_dir=[]
+                results_procent_rev=[]
+                reserv_tickers+=self.tickers
+                curr_date=self.days[date_start_index-i]
+                dayweek = self.get_day_week(curr_date)
+                if not self.allowed_times[dayweek]:
+                    self.tickers=self.filter_tickers(self.tickers, 100000,184000,-1,-1,dayweek)
+                    results_days_all,results_profit_all,results_procent_all = self.start_analyzer_threaded(-1,-1,4,delta,loss)
+                    for result in results_procent_all:
+                        if result[10] == 1:
+                            results_procent_dir.append(result)
+                        else:
+                            results_procent_rev.append(result)
+                    if self.get_ranges_by_dayweek(curr_date)[0][4] == 1:
+                        results_procent=results_procent_dir
+                    else:
+                        results_procent=results_procent_rev
+                    self.set_allowed_times(results_procent[-50:],dayweek)
+                    self.tickers=reserv_tickers
+                    del reserv_tickers
+                    del results_procent_all
+                    del results_procent_dir
+                    del results_procent_rev
+                    del results_days_all
+                    del results_profit_all"""
             self.days=self.days[-len(self.days)+date_start_index-max(period,period2*5)-1:]
         if day_end > 0 and day_end not in self.days:
             self.days.append(day_end)
-            
-        #check
-        for day in self.days:
-            day_got=0
-            for ticker in self.tickers:
-                if ticker[3] == 94000 and ticker[2]==day:
-                    day_got = 1
-            if day_got == 0:
-                log.info("No start tickers found for day %s" % day)
-        total_profit_list=[]
-        total_profit = []
-        total_count = []
-        total_procent_profit = []
-        total_extra_profit = []
-        changer_period=3
-        for single_day in self.days:
-            if day_end < 0 or day_end > single_day:
-                day_analyze_time_start=time.time()
-                day_profit_list, day_count_list,trade_direction_list,used_ranges=self.get_day_profit_old(single_day, period,period2)
-                if len(total_profit_list) > changer_period:           
-                    accumul_prof=1
-                    best_prof=0.9
-                    if len(day_count_list) > 18: 
-                        for saved_prof_ind in range(min(len(day_count_list),40)):
-                            method_per_prof=1
-                            for prev_profit in range(changer_period):
-                                method_per_prof=method_per_prof*total_profit_list[-prev_profit-1][saved_prof_ind]
-                            log.info("TotalProfit method %s: %s with day profit %s" % (saved_prof_ind,method_per_prof,day_count_list[saved_prof_ind]))
-                            if method_per_prof > best_prof:
-                                #if method_per_prof > 1.9 and saved_prof_ind in [0,2]:
-                                #    accumul_prof = 1
-                                #    break
-                                if saved_prof_ind in [19] and method_per_prof < 2.5: #[0,8,10,14]
-                                    log.info("Let's use method %s with times %s" % (saved_prof_ind,used_ranges[saved_prof_ind]))
-                                    best_prof = method_per_prof
-                                    accumul_prof = day_count_list[saved_prof_ind]
-                                    saved_times=used_ranges[saved_prof_ind]
-                        day_count_list.append(accumul_prof)
-                    day_profit_list.append(0) 
-                    if accumul_prof > 1:
-                        day_profit_list[-1] = 1
-                    elif accumul_prof < 1:
-                        day_profit_list[-1] = -1
-                    trade_direction_list.append(1)  
-                if len(total_profit) <= len(day_profit_list) and len(day_profit_list) > 1:
-                    for check_func in range(len(day_profit_list)):
-                        day_count=day_count_list[check_func]
-                        day_profit=day_profit_list[check_func]
-                        trade_direction=trade_direction_list[check_func]
-                        if len(total_profit)<check_func+1:
-                            total_profit.append(1)
-                            total_count.append(0)
-                            total_procent_profit.append(1)
-                            total_extra_profit.append(1)
-                        if day_count > 0:
-                            #if trade_direction > 0:
-                                log.info("Date %s, profit %s, count %s" % (single_day, day_profit, day_count))
-                                total_profit[check_func]=total_profit[check_func]+(day_count-1)
-                                total_procent_profit[check_func] = total_procent_profit[check_func]*day_count
-                                total_count[check_func]+=day_profit
-                                total_extra_profit[check_func]=max(total_extra_profit[check_func]-round(total_extra_profit[check_func]/2)+round(total_extra_profit[check_func]/2)*day_count,1)
-                            #elif trade_direction < 0:
-                            #    log.info("Date %s, profit %s, count %s" % (single_day, -day_profit, day_count))
-                                #total_profit=total_profit+(day_count-1)
-                                #total_procent_profit = total_procent_profit*day_count
-                            #    total_profit[check_func]=total_profit[check_func]+(1/day_count-1)
-                            #    total_procent_profit[check_func] = total_procent_profit[check_func]*(1/day_count)
-                            #    total_count[check_func]-=day_profit
-                        log.info("Method %s!!! Total profit %s, total procent profit %s, total count %s, total extra profit %s,time %s" % (check_func,total_profit[check_func],total_procent_profit[check_func],total_count[check_func], total_extra_profit[check_func], time.time()-day_analyze_time_start))
-                    if len(day_profit_list) > 1:
-                        total_profit_list.append(day_count_list)
-        if day_end > 0:            
-            saved_times=None
-            day_analyze_time_start=time.time()
-            day_profit_list, day_count_list,trade_direction_list,used_ranges=self.get_day_profit_old(day_end, period,period2,simulate_trade=False)
-            if len(total_profit_list) > changer_period:           
-                accumul_prof=1
-                best_prof=0.9
-                if len(day_count_list) > 18: 
-                    for saved_prof_ind in range(min(len(day_count_list),40)):
-                        method_per_prof=1
-                        for prev_profit in range(changer_period):
-                            method_per_prof=method_per_prof*total_profit_list[-prev_profit-1][saved_prof_ind]
-                        log.info("TotalProfit method %s: %s with day profit %s" % (saved_prof_ind,method_per_prof,day_count_list[saved_prof_ind]))
-                        if method_per_prof > best_prof:
-                            #if method_per_prof > 1.9 and saved_prof_ind in [0,2]:
-                            #    accumul_prof = 1
-                            #    break
-                            if saved_prof_ind in [19] and method_per_prof < 2.5: #[0,8,10,14]
-                                log.info("Let's finally use method %s with times %s" % (saved_prof_ind,used_ranges[saved_prof_ind]))
-                                best_prof = method_per_prof
-                                accumul_prof = day_count_list[saved_prof_ind]
-                                saved_times=used_ranges[saved_prof_ind]
-                day_count_list.append(accumul_prof)
-                day_profit_list.append(0) 
-                if accumul_prof > 1:
-                    day_profit_list[-1] = 1
-                elif accumul_prof < 1:
-                    day_profit_list[-1] = -1
-                trade_direction_list.append(1)  
-            if len(total_profit) <= len(day_profit_list) and len(day_profit_list) > 1:
-                for check_func in range(len(day_profit_list)):
-                    day_count=day_count_list[check_func]
-                    day_profit=day_profit_list[check_func]
-                    trade_direction=trade_direction_list[check_func]
-                    if len(total_profit)<check_func+1:
-                        total_profit.append(1)
-                        total_count.append(0)
-                        total_procent_profit.append(1)
-                        total_extra_profit.append(1)
-                    if day_count > 0:
-                        #if trade_direction > 0:
-                            log.info("Date %s, profit %s, count %s" % (day_end, day_profit, day_count))
-                            total_profit[check_func]=total_profit[check_func]+(day_count-1)
-                            total_procent_profit[check_func] = total_procent_profit[check_func]*day_count
-                            total_count[check_func]+=day_profit
-                            total_extra_profit[check_func]=max(total_extra_profit[check_func]-round(total_extra_profit[check_func]/2)+round(total_extra_profit[check_func]/2)*day_count,1)
-                        #elif trade_direction < 0:
-                        #    log.info("Date %s, profit %s, count %s" % (single_day, -day_profit, day_count))
-                            #total_profit=total_profit+(day_count-1)
-                            #total_procent_profit = total_procent_profit*day_count
-                        #    total_profit[check_func]=total_profit[check_func]+(1/day_count-1)
-                        #    total_procent_profit[check_func] = total_procent_profit[check_func]*(1/day_count)
-                        #    total_count[check_func]-=day_profit
-                    log.info("Method %s!!! Total profit %s, total procent profit %s, total count %s, total extra profit %s,time %s" % (check_func,total_profit[check_func],total_procent_profit[check_func],total_count[check_func], total_extra_profit[check_func], time.time()-day_analyze_time_start))
-                if len(day_profit_list) > 1:
-                    total_profit_list.append(day_count_list)
-        return [saved_times]
-           
-    def robot(self, date_start=-1, period = 10, period2 = 0, day_end = -1):
-        self.tickers = self.filter_tickers(self.tickers, 94000,160000,-1,-1)
-        if date_start > 0:
-            date_start_index=self.days.index(date_start)
-            self.days=self.days[-len(self.days)+date_start_index-max(period,period2*5)-1:]
-        if day_end > 0 and day_end not in self.days:
-            self.days.append(day_end)            
-        #check
-        for day in self.days:
-            day_got=0
-            for ticker in self.tickers:
-                if ticker[3] == 94000 and ticker[2]==day:
-                    day_got = 1
-            if day_got == 0:
-                log.info("No start tickers found for day %s" % day)
-        total_profit_list=[]
-        total_profit = []
-        total_count = []
-        total_procent_profit = []
-        total_extra_profit = []
-        changer_period=3
-        for single_day in self.days:
-            if day_end < 0 or day_end > single_day:
-                day_analyze_time_start=time.time()
-                day_profit_list, day_count_list,trade_direction_list,used_ranges=self.get_day_profit_old(single_day, period,period2)
-                if len(total_profit_list) > changer_period:           
-                    accumul_prof=1
-                    best_prof=0.7
-                    if len(day_count_list) > 18: 
-                        for saved_prof_ind in range(min(len(day_count_list),40)):
-                            method_per_prof=1
-                            for prev_profit in range(changer_period):
-                                method_per_prof=method_per_prof*total_profit_list[-prev_profit-1][saved_prof_ind]
-                            log.info("TotalProfit method %s: %s with day profit %s" % (saved_prof_ind,method_per_prof,day_count_list[saved_prof_ind]))
-                            if method_per_prof > best_prof:
-                                #if method_per_prof > 1.9 and saved_prof_ind in [0,2]:
-                                #    accumul_prof = 1
-                                #    break
-                                if saved_prof_ind in [38] and method_per_prof < 1.7: #[0,8,10,14]
-                                    log.info("Let's use method %s with times %s" % (saved_prof_ind,used_ranges[saved_prof_ind]))
-                                    best_prof = method_per_prof
-                                    accumul_prof = day_count_list[saved_prof_ind]
-                                    saved_times=used_ranges[saved_prof_ind]
-                        day_count_list.append(accumul_prof)
-                    day_profit_list.append(0) 
-                    if accumul_prof > 1:
-                        day_profit_list[-1] = 1
-                    elif accumul_prof < 1:
-                        day_profit_list[-1] = -1
-                    trade_direction_list.append(1)  
-                if len(total_profit) <= len(day_profit_list) and len(day_profit_list) > 1:
-                    for check_func in range(len(day_profit_list)):
-                        day_count=day_count_list[check_func]
-                        day_profit=day_profit_list[check_func]
-                        trade_direction=trade_direction_list[check_func]
-                        if len(total_profit)<check_func+1:
-                            total_profit.append(1)
-                            total_count.append(0)
-                            total_procent_profit.append(1)
-                            total_extra_profit.append(1)
-                        if day_count > 0:
-                            #if trade_direction > 0:
-                                log.info("Date %s, profit %s, count %s" % (single_day, day_profit, day_count))
-                                total_profit[check_func]=total_profit[check_func]+(day_count-1)
-                                total_procent_profit[check_func] = total_procent_profit[check_func]*day_count
-                                total_count[check_func]+=day_profit
-                                total_extra_profit[check_func]=max(total_extra_profit[check_func]-round(total_extra_profit[check_func]/2)+round(total_extra_profit[check_func]/2)*day_count,1)
-                            #elif trade_direction < 0:
-                            #    log.info("Date %s, profit %s, count %s" % (single_day, -day_profit, day_count))
-                                #total_profit=total_profit+(day_count-1)
-                                #total_procent_profit = total_procent_profit*day_count
-                            #    total_profit[check_func]=total_profit[check_func]+(1/day_count-1)
-                            #    total_procent_profit[check_func] = total_procent_profit[check_func]*(1/day_count)
-                            #    total_count[check_func]-=day_profit
-                        log.info("Method %s!!! Total profit %s, total procent profit %s, total count %s, total extra profit %s,time %s" % (check_func,total_profit[check_func],total_procent_profit[check_func],total_count[check_func], total_extra_profit[check_func], time.time()-day_analyze_time_start))
-                    if len(day_profit_list) > 1:
-                        total_profit_list.append(day_count_list)
-        if day_end > 0:            
-            saved_times=None
-            day_analyze_time_start=time.time()
-            day_profit_list, day_count_list,trade_direction_list,used_ranges=self.get_day_profit_old(day_end, period,period2,simulate_trade=False)
-            if len(total_profit_list) > changer_period:           
-                accumul_prof=1
-                best_prof=0.7
-                if len(day_count_list) > 18: 
-                    for saved_prof_ind in range(min(len(day_count_list),40)):
-                        method_per_prof=1
-                        for prev_profit in range(changer_period):
-                            method_per_prof=method_per_prof*total_profit_list[-prev_profit-1][saved_prof_ind]
-                        log.info("TotalProfit method %s: %s with day profit %s" % (saved_prof_ind,method_per_prof,day_count_list[saved_prof_ind]))
-                        if method_per_prof > best_prof:
-                            #if method_per_prof > 1.9 and saved_prof_ind in [0,2]:
-                            #    accumul_prof = 1
-                            #    break
-                            if saved_prof_ind in [38] and method_per_prof < 1.7: #[0,8,10,14]
-                                log.info("Let's finally use method %s with times %s" % (saved_prof_ind,used_ranges[saved_prof_ind]))
-                                best_prof = method_per_prof
-                                accumul_prof = day_count_list[saved_prof_ind]
-                                saved_times=used_ranges[saved_prof_ind]
-                day_count_list.append(accumul_prof)
-                day_profit_list.append(0) 
-                if accumul_prof > 1:
-                    day_profit_list[-1] = 1
-                elif accumul_prof < 1:
-                    day_profit_list[-1] = -1
-                trade_direction_list.append(1)  
-            if len(total_profit) <= len(day_profit_list) and len(day_profit_list) > 1:
-                for check_func in range(len(day_profit_list)):
-                    day_count=day_count_list[check_func]
-                    day_profit=day_profit_list[check_func]
-                    trade_direction=trade_direction_list[check_func]
-                    if len(total_profit)<check_func+1:
-                        total_profit.append(1)
-                        total_count.append(0)
-                        total_procent_profit.append(1)
-                        total_extra_profit.append(1)
-                    if day_count > 0:
-                        #if trade_direction > 0:
-                            log.info("Date %s, profit %s, count %s" % (day_end, day_profit, day_count))
-                            total_profit[check_func]=total_profit[check_func]+(day_count-1)
-                            total_procent_profit[check_func] = total_procent_profit[check_func]*day_count
-                            total_count[check_func]+=day_profit
-                            total_extra_profit[check_func]=max(total_extra_profit[check_func]-round(total_extra_profit[check_func]/2)+round(total_extra_profit[check_func]/2)*day_count,1)
-                        #elif trade_direction < 0:
-                        #    log.info("Date %s, profit %s, count %s" % (single_day, -day_profit, day_count))
-                            #total_profit=total_profit+(day_count-1)
-                            #total_procent_profit = total_procent_profit*day_count
-                        #    total_profit[check_func]=total_profit[check_func]+(1/day_count-1)
-                        #    total_procent_profit[check_func] = total_procent_profit[check_func]*(1/day_count)
-                        #    total_count[check_func]-=day_profit
-                    log.info("Method %s!!! Total profit %s, total procent profit %s, total count %s, total extra profit %s,time %s" % (check_func,total_profit[check_func],total_procent_profit[check_func],total_count[check_func], total_extra_profit[check_func], time.time()-day_analyze_time_start))
-                if len(day_profit_list) > 1:
-                    total_profit_list.append(day_count_list)
-        return [saved_times]
 
+        total_profit_list=[]
+        total_profit = []
+        total_count = []
+        total_procent_profit = []
+        total_extra_profit = []
+        saved_times=[]
+        changer_period=3
+        for single_day in self.days:
+            if day_end < 0 or day_end > single_day:
+                day_analyze_time_start=time.time()
+                day_profit_list, day_count_list,trade_direction_list,used_ranges=self.get_day_profit_old(single_day, period,period2,delta=delta,loss=loss)
+                if len(total_profit_list) > changer_period:           
+                    accumul_prof=1
+                    tmp_best_prof=best_prof
+                    if len(day_count_list) > 18: 
+                        for saved_prof_ind in range(min(len(day_count_list),40)):
+                            method_per_prof=1
+                            for prev_profit in range(changer_period):
+                                method_per_prof=method_per_prof*total_profit_list[-prev_profit-1][saved_prof_ind]
+                            log.info("TotalProfit method %s: %s with day profit %s" % (saved_prof_ind,method_per_prof,day_count_list[saved_prof_ind]))
+                            if method_per_prof > tmp_best_prof:
+                                #if method_per_prof > 1.9 and saved_prof_ind in [0,2]:
+                                #    accumul_prof = 1
+                                #    break
+                                if saved_prof_ind in methods_list and method_per_prof < max_prof: #[0,8,10,14]
+                                    log.info("Let's use method %s with times %s" % (saved_prof_ind,used_ranges[saved_prof_ind]))
+                                    tmp_best_prof = method_per_prof
+                                    accumul_prof = day_count_list[saved_prof_ind]
+                                    saved_times=used_ranges[saved_prof_ind]
+                        day_count_list.append(accumul_prof)
+                    day_profit_list.append(0) 
+                    if accumul_prof > 1:
+                        day_profit_list[-1] = 1
+                    elif accumul_prof < 1:
+                        day_profit_list[-1] = -1
+                    trade_direction_list.append(1)  
+                if len(total_profit) <= len(day_profit_list) and len(day_profit_list) > 1:
+                    for check_func in range(min(len(day_profit_list),len(day_count_list))):
+                        day_count=day_count_list[check_func]
+                        day_profit=day_profit_list[check_func]
+                        if len(total_profit)<check_func+1:
+                            total_profit.append(1)
+                            total_count.append(0)
+                            total_procent_profit.append(1)
+                            total_extra_profit.append(1)
+                        if day_count > 0:
+                                log.info("Date %s, profit %s, count %s" % (single_day, day_profit, day_count))
+                                total_profit[check_func]=total_profit[check_func]+(day_count-1)
+                                total_procent_profit[check_func] = total_procent_profit[check_func]*day_count
+                                total_count[check_func]+=day_profit
+                                total_extra_profit[check_func]=max(total_extra_profit[check_func]-round(total_extra_profit[check_func]/2)+round(total_extra_profit[check_func]/2)*day_count,1)
+                        log.info("Method %s!!! Total profit %s, total procent profit %s, total count %s, total extra profit %s,time %s" % (check_func,total_profit[check_func],total_procent_profit[check_func],total_count[check_func], total_extra_profit[check_func], time.time()-day_analyze_time_start))
+                    if len(day_profit_list) > 1:
+                        total_profit_list.append(day_count_list)
+        if day_end > 0:            
+            saved_times=None
+            day_analyze_time_start=time.time()
+            day_profit_list, day_count_list,trade_direction_list,used_ranges=self.get_day_profit_old(day_end, period,period2,simulate_trade=False,delta=delta,loss=loss)
+            if len(total_profit_list) > changer_period:           
+                accumul_prof=1
+                tmp_best_prof=best_prof
+                if len(day_count_list) > 18: 
+                    for saved_prof_ind in range(min(len(day_count_list),40)):
+                        method_per_prof=1
+                        for prev_profit in range(changer_period):
+                            method_per_prof=method_per_prof*total_profit_list[-prev_profit-1][saved_prof_ind]
+                        log.info("TotalProfit method %s: %s with day profit %s" % (saved_prof_ind,method_per_prof,day_count_list[saved_prof_ind]))
+                        if method_per_prof > tmp_best_prof:
+                            if saved_prof_ind in methods_list and method_per_prof < max_prof: #[0,8,10,14]
+                                log.info("Let's finally use method %s with times %s" % (saved_prof_ind,used_ranges[saved_prof_ind]))
+                                tmp_best_prof = method_per_prof
+                                accumul_prof = day_count_list[saved_prof_ind]
+                                saved_times=used_ranges[saved_prof_ind]
+                day_count_list.append(accumul_prof)
+                day_profit_list.append(0) 
+                if accumul_prof > 1:
+                    day_profit_list[-1] = 1
+                elif accumul_prof < 1:
+                    day_profit_list[-1] = -1
+                trade_direction_list.append(1)  
+            if len(total_profit) <= len(day_profit_list) and len(day_profit_list) > 1:
+                for check_func in range(min(len(day_profit_list),len(day_count_list))):
+                    day_count=day_count_list[check_func]
+                    day_profit=day_profit_list[check_func]
+                    if len(total_profit)<check_func+1:
+                        total_profit.append(1)
+                        total_count.append(0)
+                        total_procent_profit.append(1)
+                        total_extra_profit.append(1)
+                    if day_count > 0:
+                        #if trade_direction > 0:
+                            log.info("Date %s, profit %s, count %s" % (day_end, day_profit, day_count))
+                            total_profit[check_func]=total_profit[check_func]+(day_count-1)
+                            total_procent_profit[check_func] = total_procent_profit[check_func]*day_count
+                            total_count[check_func]+=day_profit
+                            total_extra_profit[check_func]=max(total_extra_profit[check_func]-round(total_extra_profit[check_func]/2)+round(total_extra_profit[check_func]/2)*day_count,1)
+                    log.info("Method %s!!! Total profit %s, total procent profit %s, total count %s, total extra profit %s,time %s" % (check_func,total_profit[check_func],total_procent_profit[check_func],total_count[check_func], total_extra_profit[check_func], time.time()-day_analyze_time_start))
+                if len(day_profit_list) > 1:
+                    total_profit_list.append(day_count_list)
+        return [saved_times]
 
 if __name__ == "__main__":
     # based on my_app_super_full_cat_5_new_fast_p3x3_delta0015_stop_075
@@ -515,7 +380,7 @@ if __name__ == "__main__":
     pa = ProfileAnalyserCAT(temp_file_name)
     log.info("All saved dayes %s " % len(pa.days))
     start_date=pa.days[-10]
-    best_range = pa.robot(start_date, 5, day_end = int("%d%.2d%.2d" % (cur_year,cur_month,cur_day)))[0]
+    best_range = pa.robot(start_date, 5, day_end = int("%d%.2d%.2d" % (cur_year,cur_month,cur_day)),loss=0.0075,delta=0.0015)[0]
     
     if not best_range:
         with open(result_file, 'wb') as f:

@@ -22,13 +22,6 @@ class ProfileAnalyserFEES(ProfileAnalyser):
     
     def get_ranges_by_dayweek(self,curr_date):
         day_of_week = datetime.datetime(int(str(curr_date)[:4]), int(str(curr_date)[4:6]), int(str(curr_date)[6:8]), 23, 55, 55, 173504).weekday()
-        """day_ranges={0:[100000, 110000, 115000, 142000,1],
-                    1:[100000, 145000, 151000, 155000,-1],
-                    2:[100000, 122000, 123000, 143000,1],
-                    3:[100000, 134000, 135000, 145000,1],
-                    4:[100000, 142000, 144000, 161000,1],
-                    5:[183000, 183000, 183000, 183000,1],
-                    6:[183000, 183000, 183000, 183000,1]}"""
         day_ranges={0:[100000, 112000, 155000, 180000,1],
                     1:[100000, 171000, 172000, 175000,1],
                     2:[100000, 112000, 141000, 172000,-1],
@@ -36,13 +29,6 @@ class ProfileAnalyserFEES(ProfileAnalyser):
                     4:[100000, 132000, 135000, 162000,1],
                     5:[183000, 183000, 183000, 183000,1],
                     6:[183000, 183000, 183000, 183000,1]}
-        """day_ranges={0:[100000, 130000, 132000, 170000,1],
-                    1:[100000, 105000, 130000, 165000,1],
-                    2:[183000, 183000, 183000, 183000,1],
-                    3:[183000, 183000, 183000, 183000,1],
-                    4:[100000, 124000, 132000, 165000,1],
-                    5:[183000, 183000, 183000, 183000,1],
-                    6:[183000, 183000, 183000, 183000,1]}"""
 
         return [day_ranges[day_of_week]]
     
@@ -440,6 +426,7 @@ class ProfileAnalyserFEES(ProfileAnalyser):
         return [saved_times]
 
 if __name__ == "__main__":
+    # based on my_app_super_full_fees_30_new_fast_p3x120_fixed_times
     start_timer=time.time()
     temp_file_name="daily_FEES.txt"
     result_file="C:\Just2Trade Client\FEES.txt"
