@@ -334,7 +334,7 @@ class ProfileAnalyserFEES(ProfileAnalyser):
                     accumul_prof=1
                     best_prof=1.9
                     if len(day_count_list) > 18: 
-                        for saved_prof_ind in range(min(len(day_count_list),39)):
+                        for saved_prof_ind in range(min(len(day_count_list),40)):
                             method_per_prof=1
                             for prev_profit in range(changer_period):
                                 method_per_prof=method_per_prof*total_profit_list[-prev_profit-1][saved_prof_ind]
@@ -389,7 +389,7 @@ class ProfileAnalyserFEES(ProfileAnalyser):
                 accumul_prof=1
                 best_prof=1.9
                 if len(day_count_list) > 18: 
-                    for saved_prof_ind in range(min(len(day_count_list),39)):
+                    for saved_prof_ind in range(min(len(day_count_list),40)):
                         method_per_prof=1
                         for prev_profit in range(changer_period):
                             method_per_prof=method_per_prof*total_profit_list[-prev_profit-1][saved_prof_ind]
