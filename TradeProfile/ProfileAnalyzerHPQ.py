@@ -19,7 +19,7 @@ logging.config.fileConfig('log_hpq.conf')
 log=logging.getLogger('main')
 from ProfileAnalyzerUSA import ProfileAnalyser
 
-class ProfileAnalyserCAT(ProfileAnalyser):
+class ProfileAnalyserHPQ(ProfileAnalyser):
     
     def get_ranges_by_dayweek(self,curr_date):
         day_of_week = datetime.datetime(int(str(curr_date)[:4]), int(str(curr_date)[4:6]), int(str(curr_date)[6:8]), 23, 55, 55, 173504).weekday()
@@ -36,11 +36,11 @@ class ProfileAnalyserCAT(ProfileAnalyser):
     
     def get_ranges_by_dayweek_new(self,curr_date):
         day_of_week = datetime.datetime(int(str(curr_date)[:4]), int(str(curr_date)[4:6]), int(str(curr_date)[6:8]), 23, 55, 55, 173504).weekday()
-        day_ranges={0:[94000, 110000, 120000, 142000,1],
-                    1:[94000, 122000, 123000, 135000,1],
-                    2:[94000, 102000, 103000, 121000,-1],
-                    3:[94000, 110000, 133000, 152000,-1],
-                    4:[94000, 102000, 103000, 123000,-1],
+        day_ranges={0:[94000, 111000, 112000, 142000,1],
+                    1:[94000, 101000, 133000, 143000,1],
+                    2:[94000, 104000, 131000, 143000,-1],
+                    3:[94000, 140000, 141000, 144000,-1],
+                    4:[94000, 120000, 124000, 145000,-1],#94000, 121000, 141000, 145000
                     5:[160000, 160000, 160000, 160000,1],
                     6:[160000, 160000, 160000, 160000,1]}
         return [day_ranges[day_of_week]]
@@ -137,7 +137,7 @@ class ProfileAnalyserCAT(ProfileAnalyser):
             else:
                 trade_dir=1"""
 
-        if self.get_ranges_by_dayweek(curr_date)[0][4] == 1:
+        if self.get_ranges_by_dayweek_new(curr_date)[0][4] == 1:
             results_days=results_days_dir
         else:
             results_days=results_days_rev
@@ -190,7 +190,7 @@ class ProfileAnalyserCAT(ProfileAnalyser):
         self.tickers = self.filter_tickers(self.tickers, 100000,184000,-1,-1)
         best_prof=0.7
         max_prof=1.9
-        methods_list=[19]
+        methods_list=[9]
         if date_start > 0:
             date_start_index=self.days.index(date_start)
             """for i in range(10):
@@ -326,7 +326,7 @@ class ProfileAnalyserCAT(ProfileAnalyser):
         return [saved_times]
 
 if __name__ == "__main__":
-    # based on my_app_super_full_hpq_5_p3x3_before_fix_success_fixed_times
+    # based on my_app_super_full_hpq_30_p3x120_before_fix_success
     start_timer=time.time()
     temp_file_name="daily_HPQ.txt"
     result_file="C:\Just2Trade Client\HPQ.txt"
@@ -352,9 +352,9 @@ if __name__ == "__main__":
                   "code":"HPQ",
                   "apply":"0",
                   "df":"1",
-                  "mf":"0",
+                  "mf":"5",
                   "yf":"2017",
-                  "from":"01.01.2017",
+                  "from":"01.06.2017",
                   "dt":"%s" % cur_day,
                   "mt":"%s" % (cur_month-1),
                   "yt":"%s" % cur_year,
@@ -377,10 +377,10 @@ if __name__ == "__main__":
     with open(temp_file_name, 'wb') as f:
         shutil.copyfileobj(r.raw, f)
         
-    pa = ProfileAnalyserCAT(temp_file_name)
+    pa = ProfileAnalyserHPQ(temp_file_name)
     log.info("All saved dayes %s " % len(pa.days))
     start_date=pa.days[-10]
-    best_range = pa.robot(start_date, 5, day_end = int("%d%.2d%.2d" % (cur_year,cur_month,cur_day)),loss=0.0,delta=0.0)[0]
+    best_range = pa.robot(start_date, 5, day_end = int("%d%.2d%.2d" % (cur_year,cur_month,cur_day)),loss=0.02,delta=0.0)[0]
     
     if not best_range:
         with open(result_file, 'wb') as f:

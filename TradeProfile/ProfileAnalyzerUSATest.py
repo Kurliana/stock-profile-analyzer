@@ -497,10 +497,13 @@ class ProfileAnalyser():
                 #if check_cand_ind - begin_cand_ind > 3 and ended_cand_ind - start_cand_ind > 2:
                 timeline.append([result_candidate[6]]+result_candidate)
             if logic_key == "3_simple_profit":
-                three_period_profit = (1+result_candidate[7][-1]*self.go)*(1+result_candidate[7][-2]*self.go)*(1+result_candidate[7][-3]*self.go)
-                if three_period_profit > 0.7 and three_period_profit < 1.9:
-                    tmp_result_candidate = result_candidate
-                    tmp_result_candidate[10] = -tmp_result_candidate[10]
+                three_period_profit = 0
+                if len(result_candidate[7]) > 3:
+                    three_period_profit = (1+result_candidate[7][-1]*self.go)*(1+result_candidate[7][-2]*self.go)*(1+result_candidate[7][-3]*self.go)
+                if three_period_profit > 1.1:
+                    tmp_result_candidate = []
+                    tmp_result_candidate+=result_candidate
+                    #tmp_result_candidate[10]=-tmp_result_candidate[10]
                     timeline.append([three_period_profit]+tmp_result_candidate)
             if logic_key == "extra":
                 if check_cand_ind - begin_cand_ind > 5 and check_cand_ind - begin_cand_ind < 17 and start_cand_ind - check_cand_ind > 2 and ended_cand_ind - start_cand_ind > 5:
@@ -511,6 +514,9 @@ class ProfileAnalyser():
             if logic_key == "best_ranges":
                 if check_cand_ind - begin_cand_ind > 5 and start_cand_ind - check_cand_ind > 2 and ended_cand_ind - start_cand_ind > 2:
                     timeline.append([(float(result_candidate[0])*2)*(1/float(result_candidate[6]))]+result_candidate)
+            if logic_key == "best_ranges2":
+                if check_cand_ind - begin_cand_ind > 5 and start_cand_ind - check_cand_ind > 2 and ended_cand_ind - start_cand_ind > 2:
+                    timeline.append([(float(result_candidate[0]))*(float(result_candidate[6]))]+result_candidate)
             if logic_key == "percentile2":
                 if check_cand_ind - begin_cand_ind > 5 and start_cand_ind - check_cand_ind > 2 and ended_cand_ind - start_cand_ind > 2:
                     timeline.append([numpy.percentile(result_daily_array,80)]+result_candidate)
@@ -520,6 +526,13 @@ class ProfileAnalyser():
             if logic_key == "median":                
                 if check_cand_ind - begin_cand_ind > 5 and start_cand_ind - check_cand_ind > 2 and ended_cand_ind - start_cand_ind > 2:
                     timeline.append([numpy.median(result_daily_array)]+result_candidate)
+            if logic_key == "anomality":                
+                if check_cand_ind - begin_cand_ind > 5 and start_cand_ind - check_cand_ind > 2 and ended_cand_ind - start_cand_ind > 2:
+                    stable_level = numpy.median(numpy.array(self._get_result_day_by_time(self.results_days, result_candidate[1], result_candidate[2], result_candidate[3], result_candidate[4],-1)[7]))
+                    tmp_result_candidate = []
+                    tmp_result_candidate+=result_candidate
+                    #tmp_result_candidate[10]=-tmp_result_candidate[10]
+                    timeline.append([stable_level-result_daily_array[-1]]+tmp_result_candidate)
             if logic_key == "percentile":
                 if check_cand_ind - begin_cand_ind > 5 and start_cand_ind - check_cand_ind > 2 and ended_cand_ind - start_cand_ind > 2:
                     timeline.append([numpy.percentile(result_daily_array,75)]+result_candidate)
@@ -542,11 +555,14 @@ class ProfileAnalyser():
                         for per_ind in range(semi_period):
                             semi_per_prof=semi_per_prof*(1+result_candidate[7][per_start*semi_period/2+per_ind]*self.go)
                         min_per_prof=min(min_per_prof,semi_per_prof)
-                    timeline.append([min_per_prof]+result_candidate)         
+                        tmp_result_candidate = []
+                        tmp_result_candidate+=result_candidate
+                        #tmp_result_candidate[10]=-tmp_result_candidate[10]
+                    timeline.append([min_per_prof]+tmp_result_candidate)         
         except Exception as e:
             log.info("Exception: %s" % e)
                 
-        return timeline         
+        return timeline   
     
     def real_trade_decisoner(self, results_days, results_profit, results_days_rev, results_profit_rev, best_range = 2, weight_multiplyer=0.6, period = 10,max_stat = -5):
         results_timeline_extra_days=[]
@@ -692,11 +708,11 @@ class ProfileAnalyser():
                     4:[100000, 142000, 144000, 161000,1],
                     5:[160000, 160000, 160000, 160000,1],
                     6:[160000, 160000, 160000, 160000,1]}"""
-        day_ranges={0:[94000, 112000, 120000, 140000,1],
-                    1:[94000, 113000, 120000, 135000,1],
-                    2:[94000, 121000, 124000, 152000,1],
-                    3:[94000, 115000, 141000, 152000,-1],
-                    4:[94000, 101000, 102000, 133000,-1],
+        day_ranges={0:[94000, 101000, 110000, 144000,-1],
+                    1:[94000, 103000, 104000, 112000,1],
+                    2:[94000, 123000, 135000, 143000,-1],
+                    3:[94000, 101000, 114000, 152000,-1],
+                    4:[94000, 115000, 120000, 152000,1],
                     5:[160000, 160000, 160000, 160000,1],
                     6:[160000, 160000, 160000, 160000,1]}
         """day_ranges={0:[100000, 130000, 132000, 170000,1],
@@ -711,11 +727,11 @@ class ProfileAnalyser():
     
     def get_ranges_by_dayweek_new(self,curr_date):
         day_of_week = datetime.datetime(int(str(curr_date)[:4]), int(str(curr_date)[4:6]), int(str(curr_date)[6:8]), 23, 55, 55, 173504).weekday()
-        day_ranges={0:[94000, 111000, 112000, 142000,1],
-                    1:[94000, 101000, 133000, 143000,1],
-                    2:[94000, 104000, 131000, 143000,-1],
-                    3:[94000, 140000, 141000, 144000,-1],
-                    4:[94000, 120000, 124000, 145000,-1],#94000, 121000, 141000, 145000
+        day_ranges={0:[94000, 101000, 110000, 144000,-1],
+                    1:[94000, 103000, 104000, 113000,1],
+                    2:[94000, 123000, 135000, 143000,-1],
+                    3:[94000, 101000, 120000, 150000,-1],
+                    4:[94000, 111000, 114000, 141000,1],#94000, 121000, 141000, 145000
                     5:[160000, 160000, 160000, 160000,1],
                     6:[160000, 160000, 160000, 160000,1]}
         return [day_ranges[day_of_week]]
@@ -777,6 +793,7 @@ class ProfileAnalyser():
                 results_days_rev.append(result)
         log.info("Success periods %s" % success_day_counter)
         log.info("Reverse periods %s" % reverse_day_counter)
+
         """for result in results_profit_all:
             if result[10] == 1:
                 results_profit_dir.append(result)
@@ -812,10 +829,16 @@ class ProfileAnalyser():
             else:
                 trade_dir=1"""
 
-        if self.get_ranges_by_dayweek(curr_date)[0][4] == 1:
+        if self.get_ranges_by_dayweek_new(curr_date)[0][4] == 1:
+            range_day_counter = success_day_counter
             results_days=results_days_dir
         else:
+            range_day_counter = reverse_day_counter
             results_days=results_days_rev
+        log.info("Expected periods %s" % range_day_counter)   
+        if range_day_counter > 1700:
+            log.info("Let's high success %s" % range_day_counter)
+            #return [-1], [-1], [-1], []
         #    results_profit=results_profit_rev
         #    results_procent=results_procent_rev
         #else:
@@ -838,7 +861,7 @@ class ProfileAnalyser():
             return [-1], [-1], [-1], []
         best_ranges = best_ranges1 + best_ranges2 + best_ranges3 + best_ranges4 + best_ranges5 + best_ranges6 + best_ranges7 + best_ranges8+best_ranges9+best_ranges10
 
-        for tmp_delta, tmp_loss, tmp_prof in [[delta, loss, 200],[delta, 0.02, 200],[0.0015, 0.01, 200],[0.0015, 0.015, 200]]:
+        for tmp_delta, tmp_loss, tmp_prof in [[delta, loss, 200],[delta, 0.005, 200],[0.0015, 0.01, 200],[0.0015, 0.015, 200]]:
             for best_range in best_ranges:
                 used_ranges.append(best_range+[tmp_delta, tmp_loss, tmp_prof])
                 ranges_counter+=1
@@ -863,9 +886,9 @@ class ProfileAnalyser():
            
     def robot(self, date_start=-1, period = 10, period2 = 0, day_end = -1, delta = 0.0015, loss = 0.015):
         self.tickers = self.filter_tickers(self.tickers, 94000,160000,-1,-1)
-        best_prof=0.7
-        max_prof=1.7
-        methods_list=[29,39]
+        best_prof=0.9
+        max_prof=1.9
+        methods_list=[9, 29, 39, 39]
         if date_start > 0:
             date_start_index=self.days.index(date_start)
             """for i in range(10):
@@ -1011,9 +1034,9 @@ class ProfileAnalyser():
 
 if __name__ == "__main__":
     start_timer=time.time()
-    pa = ProfileAnalyser("US1.HPQ_160104_170630.txt")
+    pa = ProfileAnalyser("US1.BAC_160104_170630.txt")
     #begin_time,check_time,start_time,end_time = 100000, 111000, 130000, 173000
-    #day_tickers = pa.filter_tickers(pa.tickers, 94000,160000,20150105,20150705)
+    #day_tickers = pa.filter_tickers(pa.tickers, 94000,160000,20170630,20170630)
     #print pa.analyze_by_day(day_tickers, check_time, start_time, end_time, 0, 0.01,0.015,1)
     #day_tickers = pa.filter_tickers(pa.tickers, 94000,160000,20150705,20160104)
     #print pa.analyze_by_day(day_tickers, check_time, start_time, end_time, 0, 0.01,0.015,1)
@@ -1023,7 +1046,7 @@ if __name__ == "__main__":
     #print pa.analyze_by_day(day_tickers, check_time, start_time, end_time, 0, 0.01,0.015,1)
     #day_tickers = pa.filter_tickers(pa.tickers, 94000,160000,20170104,20170506)
     #print pa.analyze_by_day(day_tickers, check_time, start_time, end_time, 0, 0.01,0.015,1)
-    #print pa.analyze_by_day(day_tickers, 113000, 121000, 141000, 0, 0.0005,0.015,1)
+    #print pa.analyze_by_day(day_tickers, 115000, 120000, 124000, 0, 0,0,-1)
     #print pa.analyze_by_day(day_tickers, 115000, 121000, 141000, 0, 0.0005,0.015,1)
     #print pa.analyze_by_day(day_tickers, 114000, 115000, 141000, 0, 0.0005,0.015,1)
     #print pa.analyze_by_day(day_tickers, 114000, 122000, 141000, 0, 0.0005,0.015,1)
@@ -1033,19 +1056,19 @@ if __name__ == "__main__":
     #print pa.analyze_by_day(pa.tickers, 111000, 143000, 175000, 0, 0.0015)
     #print pa.analyze_by_day(pa.tickers, 111000, 144000, 175000, 0, 0.0015)
     #print pa.analyze_by_day(pa.tickers, 111000, 142000, 175000, 0, 0.0015)
-    log.info(pa.robot(-1,5,delta=0,loss=0))
+    #log.info(pa.robot(-1,5,delta=0,loss=0.015))
     #print pa.start_analyzer_threaded()
     #day_tickers = pa.filter_tickers(pa.tickers, 94000,160000)
     #log.info( pa.analyze_by_day(day_tickers, 111000, 143000, 180000, 0, 0.0015))
     #dates=[20150105,20150401,20150701,20151001,20160101,20160401,20160701,20161001,20170101,20170505]
     #for sdi in range(len(dates)-2):
-    """best_results = []
+    best_results = []
     for weekday in [0,1,2,3,4]:
         log.info("New day")
-        for delta in [0]:#[0,0.0015,0.003,0.005,0.0075,0.01,0.015]:
-            for loss in [0.02]:#[0,0.0015,0.003,0.005,0.0075,0.01,0.015,0.02]:
+        for delta in [0,0.0015,0.003,0.005,0.0075,0.01,0.015]:
+            for loss in [0,0.0015,0.003,0.005,0.0075,0.01,0.015,0.02]:
                 log.info("delta %s, stop %s" % (delta, loss))
-                pa = ProfileAnalyser("US1.HPQ_160104_170630.txt")
+                pa = ProfileAnalyser("US1.C_160104_170630.txt")
                 day_tickers = pa.filter_tickers(pa.tickers, 94000,160000,-1,-1,weekday)
                 pa.tickers = day_tickers
                 results_days=[]
@@ -1083,7 +1106,7 @@ if __name__ == "__main__":
                     for single_result in results_procent[-5:]:
                         best_results.append([single_result[0],single_result[5],delta,loss])
                         log.info(single_result)
-                    for logic_key in ["simple_profit"]: #["std","extra","extra2","median","std_median","period_profit","percentile","simple_profit"]:
+                    for logic_key in ["best_ranges2","simple_profit"]: #["std","extra","extra2","median","std_median","period_profit","percentile","simple_profit"]:
                         ranges = pa.get_best_ranges_new_gen(logic_key,results_days_all, 8,0.6,5,-10, return_all = True)
                         if ranges:
                             for single_range in ranges:
@@ -1115,6 +1138,6 @@ if __name__ == "__main__":
                 del results_profit_dir
                 del results_procent_dir
     best_results.sort()
-    log.info(best_results)"""
+    log.info(best_results)
  
     log.info( time.time()-start_timer)

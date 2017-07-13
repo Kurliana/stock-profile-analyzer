@@ -804,11 +804,11 @@ class ProfileAnalyser():
 
     def get_ranges_by_dayweek(self,curr_date):
         day_of_week =  self.get_day_week(curr_date)
-        day_ranges={0:[100000, 112000, 155000, 180000,1],
-                    1:[100000, 113000, 123000, 141000,1],
-                    2:[100000, 112000, 141000, 172000,-1],
-                    3:[100000, 105000, 112000, 141000,-1],
-                    4:[100000, 113000, 121000, 163000,1],
+        day_ranges={0:[100000, 122000, 132000, 174000,1],
+                    1:[100000, 104000, 130000, 165000,1],
+                    2:[100000, 110000, 112000, 131000,1],
+                    3:[100000, 125000, 130000, 154000,1],
+                    4:[100000, 112000, 122000, 173000,1],
                     5:[183000, 183000, 183000, 183000,1],
                     6:[183000, 183000, 183000, 183000,1]}
 
@@ -816,28 +816,16 @@ class ProfileAnalyser():
 
     def get_ranges_by_dayweek_new(self,curr_date):
         day_of_week = self.get_day_week(curr_date)
-        day_ranges={0:[100000, 121000, 160000, 180000,1],
-                    1:[100000, 162000, 171000, 175000,1],
-                    2:[100000, 113000, 130000, 141000,1],
-                    3:[100000, 104000, 112000, 130000,-1],
-                    4:[100000, 132000, 135000, 143000,1],
+        day_ranges={0:[100000, 122000, 133000, 174000,1],
+                    1:[100000, 104000, 130000, 165000,1],
+                    2:[100000, 104000, 112000, 130000,1],
+                    3:[100000, 123000, 124000, 154000,1],
+                    4:[100000, 113000, 132000, 171000,1],
                     5:[183000, 183000, 183000, 183000,1],
                     6:[183000, 183000, 183000, 183000,1]}
         
         return [day_ranges[day_of_week]]
 
-    def get_ranges_by_dayweek_rev(self,curr_date):
-        day_of_week =  self.get_day_week(curr_date)
-        day_ranges={0:[100000, 104000, 122000, 130000,-1],
-                    1:[100000, 121000, 151000, 163000,-1],
-                    2:[100000, 120000, 151000, 163000,-1],
-                    3:[100000, 131000, 154000, 163000,-1],
-                    4:[100000, 153000, 173000, 180000,-1],
-                    5:[183000, 183000, 183000, 183000,1],
-                    6:[183000, 183000, 183000, 183000,1]}
-
-        return [day_ranges[day_of_week]]
-    
     def get_day_profit_old(self, curr_date, period = 30,period2 = 30,simulate_trade=True,delta=0.005,loss=0.015):
         used_ranges=[]
         ranges_counter=0
@@ -964,7 +952,7 @@ class ProfileAnalyser():
             return [-1], [-1], [-1], []
         best_ranges = best_ranges1 + best_ranges2 + best_ranges3 + best_ranges4 + best_ranges5 + best_ranges6 + best_ranges7 + best_ranges8+best_ranges9+best_ranges10
 
-        for tmp_delta, tmp_loss, tmp_prof in [[0.005, loss, 200],[0.01, loss, 200],[0.0015, loss, 200],[0.005, 0.02, 200]]:
+        for tmp_delta, tmp_loss, tmp_prof in [[delta, loss, 200],[0.0015, loss, 200],[0.0015, 0.015, 200],[0.005, 0.02, 200]]:
             for best_range in best_ranges:
                 used_ranges.append(best_range+[tmp_delta, tmp_loss, tmp_prof])
                 ranges_counter+=1
@@ -1172,7 +1160,7 @@ class ProfileAnalyser():
         for day in self.days:
             day_got=0
             for ticker in self.tickers:
-                if ticker[3] == 94000 and ticker[2]==day:
+                if ticker[3] == 101000 and ticker[2]==day:
                     day_got = 1
             if day_got == 0:
                 log.info("No start tickers found for day %s" % day)
@@ -1280,7 +1268,7 @@ class ProfileAnalyser():
 
 if __name__ == "__main__":
     start_timer=time.time()
-    pa = ProfileAnalyser("FEES_150101_170531.txt")
+    pa = ProfileAnalyser("TATN_150101_170506.txt")
     #begin_time,check_time,start_time,end_time = 100000, 111000, 130000, 173000
     #day_tickers = pa.filter_tickers(pa.tickers, 100000,184000,20150105,20150705)
     #print pa.analyze_by_day(day_tickers, check_time, start_time, end_time, 0, 0.01,0.015,1)
@@ -1302,7 +1290,7 @@ if __name__ == "__main__":
     #print pa.analyze_by_day(pa.tickers, 111000, 143000, 175000, 0, 0.0015)
     #print pa.analyze_by_day(pa.tickers, 111000, 144000, 175000, 0, 0.0015)
     #print pa.analyze_by_day(pa.tickers, 111000, 142000, 175000, 0, 0.0015)
-    log.info(pa.robot(-1,5,delta=0.0015,loss=0.01))
+    log.info(pa.robot(-1,5,delta=0.005,loss=0.015))
     #print pa.start_analyzer_threaded()
     #day_tickers = pa.filter_tickers(pa.tickers, 100000,184000)
     #log.info( pa.analyze_by_day(day_tickers, 111000, 143000, 180000, 0, 0.0015))

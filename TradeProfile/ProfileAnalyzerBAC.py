@@ -100,6 +100,9 @@ class ProfileAnalyserBAC(ProfileAnalyser):
                 results_days_rev.append(result)
         log.info("Success periods %s" % success_day_counter)
         log.info("Reverse periods %s" % reverse_day_counter)
+        if success_day_counter > 1700:
+            log.info("Let's high success %s" % success_day_counter)
+            return [-1], [-1], [-1], []
         """for result in results_profit_all:
             if result[10] == 1:
                 results_profit_dir.append(result)
@@ -186,7 +189,7 @@ class ProfileAnalyserBAC(ProfileAnalyser):
            
     def robot(self, date_start=-1, period = 10, period2 = 0, day_end = -1, delta = 0.0015, loss = 0.015):
         self.tickers = self.filter_tickers(self.tickers, 100000,184000,-1,-1)
-        best_prof=0.7
+        best_prof=0.5
         max_prof=1.9
         methods_list=[9]
         if date_start > 0:
@@ -324,7 +327,7 @@ class ProfileAnalyserBAC(ProfileAnalyser):
         return [saved_times]
 
 if __name__ == "__main__":
-    # based on my_app_super_full_hpq_30_p3x120_before_fix_success
+    # based on my_app_super_full_bac_5_p3x3_fixed_success
     start_timer=time.time()
     temp_file_name="daily_BAC.txt"
     result_file="C:\Just2Trade Client\BAC.txt"
