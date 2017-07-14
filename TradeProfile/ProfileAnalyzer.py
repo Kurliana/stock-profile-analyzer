@@ -15,7 +15,6 @@ from multiprocessing import Process, Manager
 from collections import Counter
 #import pythoncom
 
-logging.config.fileConfig('log.conf')
 log=logging.getLogger('main')
 
 class ProfileAnalyser():

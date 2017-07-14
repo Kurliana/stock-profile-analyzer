@@ -267,6 +267,45 @@ class ProfileAnalyser():
             return -1
         else:
             return 0
+        
+    def check_direction_slide(self, ticker2, up_direction, start_time=102000, end_time=120000, delta=0, stop_loss=0.015, take_profit=200):
+        if not ticker2:
+            #print "Failed to found ticker2 in case: %s, %s, %s" % (tickers_by_day, start_time, end_time)
+            return None
+
+        if up_direction > 0: #upstream
+            
+            # update slide stoploss
+            if ticker2[3] > ticker2[8]: # max price before min price
+                take_profit= (ticker2[5]/ticker2[4]-1-take_profit)
+            
+            if ticker2[6] < ticker2[4]*(1-stop_loss) and ticker2[5] > ticker2[4]*(1+take_profit):
+                if ticker2[3] > ticker2[8]:
+                    return (ticker2[4]*(1+take_profit))/ticker2[4]
+                else:
+                    return (ticker2[4]*(1-stop_loss))/ticker2[4]
+            elif ticker2[6] < ticker2[4]*(1-stop_loss):
+                return (ticker2[4]*(1-stop_loss))/ticker2[4]
+            elif ticker2[5] > ticker2[4]*(1+take_profit):
+                return (ticker2[4]*(1+take_profit))/ticker2[4]
+            else:
+                return ticker2[7]/ticker2[4]
+        else:
+            # update slide stoploss
+            if ticker2[3] < ticker2[8]: # max price before min price
+                take_profit= (ticker2[4]/ticker2[6]-1-take_profit)
+                
+            if ticker2[6] < ticker2[4]*(1-take_profit) and ticker2[5] > ticker2[4]*(1+stop_loss):
+                if ticker2[3] < ticker2[8]:
+                    return ticker2[4]/(ticker2[4]*(1+stop_loss))
+                else:
+                    return ticker2[4]/(ticker2[4]*(1-take_profit))
+            elif ticker2[6] < ticker2[4]*(1-take_profit):
+                return ticker2[4]/(ticker2[4]*(1-take_profit))
+            elif ticker2[5] > ticker2[4]*(1+stop_loss):
+                return ticker2[4]/(ticker2[4]*(1+stop_loss))
+            else:
+                return ticker2[4]/ticker2[7]
 
     def check_direction(self, ticker2, up_direction, start_time=102000, end_time=120000, delta=0, stop_loss=0.015, take_profit=200):
         if not ticker2:
@@ -319,7 +358,7 @@ class ProfileAnalyser():
                 if not is_up == 0:
                     ticker2=self.combine_multi_tickers(day_tickers,start_time,end_time)
                     if ticker2:
-                        tmp_profit = self.check_direction(ticker2, is_up, start_time, end_time, delta, stop_loss, take_profit)-1
+                        tmp_profit = self.check_direction_slide(ticker2, is_up, start_time, end_time, delta, stop_loss, take_profit)-1
                         if tmp_profit:
                             if tmp_profit>0: 
                                 total_profit+=1
@@ -952,7 +991,7 @@ class ProfileAnalyser():
             return [-1], [-1], [-1], []
         best_ranges = best_ranges1 + best_ranges2 + best_ranges3 + best_ranges4 + best_ranges5 + best_ranges6 + best_ranges7 + best_ranges8+best_ranges9+best_ranges10
 
-        for tmp_delta, tmp_loss, tmp_prof in [[delta, loss, 200],[0.0015, loss, 200],[0.0015, 0.015, 200],[0.005, 0.02, 200]]:
+        for tmp_delta, tmp_loss, tmp_prof in [[delta, loss, 0.0001],[0.0015, loss, 0.001],[0.0015, 0.015, 0.003],[0.005, 0.02, 0.01]]: #[[delta, loss, 200],[0.0015, loss, 200],[0.0015, 0.015, 200],[0.005, 0.02, 200]]:
             for best_range in best_ranges:
                 used_ranges.append(best_range+[tmp_delta, tmp_loss, tmp_prof])
                 ranges_counter+=1
@@ -1121,8 +1160,8 @@ class ProfileAnalyser():
     def robot(self, date_start=-1, period = 10, period2 = 0, day_end = -1, delta = 0.0015, loss = 0.015):
         self.tickers = self.filter_tickers(self.tickers, 100000,184000,-1,-1)
         best_prof=0.3
-        max_prof=3.5
-        methods_list=[8]
+        max_prof=3
+        methods_list=[8,9,39]
         if date_start > 0:
             date_start_index=self.days.index(date_start)
             """for i in range(10):

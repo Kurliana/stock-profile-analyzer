@@ -79,7 +79,7 @@ class ProfileAnalyserBAC(ProfileAnalyser):
             return [-1], [-1], [-1], []
         
         if not self.results_days:
-            self.start_analyzer_threaded(-1,-1,16,delta,loss)
+            self.start_analyzer_threaded(-1,-1,16,delta,loss,save_results = True)
         
         period_day_tickers = self.filter_tickers(self.tickers, 94000,160000,self.days[curr_date_pos-period-1],self.days[curr_date_pos-1])
         results_days_all = self.start_analyzer(self.days[curr_date_pos-period-1],self.days[curr_date_pos-1],delta,loss)
