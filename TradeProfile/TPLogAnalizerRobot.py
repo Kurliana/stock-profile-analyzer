@@ -56,13 +56,13 @@ class TPLogAnalizer():
                                             max_per_proff=single_result[pair_ind*2]
                                             max_per_value=single_result[pair_ind*2+1]
                                 if max_per_proff >-1:
-                                    super_sum=super_sum*max_per_value
+                                    super_sum=super_sum*max_per_value#+(max_per_value-1)
                                     total_days+=1
                                     if max_per_value >= 1:
                                         day_count+=1
                                     else:
                                         day_count-=1
-                        if super_sum > 2.5:
+                        if super_sum > 2:
                             #log.info("Sum %s, method %s, more %s, less %s, day_count %s, total days %s, days procent %s" % (super_sum,single_method, more, less,day_count,total_days,float(day_count)/float(total_days)))
                             if single_method not in method_list:
                                 method_list.append(single_method)
@@ -99,7 +99,7 @@ class TPLogAnalizer():
                                             max_per_proff=single_result[pair_ind*2]
                                             max_per_value=single_result[pair_ind*2+1]
                                 if max_per_proff >-1:
-                                    super_sum[single_ind/40]=super_sum[single_ind/40]*max_per_value
+                                    super_sum[single_ind/40]=super_sum[single_ind/40]*max_per_value#+(max_per_value-1)
                                     total_days+=1
                                     if max_per_value >= 1:
                                         day_count+=1
@@ -108,12 +108,12 @@ class TPLogAnalizer():
                         total_sum =1
                         for i in super_sum[:-1]:
                             if i > 0.3:
-                                total_sum = total_sum*i
+                                total_sum = total_sum*i#+i
                             else:
                                 total_sum = 0
-                        total_sum = total_sum*super_sum[-1]
+                        total_sum = total_sum+super_sum[-1]
                         #log.info("%s %s" % (total_sum,float(day_count)/float(total_days)))
-                        if total_sum > 300 and float(day_count)/float(total_days) > 0.2:
+                        if total_sum > 10 and float(day_count)/float(total_days) > 0.2:
                             full_results.append([(total_sum,methods,more,less,day_count,total_days,float(day_count)/float(total_days),super_sum)])
         results_dict[thread_id]=full_results
         
@@ -169,8 +169,8 @@ class TPLogAnalizer():
 
 if __name__ == "__main__":
     start_timer=time.time()
-    file_list=["my_app_super_full_bac_5_p3x3_fixed_success.log"]
-    for ranges in [range(0,30,1)+[31,32,38,39]]:#,range(10,30,1),range(10,20,1)+range(30,40,1),range(0,10,1)+range(20,30,1),range(0,10,1)+range(30,40,1)]:
+    file_list=["my_app_super_full_cat_5_p3x3_diff_delta.log"]
+    for ranges in [[9,19,29,39]]:#,range(10,30,1),range(10,20,1)+range(30,40,1),range(0,10,1)+range(20,30,1),range(0,10,1)+range(30,40,1)]:
         for filename in file_list:
             log.info("Analyze file %s with ranges %s" % (filename,ranges))
             tp = TPLogAnalizer(filename,"out.csv")

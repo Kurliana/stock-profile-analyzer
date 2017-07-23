@@ -26,9 +26,9 @@ class TPLogAnalizer():
                 if tmp_str.find("Get day profit") > -1:
                     if len(self.selected_results[-1]) > 0:
                         self.selected_results.append([])
-                if tmp_str.find("Expected periods") > -1:
+                if tmp_str.find("Success periods") > -1:
                     self.selected_results[-1].append(float(tmp_str.split(" ")[-1]))
-                if tmp_str.find("Expected periods") > -1:
+                if tmp_str.find("Success periods") > -1:
                     self.selected_results[-1].append(float(tmp_str.split(" ")[-1]))
                 if tmp_str.find(": Date") > -1:
                     self.selected_results[-1].append(float(tmp_str.split(" ")[13]))
@@ -72,7 +72,7 @@ class TPLogAnalizer():
 
 if __name__ == "__main__":
     start_timer=time.time()
-    tp = TPLogAnalizer("my_app.log","out.csv")
+    tp = TPLogAnalizer("my_app_super_full_fees_5_p3x3_diff_delta.log","out.csv")
     tp.simple_log_reader()
     for method in range(40):
         tp.analize_single_method(method)
