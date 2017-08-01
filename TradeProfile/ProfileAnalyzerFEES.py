@@ -22,11 +22,11 @@ class ProfileAnalyserFEES(ProfileAnalyser):
     
     def get_ranges_by_dayweek(self,curr_date):
         day_of_week =  self.get_day_week(curr_date)
-        day_ranges={0:[100000, 110000, 125000, 175000, 1, 0.003, 0.02, 0.001, 'take_equity_0.005'],
-                    1:[100000, 104000, 105000, 173000, 1, 0.003, 0.015, 0.01, 'simple'],
-                    2:[100000, 120000, 141000, 172000, -1, 0.0015, 0.015, 0.02, 'simple'],
-                    3:[100000, 105000, 112000, 173000, -1,0.003, 0.01, 0.005, 'simple'],
-                    4:[100000, 132000, 134000, 162000, 1, 0.0015, 0.02, 0.005, 'simple'],
+        day_ranges={0:[100000, 122000, 125000, 180000, 1, 0.005, 0.02, 0.001, 'take_shorty_0.0075'],
+                    1:[100000, 115000, 123000, 180000, 1, 0.005, 0.015, 0.001, 'take_shorty_0.0075'],
+                    2:[100000, 131000, 141000, 175000, -1, 0, 0.01, 0.001, 'take_shorty_0.005'],
+                    3:[100000, 110000, 114000, 165000, -1, 0.003, 0.015, 0.001, 'take_shorty_0.01'],
+                    4:[100000, 132000, 135000, 180000, 1, 0.0015, 0.015, 0.001, 'take_shorty_0.005'],
                     5:[183000, 183000, 183000, 183000,1],
                     6:[183000, 183000, 183000, 183000,1]}
         
@@ -34,11 +34,11 @@ class ProfileAnalyserFEES(ProfileAnalyser):
 
     def get_ranges_by_dayweek_new(self,curr_date):
         day_of_week = self.get_day_week(curr_date)
-        day_ranges={0:[100000, 110000, 125000, 175000, 1, 0.003, 0.015, 0.001, 'take_equity_0.0075'],
-                    1:[100000, 104000, 105000, 175000, 1, 0.003, 0.015, 0.003, 'take_equity_0.0075'],
-                    2:[100000, 112000, 142000, 172000, -1, 0, 0.015, 0.005, 'take_equity_0.005'],
-                    3:[100000, 105000, 112000, 173000, -1, 0.003, 0.01, 0.001, 'take_equity_0.005'],
-                    4:[100000, 134000, 135000, 162000, 1, 0, 0.005, 0.001, 'take_equity_0.005'],
+        day_ranges={0:[100000, 110000, 125000, 175000, 1, 0.003, 0.015, 0.001, 'take_shorty_0.0075'],
+                    1:[100000, 104000, 105000, 175000, 1, 0.003, 0.015, 0.003, 'take_shorty_0.0075'],
+                    2:[100000, 112000, 142000, 172000, -1, 0, 0.015, 0.005, 'take_shorty_0.005'],
+                    3:[100000, 105000, 112000, 173000, -1, 0.003, 0.01, 0.001, 'take_shorty_0.005'],
+                    4:[100000, 134000, 135000, 162000, 1, 0, 0.005, 0.001, 'take_shorty_0.005'],
                     5:[183000, 183000, 183000, 183000,1],
                     6:[183000, 183000, 183000, 183000,1]}
         
@@ -160,9 +160,9 @@ class ProfileAnalyserFEES(ProfileAnalyser):
 
     def robot(self, date_start=-1, period = 10, period2 = 0, day_end = -1, delta = 0.0015, loss = 0.015):
         self.tickers = self.filter_tickers(self.tickers, 100000,184000,-1,-1)
-        best_prof=0.3
-        max_prof=3.5
-        methods_list=[9]
+        best_prof=0.5
+        max_prof=2.5
+        methods_list=[8,9]
         changer_period=3
         if date_start > 0:
             date_start_index=self.days.index(date_start)
@@ -306,7 +306,7 @@ class ProfileAnalyserFEES(ProfileAnalyser):
                     total_profit_list.append(day_count_list)
         return [saved_times]
 if __name__ == "__main__":
-    # based on my_app_super_full_fees_5_p3x3_diff_delta
+    # based on my_app_super_full_fees_5_p3x3_shorty
     start_timer=time.time()
     temp_file_name="daily_FEES.txt"
     result_file="C:\Just2Trade Client\FEES.txt"
@@ -370,7 +370,7 @@ if __name__ == "__main__":
             #f.write("00\n")
             #f.write("00\n")
     else:    
-        begin_time,check_time,start_time,end_time,trade,delta,loss,take = best_range[0], best_range[1], best_range[2], best_range[3], best_range[4], best_range[5], best_range[6], best_range[7]               
+        begin_time,check_time,start_time,end_time,trade,delta,loss,take,method = best_range[0], best_range[1], best_range[2], best_range[3], best_range[4], best_range[5], best_range[6], best_range[7], best_range[8]               
         #current_date=datetime.date.today().strftime("%Y%m%d")
         #begin_time,check_time,start_time,end_time,trade = pa.get_ranges_by_dayweek(int(current_date))[0]
         #log.info("Current date %s" % current_date)
@@ -387,5 +387,7 @@ if __name__ == "__main__":
             f.write(str(delta)+"\n")
             f.write(str(loss)+"\n")
             f.write(str(take)+"\n")
+            f.write("".join(str(method).split("_")[:-1])+"\n")
+            f.write("".join(str(method).split("_")[-1])+"\n")
 
     log.info( time.time()-start_timer)

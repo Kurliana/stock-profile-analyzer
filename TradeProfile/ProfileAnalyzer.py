@@ -115,6 +115,8 @@ class ProfileAnalyser():
                     take_limit = float(schema[11:])
                 if schema.find("take_equity")>=0:
                     take_limit = float(schema[12:])
+                if schema.find("take_shorty")>=0:
+                    take_limit = float(schema[12:])
                 if schema.find("wrong_equity")>=0:
                     take_limit = float(schema[13:])
                 if direction > 0:
@@ -131,7 +133,15 @@ class ProfileAnalyser():
                         tmp_take_price = ticker[5]*(1-take-(stop + take_limit)*max(0,1-(ticker[5]-total_ticker[4])/((stop + take_limit)*total_ticker[4])))
                         if tmp_take_price > take_price:
                             take_price = tmp_take_price
-                        #log.info("Take profit take_equity %s up, take price %s, max price %s, min price %s, profit %s" % (total_ticker[4],take_price,ticker[5],ticker[6],take_value))
+                            #log.info("Take profit take_equity %s up, take price %s, max price %s, min price %s, profit %s" % (total_ticker[4],take_price,ticker[5],ticker[6],take_value))
+                    if schema.find("take_shorty")>=0 and take_value == 0 and stop_value == 0:
+                        if ticker[6] < take_price:
+                            take_value = (take_price/total_ticker[4])-1
+                            #log.info("Take profit take_equity %s up, take price %s, min price %s, profit %s" % (take_limit,take_price,ticker[6],take_value))
+                        tmp_take_price = ticker[5]*(1-take-(stop + take_limit)*max(0,1-(ticker[5]-total_ticker[4])/((take_limit)*total_ticker[4])))
+                        if tmp_take_price > take_price:
+                            take_price = tmp_take_price
+                            #log.info("Take profit take_shorty %s up, take price %s, max price %s, min price %s, profit %s" % (total_ticker[4],take_price,ticker[5],ticker[6],take_value))
                     if ticker[6] < total_ticker[4]*(1-stop) and take_value == 0 and stop_value == 0:
                         stop_value = -stop
                     if schema.find("wrong_equity")>=0 and take_value == 0 and stop_value == 0:
@@ -156,6 +166,15 @@ class ProfileAnalyser():
                         tmp_take_price = ticker[6]*(1+take+(stop + take_limit)*max(0,1-(total_ticker[4]-ticker[6])/((stop + take_limit)*total_ticker[4])))
                         if tmp_take_price < take_price:
                             take_price = tmp_take_price
+                        #log.info("Take profit take_equity %s down, take price %s, max price %s, min price %s, profit %s" % (total_ticker[4],take_price,ticker[5],ticker[6],take_value))
+                    if schema.find("take_shorty")>=0 and take_value == 0 and stop_value == 0:
+                        if ticker[5] > take_price:
+                            take_value = (total_ticker[4]/take_price)-1
+                            #log.info("Take profit take_equity %s down, take price %s, max price %s, profit %s" % (take_limit,take_price,ticker[5],take_value))
+                        tmp_take_price = ticker[6]*(1+take+(stop + take_limit)*max(0,1-(total_ticker[4]-ticker[6])/((take_limit)*total_ticker[4])))
+                        if tmp_take_price < take_price:
+                            take_price = tmp_take_price
+                        #log.info("Take profit take_shorty %s down, take price %s, max price %s, min price %s, profit %s" % (total_ticker[4],take_price,ticker[5],ticker[6],take_value))
                     if schema.find("wrong_equity")>=0 and take_value == 0 and stop_value == 0:
                         if ticker[5] > take_price:
                             take_value = (total_ticker[4]/take_price)-1
@@ -164,7 +183,6 @@ class ProfileAnalyser():
                         if tmp_take_price < take_price:
                             take_price = tmp_take_price
                         #log.info("DEBUG %s %s %s %s %s %s" % (stop,take,take_limit,(total_ticker[4]-ticker[6]),((stop+take_limit)*total_ticker[4]),(total_ticker[4]-ticker[6])/((stop+take_limit)*total_ticker[4])))
-                        #log.info("Take profit take_equity %s down, take price %s, max price %s, min price %s, profit %s" % (total_ticker[4],take_price,ticker[5],ticker[6],take_value))
                     if ticker[5] > total_ticker[4]*(1+stop) and take_value == 0 and stop_value == 0:
                         stop_value = -stop
         if not total_ticker:

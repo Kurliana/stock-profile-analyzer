@@ -168,7 +168,7 @@ class ProfileAnalyserTATN(ProfileAnalyser):
            
     def robot(self, date_start=-1, period = 10, period2 = 0, day_end = -1, delta = 0.0015, loss = 0.015):
         self.tickers = self.filter_tickers(self.tickers, 100000,184000,-1,-1)
-        best_prof=3
+        best_prof=0.3
         max_prof=1000
         methods_list=[19]
         changer_period=3
@@ -379,7 +379,7 @@ if __name__ == "__main__":
             #f.write("00\n")
             #f.write("00\n")
     else:    
-        begin_time,check_time,start_time,end_time,trade,delta,loss,take = best_range[0], best_range[1], best_range[2], best_range[3], best_range[4], best_range[5], best_range[6], best_range[7]               
+        begin_time,check_time,start_time,end_time,trade,delta,loss,take,method = best_range[0], best_range[1], best_range[2], best_range[3], best_range[4], best_range[5], best_range[6], best_range[7], best_range[8]               
         #current_date=datetime.date.today().strftime("%Y%m%d")
         #begin_time,check_time,start_time,end_time,trade = pa.get_ranges_by_dayweek(int(current_date))[0]
         #log.info("Current date %s" % current_date)
@@ -396,5 +396,8 @@ if __name__ == "__main__":
             f.write(str(delta)+"\n")
             f.write(str(loss)+"\n")
             f.write(str(take)+"\n")
+            f.write("".join(str(method).split("_")[:-1])+"\n")
+            f.write("".join(str(method).split("_")[-1])+"\n")
+
 
     log.info( time.time()-start_timer)
