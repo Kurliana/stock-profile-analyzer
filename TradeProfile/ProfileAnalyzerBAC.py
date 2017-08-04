@@ -22,14 +22,15 @@ from ProfileAnalyzerUSA import ProfileAnalyser
 class ProfileAnalyserBAC(ProfileAnalyser):
     
     def get_ranges_by_dayweek(self,curr_date):
-        day_of_week = datetime.datetime(int(str(curr_date)[:4]), int(str(curr_date)[4:6]), int(str(curr_date)[6:8]), 23, 55, 55, 173504).weekday()
-        day_ranges={0:[94000, 101000, 110000, 144000,-1],
-                    1:[94000, 103000, 104000, 112000,1],
-                    2:[94000, 123000, 135000, 143000,-1],
-                    3:[94000, 101000, 114000, 152000,-1],
-                    4:[94000, 115000, 120000, 152000,1],
+        day_of_week = self.get_day_week(curr_date)
+        day_ranges={0:[94000, 101000, 105000, 145000, -1, 0, 0.02, 0, 'take_shorty_0.005'],
+                    1:[94000, 103000, 104000, 145000, 1, 0, 0.015, 0, 'take_shorty_0.005'],
+                    2:[94000, 102000, 111000, 145000, -1, 0, 0.05, 0, 'take_shorty_0.003'],
+                    3:[94000, 105000, 113000, 152000, -1, 0, 0.03, 0, 'take_shorty_0.0015'],
+                    4:[94000, 101000, 102000, 114000, -1, 0.0015, 0.015, 0, 'take_shorty_0.003'],
                     5:[160000, 160000, 160000, 160000,1],
                     6:[160000, 160000, 160000, 160000,1]}
+        
         return [day_ranges[day_of_week]]
     
     def get_ranges_by_dayweek_new(self,curr_date):
@@ -191,7 +192,7 @@ class ProfileAnalyserBAC(ProfileAnalyser):
         self.tickers = self.filter_tickers(self.tickers, 100000,184000,-1,-1)
         best_prof=0.5
         max_prof=1.9
-        methods_list=[9]
+        methods_list=[8]
         if date_start > 0:
             date_start_index=self.days.index(date_start)
             """for i in range(10):
@@ -327,7 +328,7 @@ class ProfileAnalyserBAC(ProfileAnalyser):
         return [saved_times]
 
 if __name__ == "__main__":
-    # based on my_app_super_full_bac_5_p3x3_fixed_success
+    # based on my_app_super_full_bac_5_p3x3_diff_shorty
     start_timer=time.time()
     temp_file_name="daily_BAC.txt"
     result_file="C:\Just2Trade Client\BAC.txt"

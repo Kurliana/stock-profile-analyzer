@@ -979,11 +979,11 @@ class ProfileAnalyser():
 
     def get_ranges_by_dayweek(self,curr_date):
         day_of_week = self.get_day_week(curr_date)
-        day_ranges={0:[160000, 160000, 160000, 160000,1],
-                    1:[94000, 114000, 120000, 135000, 1, 0, 0.01, 0.001, 'take_shorty_0.0025'],
-                    2:[94000, 102000, 103000, 112000, -1, 0.0075, 0.0075, 0.001, 'take_shorty_0.0025'],
-                    3:[94000, 124000, 125000, 144000, 1, 0.005, 0.003, 0.001, 'take_shorty_0.0075'],
-                    4:[94000, 101000, 102000, 132000, -1, 0, 0.005, 0.003, 'take_shorty_0.0025'],
+        day_ranges={0:[94000, 101000, 105000, 145000, -1, 0, 0.02, 0, 'take_shorty_0.005'],
+                    1:[94000, 103000, 104000, 145000, 1, 0, 0.015, 0, 'take_shorty_0.005'],
+                    2:[94000, 102000, 111000, 145000, -1, 0, 0.05, 0, 'take_shorty_0.003'],
+                    3:[94000, 105000, 113000, 152000, -1, 0, 0.03, 0, 'take_shorty_0.0015'],
+                    4:[94000, 101000, 102000, 114000, -1, 0.0015, 0.015, 0, 'take_shorty_0.003'],
                     5:[160000, 160000, 160000, 160000,1],
                     6:[160000, 160000, 160000, 160000,1]}
         
@@ -1265,8 +1265,8 @@ class ProfileAnalyser():
 
 if __name__ == "__main__":
     start_timer=time.time()
-    pa = ProfileAnalyser("daily_cat.txt")
-    #log.info(pa.robot(-1,5,delta=0.0015,loss=0.0075))
+    pa = ProfileAnalyser("US1.BAC_160104_170630.txt")
+    log.info(pa.robot(-1,5,delta=0,loss=0.03))
     #day_tickers = pa.filter_tickers(pa.tickers, 94000,160000,-1,-1,0)
     #pa.tickers = day_tickers
     #day_ranges={0:[94000, 110000, 155000, 180000, 1, 0.003, 0.02, 0.003, 'take_equity_0.015'],
@@ -1283,84 +1283,32 @@ if __name__ == "__main__":
     #log.info(pa.analyze_by_day(day_tickers, check_time,start_time,end_time, 0, 0.0015, 0.015,1,0.001,True,"stop_limit_0.01"))
     #log.info(pa.analyze_by_day(day_tickers, check_time,start_time,end_time, 0, 0.0015, 0.015,1,0.001,True,"take_equity_0.0075"))
     #log.info(pa.analyze_by_day(day_tickers, check_time,start_time,end_time, 0, 0.0015, 0.015,1,0.01,True,"simple"))
-    best_results = []
+    """best_results = []
     for weekday in [0,1,2,3,4]:
-        pa = ProfileAnalyser("US1.CAT_160101_170531.txt")
+        pa = ProfileAnalyser("US1.BAC_160104_170630.txt")
         day_tickers = pa.filter_tickers(pa.tickers, 94000,160000,-1,-1,weekday)
         pa.tickers = day_tickers
-        results_days_all, results_profit_all, results_procent = pa.start_analyzer_threaded(day_start=-1,day_end=-1,threads=6,direction_delta=0,stop_loss=0.015,save_results = False, take_profit = 0.001, profit_method = "take_shorty_0.0025")
-        for delta in [0,0.0015,0.003,0.005,0.0075]:#7
-            for loss in [0.0015,0.003,0.005,0.0075,0.01]:#7
-                for take in [0.001,0.003,0.005,0.0075,0.01]:#5
-                    for take_slide_method in ["simple","take_shorty_0.0025","take_shorty_0.003","take_shorty_0.005","take_shorty_0.0075","take_equity_0.005"]: #10
-                        #log.info("delta %s, stop %s" % (delta, loss))
-                        #pa = ProfileAnalyser("FEES_150101_170531.txt")
-                        #day_tickers = pa.filter_tickers(pa.tickers, 94000,160000,-1,-1,weekday)
-                        #pa.tickers = day_tickers
-                        results_days=[]
-                        results_profit=[] 
-                        results_procent=[]
-                        results_days_rev=[]
-                        results_profit_rev=[]
-                        results_procent_rev=[]
-                        results_days_dir=[]
-                        results_profit_dir=[]
-                        results_procent_dir=[]
-                        #spec_dates_list=[20150105,20150705,20160104,20160705,20170104,20170506,20170506]
-                        spec_dates_list=[-1,-1]
-                        for tmpdate in range(len(spec_dates_list)-1):
-                            results_days=[]
-                            results_profit=[]
-                            results_procent=[]
-                            results_days_rev=[]
-                            results_profit_rev=[]
-                            results_procent_rev=[]
-                            results_days_dir=[]
-                            results_profit_dir=[]
-                            results_procent_dir=[]
-                            #results_days_all, results_profit_all, results_procent = pa.start_analyzer_threaded(day_start=spec_dates_list[tmpdate],day_end=spec_dates_list[tmpdate+1],threads=6,direction_delta=delta,stop_loss=loss,save_results = False, take_profit = take, profit_method = take_slide_method)
-                            for result in results_days_all:
-                                if result[10] == 1:
-                                    results_days_dir.append(result)
-                                else:
-                                    results_days_rev.append(result)
-                            for result in results_profit_all:
-                                if result[10] == 1:
-                                    results_profit_dir.append(result)
-                                else:
-                                    results_profit_rev.append(result)
-                            day_tickers = pa.filter_tickers(pa.tickers, 94000,160000,spec_dates_list[tmpdate],spec_dates_list[tmpdate+1])
-                            for logic_key in ["simple_profit","std_median"]: #["best_ranges2","std","extra","extra2","median","std_median","period_profit","percentile","simple_profit"]:
-                                ranges = pa.get_best_ranges_new_gen(logic_key,results_days_all, 8,0.6,5,-10, return_all = True)
-                                log.info("Weekday %s, Delta %s, Stop %s, take %s, range method %s, take method %s" % (weekday, delta, loss,take,logic_key,take_slide_method))
-                                if ranges:
-                                    for single_range in ranges:
-                                        begin_time,check_time,start_time,end_time,trade = single_range
-                                        #log.info( "%s, %s, %s, %s" % (begin_time,check_time,start_time,end_time))
-                                        
-                                        day_profit, day_count, day_procent, day_list_profit = pa.analyze_by_day(day_tickers, check_time, start_time, end_time, 0, delta, loss,trade,take,True,take_slide_method)
-                                        best_results.append([weekday,begin_time,check_time,start_time,end_time,trade,delta,loss,take,take_slide_method,day_profit, day_count, day_procent, day_list_profit])
-                                        
-                        #del day_profit
-                        #del day_count
-                        #del day_procent
-                        #del day_list_profit
-                        #del pa
-                        #del day_tickers
-                        del results_days
-                        del results_profit
-                        del results_procent
-                        del results_days_rev
-                        del results_profit_rev
-                        del results_procent_rev
-                        del results_days_dir
-                        del results_profit_dir
-                        del results_procent_dir
+        for take_slide_method in ["take_shorty_0.0015","take_shorty_0.003","take_shorty_0.005","take_shorty_0.0075","take_shorty_0.01","take_shorty_0.015","take_equity_0.005","take_equity_0.0075"]: #10
+            results_days_all, results_profit_all, results_procent = pa.start_analyzer_threaded(day_start=-1,day_end=-1,threads=6,direction_delta=0,stop_loss=0.015,save_results = False, take_profit = 0.001, profit_method = take_slide_method)
+            ranges = []
+            for logic_key in ["simple_profit","std"]: #["best_ranges2","std","extra","extra2","median","std_median","period_profit","percentile","simple_profit"]:
+                ranges+=pa.get_best_ranges_new_gen(logic_key,results_days_all, 8,0.6,5,-10, return_all = True)
+            for delta in [0,0.0015,0.003,0.005,0.0075,0.01]:#7
+                for loss in [0.0015,0.003,0.005,0.0075,0.01,0.015,0.02,0.03,0.04,0.05]:#7
+                    for take in [0,0.001,0.003,0.005]:#,0.01,0.015,0.02]:#5
+                        log.info("Weekday %s, Delta %s, Stop %s, take %s, range method %s, take method %s" % (weekday, delta, loss,take,logic_key,take_slide_method))
+                        if ranges:
+                            for single_range in ranges:
+                                begin_time,check_time,start_time,end_time,trade = single_range
+                                #log.info( "%s, %s, %s, %s" % (begin_time,check_time,start_time,end_time))
+                                
+                                day_profit, day_count, day_procent, day_list_profit = pa.analyze_by_day(day_tickers, check_time, start_time, end_time, 0, delta, loss,trade,take,True,take_slide_method)
+                                best_results.append([weekday,begin_time,check_time,start_time,end_time,trade,delta,loss,take,take_slide_method,day_profit, day_count, day_procent, day_list_profit])
                         
     for single_result in best_results:
-        if single_result[12] > 3:
+        if single_result[11] > 3 and single_result[12] > 5:
             log.info(single_result)
-    """best_profit = []
+    best_profit = []
     best_days = []
     best_balance = []
     #for delta in [0,0.0015,0.003,0.005,0.0075,0.01,0.015]:#7

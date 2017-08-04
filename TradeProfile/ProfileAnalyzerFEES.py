@@ -22,11 +22,11 @@ class ProfileAnalyserFEES(ProfileAnalyser):
     
     def get_ranges_by_dayweek(self,curr_date):
         day_of_week =  self.get_day_week(curr_date)
-        day_ranges={0:[100000, 122000, 125000, 180000, 1, 0.005, 0.02, 0.001, 'take_shorty_0.0075'],
-                    1:[100000, 115000, 123000, 180000, 1, 0.005, 0.015, 0.001, 'take_shorty_0.0075'],
-                    2:[100000, 131000, 141000, 175000, -1, 0, 0.01, 0.001, 'take_shorty_0.005'],
-                    3:[100000, 110000, 114000, 165000, -1, 0.003, 0.015, 0.001, 'take_shorty_0.01'],
-                    4:[100000, 132000, 135000, 180000, 1, 0.0015, 0.015, 0.001, 'take_shorty_0.005'],
+        day_ranges={0:[100000, 111000, 114000, 172000, 1, 0.0015, 0.04, 0, 'take_shorty_0.005'],
+                    1:[100000, 120000, 124000, 175000, 1, 0.0015, 0.03, 0, 'take_shorty_0.005'],
+                    2:[100000, 134000, 142000, 175000, -1, 0, 0.03, 0, 'take_shorty_0.005'],
+                    3:[100000, 105000, 112000, 180000, -1, 0.0015, 0.04, 0, 'take_shorty_0.0075'],
+                    4:[100000, 132000, 135000, 180000, 1, 0.0015, 0.04, 0, 'take_shorty_0.005'],
                     5:[183000, 183000, 183000, 183000,1],
                     6:[183000, 183000, 183000, 183000,1]}
         
@@ -160,9 +160,9 @@ class ProfileAnalyserFEES(ProfileAnalyser):
 
     def robot(self, date_start=-1, period = 10, period2 = 0, day_end = -1, delta = 0.0015, loss = 0.015):
         self.tickers = self.filter_tickers(self.tickers, 100000,184000,-1,-1)
-        best_prof=0.5
-        max_prof=2.5
-        methods_list=[8,9]
+        best_prof=0
+        max_prof=1000
+        methods_list=[8]
         changer_period=3
         if date_start > 0:
             date_start_index=self.days.index(date_start)
@@ -306,7 +306,7 @@ class ProfileAnalyserFEES(ProfileAnalyser):
                     total_profit_list.append(day_count_list)
         return [saved_times]
 if __name__ == "__main__":
-    # based on my_app_super_full_fees_5_p3x3_shorty
+    # based on my_app_super_full_fees_5_p3x3_diff_shorty_direction
     start_timer=time.time()
     temp_file_name="daily_FEES.txt"
     result_file="C:\Just2Trade Client\FEES.txt"
@@ -359,7 +359,7 @@ if __name__ == "__main__":
     pa = ProfileAnalyserFEES(temp_file_name)
     log.info("All saved dayes %s " % len(pa.days))
     start_date=pa.days[-10]
-    best_range = pa.robot(start_date, 5, day_end = int("%d%.2d%.2d" % (cur_year,cur_month,cur_day)),delta=0.0015,loss=0.015)[0]
+    best_range = pa.robot(start_date, 5, day_end = int("%d%.2d%.2d" % (cur_year,cur_month,cur_day)),delta=0.0015,loss=0.03)[0]
     
     if not best_range:
         with open(result_file, 'wb') as f:

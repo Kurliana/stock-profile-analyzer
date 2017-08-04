@@ -23,11 +23,11 @@ class ProfileAnalyserTATN(ProfileAnalyser):
 
     def get_ranges_by_dayweek(self,curr_date):
         day_of_week =  self.get_day_week(curr_date)
-        day_ranges={0:[100000, 122000, 132000, 170000,1 ,0.005, 0.02, 0.01, 'simple'],
-                    1:[100000, 104000, 130000, 170000,1, 0.005, 0.015, 0.01, 'simple'],
-                    2:[100000, 104000, 112000, 132000,1, 0.005, 0.02, 0.02, 'simple'],
-                    3:[100000, 123000, 124000, 154000,1, 0.005, 0.02, 0.01, 'simple'],
-                    4:[100000, 113000, 135000, 175000,1, 0.005, 0.015, 0.01, 'simple'],
+        day_ranges={0:[100000, 144000, 145000, 175000, 1, 0.005, 0.05, 0, 'take_shorty_0.005'],
+                    1:[100000, 155000, 164000, 180000, 1, 0, 0.03, 0, 'take_shorty_0.0015'],
+                    2:[100000, 104000, 112000, 180000, 1, 0.003, 0.04, 0, 'take_shorty_0.0075'],
+                    3:[100000, 124000, 125000, 175000, 1, 0, 0.05, 0, 'take_shorty_0.005'],
+                    4:[100000, 111000, 115000, 180000, 1, 0, 0.04, 0, 'take_shorty_0.005'],
                     5:[183000, 183000, 183000, 183000,1],
                     6:[183000, 183000, 183000, 183000,1]}
 
@@ -35,11 +35,11 @@ class ProfileAnalyserTATN(ProfileAnalyser):
 
     def get_ranges_by_dayweek_new(self,curr_date):
         day_of_week = self.get_day_week(curr_date)
-        day_ranges={0:[100000, 122000, 132000, 175000,1, 0.005, 0.02, 0.003, 'take_equity_0.0075'],
-                    1:[100000, 104000, 130000, 170000,1, 0.005, 0.015, 0.015, 'take_equity_0.01'],
-                    2:[100000, 104000, 112000, 132000,1, 0.005, 0.015, 0.003, 'take_equity_0.01'],
-                    3:[100000, 125000, 130000, 154000,1, 0.005, 0.015, 0.001, 'take_equity_0.0075'],
-                    4:[100000, 113000, 135000, 175000,1, 0.005, 0.015, 0.001, 'take_equity_0.015'],
+        day_ranges={0:[100000, 122000, 132000, 175000, 1, 0.005, 0.02, 0.003, 'take_equity_0.0075'],
+                    1:[100000, 104000, 130000, 170000, 1, 0.005, 0.015, 0.015, 'take_equity_0.01'],
+                    2:[100000, 104000, 112000, 132000, 1, 0.005, 0.015, 0.003, 'take_equity_0.01'],
+                    3:[100000, 125000, 130000, 154000, 1, 0.005, 0.015, 0.001, 'take_equity_0.0075'],
+                    4:[100000, 113000, 135000, 175000, 1, 0.005, 0.015, 0.001, 'take_equity_0.015'],
                     5:[183000, 183000, 183000, 183000,1],
                     6:[183000, 183000, 183000, 183000,1]}
         
@@ -168,9 +168,9 @@ class ProfileAnalyserTATN(ProfileAnalyser):
            
     def robot(self, date_start=-1, period = 10, period2 = 0, day_end = -1, delta = 0.0015, loss = 0.015):
         self.tickers = self.filter_tickers(self.tickers, 100000,184000,-1,-1)
-        best_prof=0.3
-        max_prof=1000
-        methods_list=[19]
+        best_prof=0
+        max_prof=2
+        methods_list=[8]
         changer_period=3
         if date_start > 0:
             date_start_index=self.days.index(date_start)
@@ -316,7 +316,7 @@ class ProfileAnalyserTATN(ProfileAnalyser):
     
     
 if __name__ == "__main__":
-    # based on my_app_super_full_tatn_5_p3x3_diff_delta
+    # based on my_app_super_full_tatn_5_p3x3_new_short+eq
     start_timer=time.time()
     temp_file_name="daily_TATN.txt"
     result_file="C:\Just2Trade Client\TATN.txt"
