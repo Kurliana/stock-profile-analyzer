@@ -22,12 +22,12 @@ from ProfileAnalyzerUSA import ProfileAnalyser
 class ProfileAnalyserCAT(ProfileAnalyser):
     
     def get_ranges_by_dayweek(self,curr_date):
-        day_of_week =  self.get_day_week(curr_date)
+        day_of_week = self.get_day_week(curr_date)
         day_ranges={0:[160000, 160000, 160000, 160000,1],
-                    1:[94000, 114000, 120000, 135000, 1, 0, 0.01, 0.005, 'simple'],
-                    2:[94000, 101000, 103000, 112000, -1, 0, 0.0075, 0.01, 'simple'],
-                    3:[94000, 115000, 135000, 152000, -1, 0, 0.0075, 0.01, 'simple'],
-                    4:[94000, 101000, 102000, 133000, -1, 0, 0.01, 0.005, 'simple'],
+                    1:[94000, 115000, 120000, 151000, 1, 0, 0.03, 0, 'take_shorty_0.01'],
+                    2:[94000, 101000, 103000, 112000, -1, 0.0015, 0.03, 0, 'take_shorty_0.0075'],
+                    3:[94000, 102000, 104000, 152000, -1, 0, 0.05, 0, 'take_shorty_0.0015'],
+                    4:[94000, 101000, 102000, 131000, -1, 0, 0.05, 0, 'take_shorty_0.0075'],
                     5:[160000, 160000, 160000, 160000,1],
                     6:[160000, 160000, 160000, 160000,1]}
         
@@ -161,9 +161,9 @@ class ProfileAnalyserCAT(ProfileAnalyser):
 
     def robot(self, date_start=-1, period = 10, period2 = 0, day_end = -1, delta = 0.0015, loss = 0.015):
         self.tickers = self.filter_tickers(self.tickers, 94000,160000,-1,-1)
-        best_prof=0.7
-        max_prof=1.3
-        methods_list=[29]
+        best_prof=0
+        max_prof=2
+        methods_list=[8]
         changer_period=3
         if date_start > 0:
             date_start_index=self.days.index(date_start)
@@ -308,7 +308,7 @@ class ProfileAnalyserCAT(ProfileAnalyser):
         return [saved_times]
 
 if __name__ == "__main__":
-    # based on my_app_super_full_cat_5_p3x3_diff_delta
+    # based on my_app_super_full_cat_5_p3x3_diff_shorty
     start_timer=time.time()
     temp_file_name="daily_CAT.txt"
     result_file="C:\Just2Trade Client\CAT.txt"
