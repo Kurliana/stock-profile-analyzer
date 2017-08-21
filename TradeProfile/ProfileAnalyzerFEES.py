@@ -34,11 +34,11 @@ class ProfileAnalyserFEES(ProfileAnalyser):
 
     def get_ranges_by_dayweek_new(self,curr_date):
         day_of_week = self.get_day_week(curr_date)
-        day_ranges={0:[100000, 110000, 125000, 175000, 1, 0.003, 0.015, 0.001, 'take_shorty_0.0075'],
-                    1:[100000, 104000, 105000, 175000, 1, 0.003, 0.015, 0.003, 'take_shorty_0.0075'],
-                    2:[100000, 112000, 142000, 172000, -1, 0, 0.015, 0.005, 'take_shorty_0.005'],
-                    3:[100000, 105000, 112000, 173000, -1, 0.003, 0.01, 0.001, 'take_shorty_0.005'],
-                    4:[100000, 134000, 135000, 162000, 1, 0, 0.005, 0.001, 'take_shorty_0.005'],
+        day_ranges={0:[100000, 110000, 114000, 171000, 1, 0, 0.05, 4, 'take_innsta_0.015'],
+                    1:[100000, 103000, 120000, 180000, 1, 0, 0.04, 4, 'take_innsta_0.015',],
+                    2:[100000, 134000, 141000, 180000, -1, 0, 0.03, 4, 'take_innsta_0.03'],
+                    3:[100000, 121000, 124000, 171000, 1, 0, 0.05, 4, 'take_innsta_0.02'],
+                    4:[100000, 132000, 134000, 164000, 1, 0.0015, 0.05, 4, 'take_innsta_0.04'],
                     5:[183000, 183000, 183000, 183000,1],
                     6:[183000, 183000, 183000, 183000,1]}
         
@@ -80,7 +80,7 @@ class ProfileAnalyserFEES(ProfileAnalyser):
             return [-1], [-1], [-1], []
         
         if not self.results_days:
-            self.start_analyzer_threaded(-1,-1,16,delta,loss,save_results = True,take_profit = 0.001, profit_method = "take_equity_0.01")
+            self.start_analyzer_threaded(-1,-1,16,delta,loss,save_results = True,take_profit = 4, profit_method = "take_innsta_0.02")
         
         period_day_tickers = self.filter_tickers(self.tickers, 100000,184000,self.days[curr_date_pos-period-1],self.days[curr_date_pos-1])
         results_days_all = self.start_analyzer(self.days[curr_date_pos-period-1],self.days[curr_date_pos-1],delta,loss)
@@ -124,7 +124,7 @@ class ProfileAnalyserFEES(ProfileAnalyser):
             return [-1], [-1], [-1], []
         best_ranges = best_ranges1 + best_ranges2 + best_ranges3 + best_ranges4 + best_ranges5 + best_ranges6 + best_ranges7 + best_ranges8+best_ranges9+best_ranges10
 
-        for tmp_delta, tmp_loss, tmp_prof,take_schema in [[delta, loss, 0.015,"Noschema"],[delta, loss, 0.01,"simple"],[delta, loss, 0.005,"take_equity_0.005"],[delta, loss,  0.0075, 'take_equity_0.0075']]: #[[delta, loss, 200],[0.0015, loss, 200],[0.0015, 0.015, 200],[0.005, 0.02, 200]]:
+        for tmp_delta, tmp_loss, tmp_prof,take_schema in [[delta, loss, 4,"Noschema"],[delta, loss, 4,"simple"],[delta, loss, 4,"take_innsta_0.02"],[delta, loss,  4, 'take_atrts_0.005']]: #[[delta, loss, 200],[0.0015, loss, 200],[0.0015, 0.015, 200],[0.005, 0.02, 200]]:
             for best_range in best_ranges:
                 real_delta = tmp_delta
                 real_loss = tmp_loss
@@ -161,8 +161,8 @@ class ProfileAnalyserFEES(ProfileAnalyser):
     def robot(self, date_start=-1, period = 10, period2 = 0, day_end = -1, delta = 0.0015, loss = 0.015):
         self.tickers = self.filter_tickers(self.tickers, 100000,184000,-1,-1)
         best_prof=0
-        max_prof=1000
-        methods_list=[8]
+        max_prof=5
+        methods_list=[9]
         changer_period=3
         if date_start > 0:
             date_start_index=self.days.index(date_start)
@@ -306,10 +306,10 @@ class ProfileAnalyserFEES(ProfileAnalyser):
                     total_profit_list.append(day_count_list)
         return [saved_times]
 if __name__ == "__main__":
-    # based on my_app_super_full_fees_5_p3x3_diff_shorty_direction
+    # based on my_app_0817_full_fees_atr
     start_timer=time.time()
     temp_file_name="daily_FEES.txt"
-    result_file="C:\Just2Trade Client\FEES.txt"
+    result_file="C:\Just2Trade Client\FGC UES.txt"
     if os.path.exists(temp_file_name):
         os.remove(temp_file_name)
     cur_date=time.localtime()

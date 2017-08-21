@@ -23,11 +23,11 @@ class ProfileAnalyserTATN(ProfileAnalyser):
 
     def get_ranges_by_dayweek(self,curr_date):
         day_of_week =  self.get_day_week(curr_date)
-        day_ranges={0:[100000, 144000, 145000, 175000, 1, 0.005, 0.05, 0, 'take_shorty_0.005'],
-                    1:[100000, 121000, 151000, 175000, -1, 0.0075, 0.05, 0, 'take_shorty_0.01'],
-                    2:[100000, 104000, 112000, 180000, 1, 0.003, 0.04, 0, 'take_shorty_0.0075'],
-                    3:[100000, 124000, 125000, 175000, 1, 0, 0.05, 0, 'take_shorty_0.005'],
-                    4:[100000, 111000, 115000, 180000, 1, 0, 0.04, 0, 'take_shorty_0.005'],
+        day_ranges={0:[100000, 122000, 132000, 180000, 1, 0.003, 0.05, 3, 'take_innsta_0.01'],
+                    1:[100000, 121000, 152000, 180000, -1, 0, 0.05, 4, 'take_innsta_0.04'],
+                    2:[100000, 104000, 112000, 154000, 1, 0, 0.05, 2, 'take_innsta_0.0075'],
+                    3:[100000, 123000, 125000, 155000, 1, 0, 0.05, 3, 'take_innsta_0.015'],
+                    4:[100000, 115000, 141000, 175000, 1, 0, 0.03, 4, 'take_innsta_0.01'],
                     5:[183000, 183000, 183000, 183000,1],
                     6:[183000, 183000, 183000, 183000,1]}
 
@@ -81,7 +81,7 @@ class ProfileAnalyserTATN(ProfileAnalyser):
             return [-1], [-1], [-1], []
         
         if not self.results_days:
-            self.start_analyzer_threaded(-1,-1,16,delta,loss,save_results = True,take_profit = 0.001, profit_method = "take_equity_0.01")
+            self.start_analyzer_threaded(-1,-1,16,delta,loss,save_results = True,take_profit =4, profit_method = "take_innsta_0.02")
         
         
         period_day_tickers = self.filter_tickers(self.tickers, 100000,184000,self.days[curr_date_pos-period-1],self.days[curr_date_pos-1])
@@ -126,13 +126,13 @@ class ProfileAnalyserTATN(ProfileAnalyser):
         best_ranges7 = self.get_best_ranges_new_gen("best_ranges",results_days,8,0.6,period,-5)
         best_ranges8 = self.get_best_ranges_new_gen("period_profit",results_days, 8,0.6,period,-1)
         best_ranges9 = self.get_ranges_by_dayweek(curr_date)
-        best_ranges10 = self.get_ranges_by_dayweek_new(curr_date)
+        best_ranges10 = self.get_ranges_by_dayweek(curr_date)
         if not best_ranges1 or not best_ranges2 or not best_ranges3 or not best_ranges4 or not best_ranges5 or not best_ranges6 or not best_ranges7 or not best_ranges8:
             log.info("No some best ranges, lets skip")
             return [-1], [-1], [-1], []
         best_ranges = best_ranges1 + best_ranges2 + best_ranges3 + best_ranges4 + best_ranges5 + best_ranges6 + best_ranges7 + best_ranges8+best_ranges9+best_ranges10
 
-        for tmp_delta, tmp_loss, tmp_prof,take_schema in [[delta, loss, 0.02,"Noschema"],[delta, loss, 0.001,"take_equity_0.01"],[delta, loss, 0.003,"take_equity_0.005"],[delta, loss, 0.01,"simple"]]: #[[delta, loss, 200],[0.0015, loss, 200],[0.0015, 0.015, 200],[0.005, 0.02, 200]]:
+        for tmp_delta, tmp_loss, tmp_prof,take_schema in [[delta, loss, 4,"Noschema"],[delta, loss, 4,"take_equity_0.01"],[delta, loss, 4,"take_equity_0.005"],[delta, loss, 4,"simple"]]: #[[delta, loss, 200],[0.0015, loss, 200],[0.0015, 0.015, 200],[0.005, 0.02, 200]]:
             for best_range in best_ranges:
                 real_delta = tmp_delta
                 real_loss = tmp_loss
@@ -169,8 +169,8 @@ class ProfileAnalyserTATN(ProfileAnalyser):
     def robot(self, date_start=-1, period = 10, period2 = 0, day_end = -1, delta = 0.0015, loss = 0.015):
         self.tickers = self.filter_tickers(self.tickers, 100000,184000,-1,-1)
         best_prof=0.3
-        max_prof=2.5
-        methods_list=[9]
+        max_prof=3
+        methods_list=[8]
         changer_period=3
         if date_start > 0:
             date_start_index=self.days.index(date_start)
@@ -316,10 +316,10 @@ class ProfileAnalyserTATN(ProfileAnalyser):
     
     
 if __name__ == "__main__":
-    # based on my_app_super_full_tatn_5_p3x3_insta
+    # based on my_app_0817_full_tatn_atr
     start_timer=time.time()
     temp_file_name="daily_TATN.txt"
-    result_file="C:\Just2Trade Client\TATN.txt"
+    result_file="C:\Just2Trade Client\Tatneft.txt"
     if os.path.exists(temp_file_name):
         os.remove(temp_file_name)
     cur_date=time.localtime()

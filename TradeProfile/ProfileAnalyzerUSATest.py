@@ -13,6 +13,7 @@ import os
 import datetime
 from multiprocessing import Process, Manager
 from collections import Counter
+from indicators import TradeIndicators
 #import pythoncom
 
 logging.config.fileConfig('log.conf')
@@ -44,6 +45,7 @@ class ProfileAnalyser():
                 candle[6]=float(candle[6])
                 candle[7]=float(candle[7])
                 candle[8]=int(candle[8])
+                candle.append({})
                 if day_of_week < 0 or day_of_week ==  self.get_day_week(candle[2]):
                     self.tickers.append(candle)
                     if not current_day == candle[2]:
@@ -55,6 +57,9 @@ class ProfileAnalyser():
             if self.time_range[one_time_counter] % 10000 > 5000:
                 del self.time_range[one_time_counter]
         self.days.sort()
+        ti = TradeIndicators(self.tickers)
+        self.tickers=ti.count_indicators(["ATR"])
+        del ti
 
     def filter_tickers(self, tikers, begin_time=94000, end_time=120000, date_start=-1,date_end=-1,day_of_week=-1):
         filtered_tickers=[]
@@ -93,188 +98,244 @@ class ProfileAnalyser():
         take_value=0
         take_price=0
         start_value=0
-
+        start_values={}
+        obv=0
         #print tickers_list,start_time,end_time
         for ticker in tickers_list:
             if ticker[3] > start_time and ticker[3] <= end_time:
-                if take_price == 0:
-                    start_value=ticker[4]
-                    if direction > 0:
-                        take_price=ticker[4]*(1-stop)
-                    if direction < 0:
-                        take_price=ticker[4]*(1+stop)
-                if ticker[5] > max_value:
-                    max_value = ticker[5]
-                    max_time = ticker[3]
-                if ticker[6] < min_value:
-                    min_value = ticker[6]
-                    min_time = ticker[3]
-                #high_low.append(ticker[5])
-                #high_low.append(ticker[6])
                 if not total_ticker:
-                    total_ticker+=ticker
-                close_value=ticker[7]
-                if schema.find("stop_limit")>=0:
-                    take_limit = float(schema[11:])
-                if schema.find("take_equity")>=0:
-                    take_limit = float(schema[12:])
-                if schema.find("take_shorty")>=0:
-                    take_limit = float(schema[12:])
-                if schema.find("take_revers")>=0:
-                    take_limit = float(schema[12:])
-                if schema.find("take_sinrev")>=0:
-                    take_limit = float(schema[12:])
-                if schema.find("take_innsta")>=0:
-                    take_limit = float(schema[12:])
-                if schema.find("wrong_equity")>=0:
-                    take_limit = float(schema[13:])
-                if direction > 0:
-                    if schema == "simple" and ticker[5] > total_ticker[4]*(1+take) and take_value == 0 and stop_value == 0:
-                        #log.info("Take profit simple %s up, take price %s, max price %s, profit %s" % (take, total_ticker[4]*(1+take),ticker[5],take))
-                        take_value = take
-                    if schema.find("stop_limit")>=0 and max_value > total_ticker[4]*(1+take_limit) and max_value*(1-take) > ticker[6] and take_value == 0 and stop_value == 0:
-                        take_value = ((max_value*(1-take))/total_ticker[4])-1
-                        #log.info("Take profit stop_limit %s up, take price %s, min price %s, profit %s" % (take_limit,max_value*(1-take),ticker[6],take_value))
-                    if schema.find("take_equity")>=0 and take_value == 0 and stop_value == 0:
-                        if ticker[6] < take_price:
-                            take_value = (take_price/total_ticker[4])-1
-                            #log.info("Take profit take_equity %s up, take price %s, min price %s, profit %s" % (take_limit,take_price,ticker[6],take_value))
-                        tmp_take_price = ticker[5]*(1-take-(stop + take_limit)*max(0,1-(ticker[5]-total_ticker[4])/((stop + take_limit)*total_ticker[4])))
-                        if tmp_take_price > take_price:
-                            take_price = tmp_take_price
+                    #log.info(ticker)
+                    if (take == 0) or (direction > 0 and ticker[6] > ticker[9]["ATRTS"+str(take)]) or (direction < 0 and ticker[5] < ticker[9]["ATRTS"+str(take)]):
+                        #log.info("Start time %s value %s" % (ticker[3],ticker[4]))
+                        total_ticker+=ticker
+                if total_ticker:
+                    if take_price == 0:
+                        start_value=ticker[4]
+                        if direction > 0:
+                            #log.info("Direction upstream")
+                            take_price=ticker[4]*(1-stop)
+                        if direction < 0:
+                            #log.info("Direction downstram")
+                            take_price=ticker[4]*(1+stop)
+                    if ticker[4] > ticker[7]:
+                        obv+=ticker[8]
+                    else:
+                        obv-=ticker[8]
+                    if ticker[5] > max_value:
+                        max_value = ticker[5]
+                        max_time = ticker[3]
+                    if ticker[6] < min_value:
+                        min_value = ticker[6]
+                        min_time = ticker[3]
+                    #high_low.append(ticker[5])
+                    #high_low.append(ticker[6])
+    
+                    close_value=ticker[7]
+                    if schema.find("stop_limit")>=0:
+                        take_limit = float(schema[11:])
+                    if schema.find("take_atrts")>=0:
+                        take_limit = float(schema[11:])
+                    if schema.find("take_equity")>=0:
+                        take_limit = float(schema[12:])
+                    if schema.find("take_shorty")>=0:
+                        take_limit = float(schema[12:])
+                    if schema.find("take_revers")>=0:
+                        take_limit = float(schema[12:])
+                    if schema.find("take_sinrev")>=0:
+                        take_limit = float(schema[12:])
+                    if schema.find("take_innsta")>=0:
+                        take_limit = float(schema[12:])
+                    if schema.find("wrong_equity")>=0:
+                        take_limit = float(schema[13:])
+                    if direction > 0:
+                        if schema == "simple" and ticker[5] > total_ticker[4]*(1+take) and take_value == 0 and stop_value == 0:
+                            #log.info("Take profit simple %s up, take price %s, max price %s, profit %s" % (take, total_ticker[4]*(1+take),ticker[5],take))
+                            take_value = take
+                        if schema.find("stop_limit")>=0 and max_value > total_ticker[4]*(1+take_limit) and max_value*(1-take) > ticker[6] and take_value == 0 and stop_value == 0:
+                            take_value = ((max_value*(1-take))/total_ticker[4])-1
+                            #log.info("Take profit stop_limit %s up, take price %s, min price %s, profit %s" % (take_limit,max_value*(1-take),ticker[6],take_value))
+                        if schema.find("take_equity")>=0 and take_value == 0 and stop_value == 0:
+                            if ticker[6] < take_price:
+                                take_value = (take_price/total_ticker[4])-1
+                                #log.info("Take profit take_equity %s up, take price %s, min price %s, profit %s" % (take_limit,take_price,ticker[6],take_value))
+                            tmp_take_price = ticker[5]*(1-take-(stop + take_limit)*max(0,1-(ticker[5]-total_ticker[4])/((stop + take_limit)*total_ticker[4])))
+                            if tmp_take_price > take_price:
+                                take_price = tmp_take_price
+                                #log.info("Take profit take_equity %s up, take price %s, max price %s, min price %s, profit %s" % (total_ticker[4],take_price,ticker[5],ticker[6],take_value))
+                        if schema.find("take_shorty")>=0 and take_value == 0 and stop_value == 0:
+                            if total_ticker and take > 0 and ticker[6] < ticker[9]["ATRTS"+str(take)]:
+                                take_value = (ticker[7]/start_value)-1
+                            if total_ticker and ticker[6] < take_price:
+                                #log.info("stop value")
+                                take_value = (take_price/total_ticker[4])-1
+                                #log.info("Take profit take_equity %s up, take price %s, min price %s, profit %s" % (take_limit,take_price,ticker[6],take_value))
+                            tmp_take_price = ticker[5]*(1-(stop + take_limit)*max(0,1-(ticker[5]-total_ticker[4])/((take_limit)*total_ticker[4])))
+                            if tmp_take_price > take_price:# and tmp_take_price < ticker[7]:
+                                take_price = tmp_take_price
+                                
+                        if schema.find("take_atrts")>=0 and take_value == 0 and stop_value == 0:
+                            if total_ticker and take > 0 and ticker[6] < ticker[9]["ATRTS"+str(take)]:
+                                take_value = (ticker[7]/start_value)-1
+                            #if total_ticker and ticker[6] < take_price:
+                                #log.info("max value %s %s" % (take_price,ticker[3]))
+                            #    take_value = (take_price/start_value)-1
+                                #log.info("Take profit take_equity %s up, take price %s, min price %s, profit %s" % (take_limit,take_price,ticker[6],take_value))
+                            #tmp_take_price = ticker[6]-ticker[9]["ATR"]*take
+                            #if tmp_take_price > take_price:# and tmp_take_price < ticker[7]:
+                                #log.info("ATRTS %s" % take_price)
+                            #    take_price = tmp_take_price
+                                
+                        if schema.find("take_revers")>=0 and stop_value == 0:
+                            if ticker[6] < take_price:
+                                #log.info("Revers %s" % take_price)
+                                take_value += (take_price/start_value)-1-self.comission/self.go
+                                start_value=take_price
+                                direction=-1
+                                take_price=start_value*(1+stop)
+                            else:
+                                #log.info("Take profit take_equity %s up, take price %s, min price %s, profit %s" % (take_limit,take_price,ticker[6],take_value))
+                                tmp_take_price = ticker[5]*(1-take-(stop + take_limit)*max(0,1-(ticker[5]-start_value)/((take_limit)*start_value)))
+                                if tmp_take_price > take_price:
+                                    take_price = tmp_take_price
+                                if take_price > ticker[7]:
+                                    take_price=ticker[7]*(1-take)
+                        if schema.find("take_sinrev")>=0 and take_value == 0 and stop_value == 0:
+                            if ticker[6] < take_price:
+                                #log.info("Revers %s" % take_price)
+                                take_value += (take_price/start_value)-1-self.comission/self.go
+                                start_value=take_price
+                                direction=-1
+                                take_price=start_value*(1+stop)
+                            else:
+                                #log.info("Take profit take_equity %s up, take price %s, min price %s, profit %s" % (take_limit,take_price,ticker[6],take_value))
+                                tmp_take_price = ticker[5]*(1-take-(stop + take_limit)*max(0,1-(ticker[5]-start_value)/((take_limit)*start_value)))
+                                if tmp_take_price > take_price:
+                                    take_price = tmp_take_price
+                                if take_price > ticker[7]:
+                                    take_price=ticker[7]*(1-take)
+                        if schema.find("take_innsta")>=0 and take_value == 0 and stop_value == 0:
+                            if total_ticker and take > 0 and ticker[6] < ticker[9]["ATRTS"+str(take)]:
+                                take_value = (ticker[7]/start_value)-1
+                                #log.info(ticker)
+                                #log.info("Stop by atr at %s with start %s end %s" % (ticker[3],start_value,ticker[7]))
+                            if ticker[6] < take_price and take_value == 0:
+                                take_value = (take_price/total_ticker[4])-1
+                                #log.info(ticker)
+                                #log.info("Stop by limit at %s with start %s end %s" % (ticker[3],total_ticker[4],take_price))
+                                #log.info("Take profit take_equity %s up, take price %s, min price %s, profit %s" % (take_limit,take_price,ticker[6],take_value))
+                            tmp_take_price = ticker[5]*(1-(stop + take_limit)*max(0,1-(ticker[5]-total_ticker[4])/((take_limit)*total_ticker[4])))
+                            if tmp_take_price > take_price:
+                                take_price = tmp_take_price
+                            if take_price > ticker[7]:
+                                take_value=(ticker[7]/total_ticker[4])-1
+                                #take_price=ticker[7]*(1-take)
+                                #log.info("Take profit take_shorty %s up, take price %s, max price %s, min price %s, profit %s" % (total_ticker[4],take_price,ticker[5],ticker[6],take_value))
+                        if ticker[6] < total_ticker[4]*(1-stop) and take_value == 0 and stop_value == 0:
+                            stop_value = -stop
+                        if schema.find("wrong_equity")>=0 and take_value == 0 and stop_value == 0:
+                            if ticker[6] < take_price:
+                                take_value = (take_price/total_ticker[4])-1
+                                #log.info("Take profit take_equity %s up, take price %s, min price %s, profit %s" % (take_limit,take_price,ticker[6],take_value))
+                            tmp_take_price = ticker[5]*(1-take-max(0,1-(ticker[5]-total_ticker[4])/((take_limit)*total_ticker[4])))
+                            if tmp_take_price > take_price:
+                                take_price = tmp_take_price
                             #log.info("Take profit take_equity %s up, take price %s, max price %s, min price %s, profit %s" % (total_ticker[4],take_price,ticker[5],ticker[6],take_value))
-                    if schema.find("take_shorty")>=0 and take_value == 0 and stop_value == 0:
-                        if ticker[6] < take_price:
-                            take_value = (take_price/total_ticker[4])-1
-                            #log.info("Take profit take_equity %s up, take price %s, min price %s, profit %s" % (take_limit,take_price,ticker[6],take_value))
-                        tmp_take_price = ticker[5]*(1-take-(stop + take_limit)*max(0,1-(ticker[5]-total_ticker[4])/((take_limit)*total_ticker[4])))
-                        if tmp_take_price > take_price:# and tmp_take_price < ticker[7]:
-                            take_price = tmp_take_price
-                        #if take_price > ticker[7]:
-                        #    take_price=ticker[7]*(1-take)
-                    if schema.find("take_revers")>=0 and stop_value == 0:
-                        if ticker[6] < take_price:
-                            #log.info("Revers %s" % take_price)
-                            take_value += (take_price/start_value)-1-self.comission/self.go
-                            start_value=take_price
-                            direction=-1
-                            take_price=start_value*(1+stop)
-                        else:
-                            #log.info("Take profit take_equity %s up, take price %s, min price %s, profit %s" % (take_limit,take_price,ticker[6],take_value))
-                            tmp_take_price = ticker[5]*(1-take-(stop + take_limit)*max(0,1-(ticker[5]-start_value)/((take_limit)*start_value)))
-                            if tmp_take_price > take_price:
+                    elif direction < 0:
+                        if schema == "simple" and ticker[6] < total_ticker[4]*(1-take) and take_value == 0 and stop_value == 0:
+                            #log.info("Take profit simple %s down, take price %s, min price %s, profit %s" % (take, total_ticker[4]*(1-take),ticker[6],take))
+                            take_value = take
+                        if schema.find("stop_limit")>=0 and min_value < total_ticker[4]*(1-take_limit) and min_value*(1+take) < ticker[5] and take_value == 0 and stop_value == 0:
+                            take_value = (total_ticker[4]/(min_value*(1+take)))-1
+                            #log.info("Take profit stop_limit %s down, take price %s, max price %s, profit %s" % (take_limit,min_value*(1+take),ticker[5],take_value))
+                        if schema.find("take_equity")>=0 and take_value == 0 and stop_value == 0:
+                            if ticker[5] > take_price:
+                                take_value = (total_ticker[4]/take_price)-1
+                                #log.info("Take profit take_equity %s down, take price %s, max price %s, profit %s" % (take_limit,take_price,ticker[5],take_value))
+                            tmp_take_price = ticker[6]*(1+take+(stop + take_limit)*max(0,1-(total_ticker[4]-ticker[6])/((stop + take_limit)*total_ticker[4])))
+                            if tmp_take_price < take_price:
                                 take_price = tmp_take_price
-                            if take_price > ticker[7]:
-                                take_price=ticker[7]*(1-take)
-                    if schema.find("take_sinrev")>=0 and take_value == 0 and stop_value == 0:
-                        if ticker[6] < take_price:
-                            #log.info("Revers %s" % take_price)
-                            take_value += (take_price/start_value)-1-self.comission/self.go
-                            start_value=take_price
-                            direction=-1
-                            take_price=start_value*(1+stop)
-                        else:
-                            #log.info("Take profit take_equity %s up, take price %s, min price %s, profit %s" % (take_limit,take_price,ticker[6],take_value))
-                            tmp_take_price = ticker[5]*(1-take-(stop + take_limit)*max(0,1-(ticker[5]-start_value)/((take_limit)*start_value)))
-                            if tmp_take_price > take_price:
+                            #log.info("Take profit take_equity %s down, take price %s, max price %s, min price %s, profit %s" % (total_ticker[4],take_price,ticker[5],ticker[6],take_value))
+                        if schema.find("take_shorty")>=0 and take_value == 0 and stop_value == 0:
+                            #if ticker[7] > ticker[4] and ticker[9]["ATR"]*take<ticker[5]-ticker[6]:
+                                #log.info("Max value %s %s %s" % (max_value*(1-take),ticker[3],total_ticker[4]))
+                            #    take_value = (total_ticker[4]/ticker[7])-1
+                            if total_ticker and take > 0 and ticker[5] > ticker[9]["ATRTS"+str(take)]:
+                                take_value = (ticker[7]/start_value)-1
+                            if total_ticker and ticker[5] > take_price:
+                                take_value = (total_ticker[4]/take_price)-1
+                                #log.info("Take profit take_equity %s down, take price %s, max price %s, profit %s" % (take_limit,take_price,ticker[5],take_value))
+                            tmp_take_price = ticker[6]*(1+(stop + take_limit)*max(0,1-(total_ticker[4]-ticker[6])/((take_limit)*total_ticker[4])))
+                            if tmp_take_price < take_price:# and tmp_take_price > ticker[7]:
                                 take_price = tmp_take_price
-                            if take_price > ticker[7]:
-                                take_price=ticker[7]*(1-take)
-                    if schema.find("take_innsta")>=0 and take_value == 0 and stop_value == 0:
-                        if ticker[6] < take_price:
-                            take_value = (take_price/total_ticker[4])-1
-                            #log.info("Take profit take_equity %s up, take price %s, min price %s, profit %s" % (take_limit,take_price,ticker[6],take_value))
-                        tmp_take_price = ticker[5]*(1-take-(stop + take_limit)*max(0,1-(ticker[5]-total_ticker[4])/((take_limit)*total_ticker[4])))
-                        if tmp_take_price > take_price:
-                            take_price = tmp_take_price
-                        if take_price > ticker[7]:
-                            #take_value=ticker[7]
-                            take_price=ticker[7]*(1-take)
-                            #log.info("Take profit take_shorty %s up, take price %s, max price %s, min price %s, profit %s" % (total_ticker[4],take_price,ticker[5],ticker[6],take_value))
-                    if ticker[6] < total_ticker[4]*(1-stop) and take_value == 0 and stop_value == 0:
-                        stop_value = -stop
-                    if schema.find("wrong_equity")>=0 and take_value == 0 and stop_value == 0:
-                        if ticker[6] < take_price:
-                            take_value = (take_price/total_ticker[4])-1
-                            #log.info("Take profit take_equity %s up, take price %s, min price %s, profit %s" % (take_limit,take_price,ticker[6],take_value))
-                        tmp_take_price = ticker[5]*(1-take-max(0,1-(ticker[5]-total_ticker[4])/((take_limit)*total_ticker[4])))
-                        if tmp_take_price > take_price:
-                            take_price = tmp_take_price
-                        #log.info("Take profit take_equity %s up, take price %s, max price %s, min price %s, profit %s" % (total_ticker[4],take_price,ticker[5],ticker[6],take_value))
-                elif direction < 0:
-                    if schema == "simple" and ticker[6] < total_ticker[4]*(1-take) and take_value == 0 and stop_value == 0:
-                        #log.info("Take profit simple %s down, take price %s, min price %s, profit %s" % (take, total_ticker[4]*(1-take),ticker[6],take))
-                        take_value = take
-                    if schema.find("stop_limit")>=0 and min_value < total_ticker[4]*(1-take_limit) and min_value*(1+take) < ticker[5] and take_value == 0 and stop_value == 0:
-                        take_value = (total_ticker[4]/(min_value*(1+take)))-1
-                        #log.info("Take profit stop_limit %s down, take price %s, max price %s, profit %s" % (take_limit,min_value*(1+take),ticker[5],take_value))
-                    if schema.find("take_equity")>=0 and take_value == 0 and stop_value == 0:
-                        if ticker[5] > take_price:
-                            take_value = (total_ticker[4]/take_price)-1
-                            #log.info("Take profit take_equity %s down, take price %s, max price %s, profit %s" % (take_limit,take_price,ticker[5],take_value))
-                        tmp_take_price = ticker[6]*(1+take+(stop + take_limit)*max(0,1-(total_ticker[4]-ticker[6])/((stop + take_limit)*total_ticker[4])))
-                        if tmp_take_price < take_price:
-                            take_price = tmp_take_price
-                        #log.info("Take profit take_equity %s down, take price %s, max price %s, min price %s, profit %s" % (total_ticker[4],take_price,ticker[5],ticker[6],take_value))
-                    if schema.find("take_shorty")>=0 and take_value == 0 and stop_value == 0:
-                        if ticker[5] > take_price:
-                            take_value = (total_ticker[4]/take_price)-1
-                            #log.info("Take profit take_equity %s down, take price %s, max price %s, profit %s" % (take_limit,take_price,ticker[5],take_value))
-                        tmp_take_price = ticker[6]*(1+take+(stop + take_limit)*max(0,1-(total_ticker[4]-ticker[6])/((take_limit)*total_ticker[4])))
-                        if tmp_take_price < take_price:# and tmp_take_price > ticker[7]:
-                            take_price = tmp_take_price
-                        #if take_price < ticker[7]:
-                        #    take_price=ticker[7]*(1+take)
-                    if schema.find("take_revers")>=0 and stop_value == 0:
-                        if ticker[5] > take_price:
-                            #log.info("Revers %s" % take_price)
-                            take_value += (start_value/take_price)-1-self.comission/self.go
-                            start_value=take_price
-                            direction=1
-                            take_price=start_value*(1-stop)
-                            #log.info("Take profit take_equity %s down, take price %s, max price %s, profit %s" % (take_limit,take_price,ticker[5],take_value))
-                        else:
-                            tmp_take_price = ticker[6]*(1+take+(stop + take_limit)*max(0,1-(start_value-ticker[6])/((take_limit)*start_value)))
+                            #if take_price < ticker[7]:
+                            #    take_price=ticker[7]*(1+take)
+                        if schema.find("take_atrts")>=0 and take_value == 0 and stop_value == 0:
+                            if total_ticker and take > 0 and ticker[5] > ticker[9]["ATRTS"+str(take)]:
+                                take_value = (ticker[7]/start_value)-1
+                            #if total_ticker and ticker[5] > take_price:
+                                #log.info("min value %s %s" % (take_price,ticker[3]))
+                            #    take_value = (total_ticker[4]/take_price)-1
+                                #log.info("Take profit take_equity %s down, take price %s, max price %s, profit %s" % (take_limit,take_price,ticker[5],take_value))
+                            #tmp_take_price = ticker[5]+ticker[9]["ATR"]*take
+                            #if tmp_take_price < take_price:# and tmp_take_price > ticker[7]:
+                            #    take_price = tmp_take_price
+                            #if take_price < ticker[7]:
+                        if schema.find("take_revers")>=0 and stop_value == 0:
+                            if ticker[5] > take_price:
+                                #log.info("Revers %s" % take_price)
+                                take_value += (start_value/take_price)-1-self.comission/self.go
+                                start_value=take_price
+                                direction=1
+                                take_price=start_value*(1-stop)
+                                #log.info("Take profit take_equity %s down, take price %s, max price %s, profit %s" % (take_limit,take_price,ticker[5],take_value))
+                            else:
+                                tmp_take_price = ticker[6]*(1+take+(stop + take_limit)*max(0,1-(start_value-ticker[6])/((take_limit)*start_value)))
+                                if tmp_take_price < take_price:
+                                    take_price = tmp_take_price
+                                if take_price < ticker[7]:
+                                    take_price=ticker[7]*(1+take)
+                        if schema.find("take_sinrev")>=0 and take_value == 0 and stop_value == 0:
+                            if ticker[5] > take_price:
+                                #log.info("Revers %s" % take_price)
+                                take_value += (start_value/take_price)-1-self.comission/self.go
+                                start_value=take_price
+                                direction=1
+                                take_price=start_value*(1-stop)
+                                #log.info("Take profit take_equity %s down, take price %s, max price %s, profit %s" % (take_limit,take_price,ticker[5],take_value))
+                            else:
+                                tmp_take_price = ticker[6]*(1+take+(stop + take_limit)*max(0,1-(start_value-ticker[6])/((take_limit)*start_value)))
+                                if tmp_take_price < take_price:
+                                    take_price = tmp_take_price
+                                if take_price < ticker[7]:
+                                    take_price=ticker[7]*(1+take)
+                        if schema.find("take_innsta")>=0 and take_value == 0 and stop_value == 0:
+                            if total_ticker and take > 0 and ticker[5] > ticker[9]["ATRTS"+str(take)]:
+                                take_value = (ticker[7]/start_value)-1
+                                #log.info(ticker)
+                                #log.info("Stop by atr at %s with start %s end %s" % (ticker[3],start_value,ticker[7]))
+                            if ticker[5] > take_price and take_value == 0:
+                                #log.info(ticker)
+                                #log.info("Stop by limit at %s with start %s end %s" % (ticker[3],total_ticker[4],take_price))
+                                take_value = (total_ticker[4]/take_price)-1
+                                #log.info("Take profit take_equity %s down, take price %s, max price %s, profit %s" % (take_limit,take_price,ticker[5],take_value))
+                            tmp_take_price = ticker[6]*(1+(stop + take_limit)*max(0,1-(total_ticker[4]-ticker[6])/((take_limit)*total_ticker[4])))
                             if tmp_take_price < take_price:
                                 take_price = tmp_take_price
                             if take_price < ticker[7]:
-                                take_price=ticker[7]*(1+take)
-                    if schema.find("take_sinrev")>=0 and take_value == 0 and stop_value == 0:
-                        if ticker[5] > take_price:
-                            #log.info("Revers %s" % take_price)
-                            take_value += (start_value/take_price)-1-self.comission/self.go
-                            start_value=take_price
-                            direction=1
-                            take_price=start_value*(1-stop)
-                            #log.info("Take profit take_equity %s down, take price %s, max price %s, profit %s" % (take_limit,take_price,ticker[5],take_value))
-                        else:
-                            tmp_take_price = ticker[6]*(1+take+(stop + take_limit)*max(0,1-(start_value-ticker[6])/((take_limit)*start_value)))
+                                #take_price=ticker[7]*(1+take)
+                                take_value=(total_ticker[4]/ticker[7])-1                      
+    
+                            #log.info("Take profit take_shorty %s down, take price %s, max price %s, min price %s, profit %s" % (total_ticker[4],take_price,ticker[5],ticker[6],take_value))
+                        if schema.find("wrong_equity")>=0 and take_value == 0 and stop_value == 0:
+                            if ticker[5] > take_price:
+                                take_value = (total_ticker[4]/take_price)-1
+                                #log.info("Take profit take_equity %s down, take price %s, max price %s, profit %s" % (take_limit,take_price,ticker[5],take_value))
+                            tmp_take_price = ticker[6]*(1+take+max(0,1-(total_ticker[4]-ticker[6])/((take_limit)*total_ticker[4])))
                             if tmp_take_price < take_price:
                                 take_price = tmp_take_price
-                            if take_price < ticker[7]:
-                                take_price=ticker[7]*(1+take)
-                    if schema.find("take_innsta")>=0 and take_value == 0 and stop_value == 0:
-                        if ticker[5] > take_price:
-                            take_value = (total_ticker[4]/take_price)-1
-                            #log.info("Take profit take_equity %s down, take price %s, max price %s, profit %s" % (take_limit,take_price,ticker[5],take_value))
-                        tmp_take_price = ticker[6]*(1+take+(stop + take_limit)*max(0,1-(total_ticker[4]-ticker[6])/((take_limit)*total_ticker[4])))
-                        if tmp_take_price < take_price:
-                            take_price = tmp_take_price
-                        if take_price < ticker[7]:
-                            take_price=ticker[7]*(1+take)
-                            #take_value=ticker[7]                       
-
-                        #log.info("Take profit take_shorty %s down, take price %s, max price %s, min price %s, profit %s" % (total_ticker[4],take_price,ticker[5],ticker[6],take_value))
-                    if schema.find("wrong_equity")>=0 and take_value == 0 and stop_value == 0:
-                        if ticker[5] > take_price:
-                            take_value = (total_ticker[4]/take_price)-1
-                            #log.info("Take profit take_equity %s down, take price %s, max price %s, profit %s" % (take_limit,take_price,ticker[5],take_value))
-                        tmp_take_price = ticker[6]*(1+take+max(0,1-(total_ticker[4]-ticker[6])/((take_limit)*total_ticker[4])))
-                        if tmp_take_price < take_price:
-                            take_price = tmp_take_price
-                        #log.info("DEBUG %s %s %s %s %s %s" % (stop,take,take_limit,(total_ticker[4]-ticker[6]),((stop+take_limit)*total_ticker[4]),(total_ticker[4]-ticker[6])/((stop+take_limit)*total_ticker[4])))
-                    if ticker[5] > total_ticker[4]*(1+stop) and take_value == 0 and stop_value == 0:
-                        stop_value = -stop
+                            #log.info("DEBUG %s %s %s %s %s %s" % (stop,take,take_limit,(total_ticker[4]-ticker[6]),((stop+take_limit)*total_ticker[4]),(total_ticker[4]-ticker[6])/((stop+take_limit)*total_ticker[4])))
+                        if ticker[5] > total_ticker[4]*(1+stop) and take_value == 0 and stop_value == 0:
+                            stop_value = -stop
         if not total_ticker:
             return [], 0, 0
         total_ticker[3]=max_time
@@ -282,7 +343,7 @@ class ProfileAnalyser():
         total_ticker[6]=min_value
         total_ticker[7]=close_value
         total_ticker[8]=min_time
-        total_ticker.append(0)
+        total_ticker.append({})
         
         if (schema.find("take_revers")>=0 or schema.find("take_sinrev")>=0)and not take_value == 0:
             if direction > 0:
@@ -321,7 +382,7 @@ class ProfileAnalyser():
         total_ticker[6]=min_value
         total_ticker[7]=close_time
         total_ticker[8]=min_time
-        total_ticker.append(0)
+        total_ticker.append({})
         
         return total_ticker
     
@@ -467,13 +528,12 @@ class ProfileAnalyser():
                 
         return best_timeline
 
-    def is_up_direction(self, tickers_by_day, check_time=102000, direction_delta = 0):
-        ticker1=self.combine_multi_tickers(tickers_by_day,-1,check_time)
+    def is_up_direction(self, ticker1, check_time=102000, direction_delta = 0):
         if not ticker1:
             return 0
-        if (abs(ticker1[4] - ticker1[7]) > min(ticker1[4],ticker1[7])*direction_delta) and ticker1[4] < ticker1[7]:# and self.ticker1[9] > 0: #upstream
+        if (abs(ticker1[4] - ticker1[7]) > min(ticker1[4],ticker1[7])*direction_delta) and ticker1[4] < ticker1[7]: #and ticker1[9] > obv_delta: #upstream
             return 1
-        elif (abs(ticker1[4] - ticker1[7]) > min(ticker1[4],ticker1[7])*direction_delta) and ticker1[4] > ticker1[7]:# and self.ticker1[9] < 0:
+        elif (abs(ticker1[4] - ticker1[7]) > min(ticker1[4],ticker1[7])*direction_delta) and ticker1[4] > ticker1[7]: #and ticker1[9] < obv_delta:
             return -1
         else:
             return 0
@@ -553,7 +613,7 @@ class ProfileAnalyser():
         check_diff_limit=0.02
         if len(tickers) == 0:
             log.info("No any tickers found")
-            return 0,1,1,[]
+            return 0,1,1,[],0
         day_tickers=[tickers[0]]
         total_profit=0
         count_profit=1
@@ -565,11 +625,12 @@ class ProfileAnalyser():
                 day_tickers.append(single_ticker) 
             else:
                 day_count+=1
-                is_up = self.is_up_direction(day_tickers,check_time,direction_delta)*reverse_trade
+                ticker1=self.combine_multi_tickers(day_tickers,-1,check_time)
+                is_up = self.is_up_direction(ticker1,check_time,direction_delta)*reverse_trade
                 if not is_up == 0:
                    #ticker2=self.combine_multi_tickers(day_tickers,start_time,end_time)
                     ticker2, combi_stop, combi_take = self.combine_multi_tickers_slide(day_tickers,start_time,end_time,stop_loss,take_profit,is_up,take_profit_schema)
-                    if ticker2:
+                    if ticker2:# and (ticker2[4]-ticker1[7])*is_up >delta:
                         if combi_take == 0 and combi_stop == 0:
                             tmp_profit = self.check_direction(ticker2, is_up, start_time, end_time, delta, stop_loss, take_profit)-1
                         elif combi_stop == 0:
@@ -597,10 +658,11 @@ class ProfileAnalyser():
                     list_profit.append(float(0))   
                 day_tickers=[single_ticker]
         day_count+=1
-        is_up = self.is_up_direction(day_tickers,check_time,direction_delta)*reverse_trade
+        ticker1=self.combine_multi_tickers(day_tickers,-1,check_time)
+        is_up = self.is_up_direction(ticker1,check_time,direction_delta)*reverse_trade
         if not is_up == 0:
             ticker2, combi_stop, combi_take = self.combine_multi_tickers_slide(day_tickers,start_time,end_time,stop_loss,take_profit,is_up,take_profit_schema)
-            if ticker2:
+            if ticker2:# and (ticker2[4]-ticker1[7])*is_up > delta:
                 if combi_take == 0 and combi_stop == 0:
                     tmp_profit = self.check_direction(ticker2, is_up, start_time, end_time, delta, stop_loss, take_profit)-1
                 elif combi_stop == 0:
@@ -627,7 +689,7 @@ class ProfileAnalyser():
             list_profit.append(float(0))
             zero_days+=1    
         day_tickers=[single_ticker]
-        return total_profit, count_profit, procn_profit, list_profit
+        return total_profit, count_profit, procn_profit, list_profit, zero_days
     
     def main_analyzer(self, begin_list, check_list, start_list, end_list, date_start, date_end, stop_loss, direction_delta,take_profit, profit_method, results_days_dict, results_profit_dict, results_procent_dict, thread=0):
         #pythoncom.CoInitialize()
@@ -653,8 +715,8 @@ class ProfileAnalyser():
                             for start in start_list:
                                 if begin < check and check < start and start < end:
                                     if self.time_range.index(check) - self.time_range.index(begin) > 2 and self.time_range.index(end) - self.time_range.index(start) > 2:
-                                        days,profit,procent,list_profit=self.analyze_by_day(filtered_tickers, check, start, end, delta, direction_delta, stop_loss,1,take_profit,True, profit_method)
-                                        days_rev,profit_rev,procent_rev,list_profit_rev=self.analyze_by_day(filtered_tickers, check, start, end, delta, direction_delta, stop_loss,-1,take_profit,True, profit_method)
+                                        days,profit,procent,list_profit,zero_days=self.analyze_by_day(filtered_tickers, check, start, end, delta, direction_delta, stop_loss,1,take_profit,True, profit_method)
+                                        days_rev,profit_rev,procent_rev,list_profit_rev,zero_days=self.analyze_by_day(filtered_tickers, check, start, end, delta, direction_delta, stop_loss,-1,take_profit,True, profit_method)
                                     else:
                                         days=0
                                         profit=1
@@ -1073,11 +1135,11 @@ class ProfileAnalyser():
 
     def get_ranges_by_dayweek(self,curr_date):
         day_of_week = self.get_day_week(curr_date)
-        day_ranges={0:[160000, 160000, 160000, 160000,1],
-                    1:[94000, 115000, 120000, 151000, 1, 0, 0.03, 0, 'take_shorty_0.01'],
-                    2:[94000, 101000, 103000, 112000, -1, 0.0015, 0.03, 0, 'take_shorty_0.0075'],
-                    3:[94000, 102000, 104000, 152000, -1, 0, 0.05, 0, 'take_shorty_0.0015'],
-                    4:[94000, 101000, 102000, 131000, -1, 0, 0.05, 0, 'take_shorty_0.0075'],
+        day_ranges={0:[94000, 101000, 105000, 145000, -1, 0, 0.02, 0, 'take_shorty_0.005'],
+                    1:[94000, 103000, 104000, 145000, 1, 0, 0.015, 0, 'take_shorty_0.005'],
+                    2:[94000, 102000, 111000, 145000, -1, 0, 0.05, 0, 'take_shorty_0.003'],
+                    3:[94000, 101000, 112000, 150000, -1, 0, 0.03, 0, 'take_shorty_0.015'],
+                    4:[94000, 101000, 102000, 114000, -1, 0.0015, 0.015, 0, 'take_shorty_0.003'],
                     5:[160000, 160000, 160000, 160000,1],
                     6:[160000, 160000, 160000, 160000,1]}
         
@@ -1086,10 +1148,10 @@ class ProfileAnalyser():
     def get_ranges_by_dayweek_new(self,curr_date):
         day_of_week = self.get_day_week(curr_date)
         day_ranges={0:[160000, 160000, 160000, 160000,1],
-                    1:[94000, 114000, 120000, 135000, 1, 0, 0.01, 0.0075, 'take_equity_0.0025'],
-                    2:[94000, 102000, 103000, 112000, -1, 0.0075, 0.0075, 0.001, 'take_equity_0.0025'],
-                    3:[94000, 124000, 125000, 144000, 1, 0.005, 0.003, 0.001, 'take_equity_0.0075'],
-                    4:[94000, 101000, 102000, 132000, -1, 0, 0.005, 0.003, 'take_equity_0.0025'],
+                    1:[94000, 113000, 120000, 152000, 1, 0, 0.03, 3, 'take_innsta_0.01'],
+                    2:[94000, 101000, 103000, 121000, -1, 0, 0.05, 2, 'take_innsta_0.02'],
+                    3:[94000, 121000, 125000, 144000, 1, 0.0015, 0.03, 2, 'take_innsta_0.003'],
+                    4:[94000, 101000, 102000, 125000, -1, 0, 0.05, 1.5, 'take_innsta_0.0075'],
                     5:[160000, 160000, 160000, 160000,1],
                     6:[160000, 160000, 160000, 160000,1]}
         
@@ -1131,7 +1193,7 @@ class ProfileAnalyser():
             return [-1], [-1], [-1], []
         
         if not self.results_days:
-            self.start_analyzer_threaded(-1,-1,16,delta,loss,save_results = True,take_profit = 0.001, profit_method = "take_equity_0.0025")
+            self.start_analyzer_threaded(-1,-1,16,delta,loss,save_results = True,take_profit = 2, profit_method = "take_innsta_0.01")
         
         period_day_tickers = self.filter_tickers(self.tickers, 94000,160000,self.days[curr_date_pos-period-1],self.days[curr_date_pos-1])
         results_days_all = self.start_analyzer(self.days[curr_date_pos-period-1],self.days[curr_date_pos-1],delta,loss)
@@ -1175,7 +1237,7 @@ class ProfileAnalyser():
             return [-1], [-1], [-1], []
         best_ranges = best_ranges1 + best_ranges2 + best_ranges3 + best_ranges4 + best_ranges5 + best_ranges6 + best_ranges7 + best_ranges8+best_ranges9+best_ranges10
 
-        for tmp_delta, tmp_loss, tmp_prof,take_schema in [[delta, loss, 0.015,"Noschema"],[delta, loss, 0.01,"simple"],[delta, loss, 0.005,"take_equity_0.005"],[delta, loss,  0.0075, 'take_equity_0.0075']]: #[[delta, loss, 200],[0.0015, loss, 200],[0.0015, 0.015, 200],[0.005, 0.02, 200]]:
+        for tmp_delta, tmp_loss, tmp_prof,take_schema in [[delta, loss, 2,"Noschema"],[delta, loss, 2,"simple"],[delta, loss, 2,"take_innsta_0.01"],[delta, loss,  2, 'take_atrts_0.0075']]: #[[delta, loss, 200],[0.0015, loss, 200],[0.0015, 0.015, 200],[0.005, 0.02, 200]]:
             for best_range in best_ranges:
                 real_delta = tmp_delta
                 real_loss = tmp_loss
@@ -1196,7 +1258,7 @@ class ProfileAnalyser():
                 log.info("Begin %s, check %s, start %s, end %s,trade direct %s" % (begin_time,check_time,start_time,end_time,best_range[4]))
                 if simulate_trade:
                     day_tickers = self.filter_tickers(self.tickers, begin_time,end_time,curr_date,curr_date)
-                    day_profit, day_count, day_procent, day_list_profit = self.analyze_by_day(day_tickers, check_time, start_time, end_time, 0, real_delta, real_loss, best_range[4], real_prof, True,real_schema)
+                    day_profit, day_count, day_procent, day_list_profit,zero_day = self.analyze_by_day(day_tickers, check_time, start_time, end_time, 0, real_delta, real_loss, best_range[4], real_prof, True,real_schema)
                     day_profit_list.append(day_profit)
                     day_count_list.append(day_count)
                     log.info("day_profit %s %s, day_count %s, day_procent %s" % (ranges_counter,day_profit, day_count, day_procent))
@@ -1211,9 +1273,9 @@ class ProfileAnalyser():
 
     def robot(self, date_start=-1, period = 10, period2 = 0, day_end = -1, delta = 0.0015, loss = 0.015):
         self.tickers = self.filter_tickers(self.tickers, 94000,160000,-1,-1)
-        best_prof=0.7
-        max_prof=1.3
-        methods_list=[29]
+        best_prof=0.3
+        max_prof=3
+        methods_list=[9]
         changer_period=3
         if date_start > 0:
             date_start_index=self.days.index(date_start)
@@ -1359,9 +1421,9 @@ class ProfileAnalyser():
 
 if __name__ == "__main__":
     start_timer=time.time()
-    pa = ProfileAnalyser("US1.CAT_160101_170531.txt")
-    #log.info(pa.robot(-1,5,delta=0,loss=0.03))
-    day_tickers = pa.filter_tickers(pa.tickers, 94000,160000,-1,-1,4)
+    pa = ProfileAnalyser("daily_CAT.txt")
+    log.info(pa.robot(-1,5,delta=0,loss=0.03))
+    """day_tickers = pa.filter_tickers(pa.tickers, 94000,160000,-1,-1,4)
     pa.tickers = day_tickers
     day_ranges={0:[160000, 160000, 160000, 160000,1],
                     1:[94000, 115000, 120000, 151000, 1, 0, 0.03, 0, 'take_shorty_0.01'],
@@ -1381,33 +1443,37 @@ if __name__ == "__main__":
     #log.info(pa.analyze_by_day(day_tickers, check_time,start_time,end_time, 0, 0.0015, 0.015,1,0.001,True,"stop_limit_0.01"))
     #log.info(pa.analyze_by_day(day_tickers, check_time,start_time,end_time, 0, 0.0015, 0.015,1,0.001,True,"take_equity_0.0075"))
     #log.info(pa.analyze_by_day(day_tickers, check_time,start_time,end_time, 0, 0.0015, 0.015,1,0.01,True,"simple"))
-    """for weekday in [0,1,2,3,4]:
+    for weekday in [0,1,2,3,4]:
         best_results = []
-        pa = ProfileAnalyser("US1.CAT_160101_170531.txt")
+        pa = ProfileAnalyser("US1.BAC_160104_170630.txt")
         day_tickers = pa.filter_tickers(pa.tickers, 94000,160000,-1,-1,weekday)
         pa.tickers = day_tickers
-        for take_slide_method in ["take_sinrev_0.0015","take_sinrev_0.003","take_sinrev_0.005","take_sinrev_0.0075","take_sinrev_0.01","take_revers_0.0015","take_revers_0.003","take_revers_0.005","take_revers_0.0075","take_revers_0.01",]: #10
-            results_days_all, results_profit_all, results_procent = pa.start_analyzer_threaded(day_start=-1,day_end=-1,threads=6,direction_delta=0,stop_loss=0.015,save_results = False, take_profit = 0.001, profit_method = take_slide_method)
+        for take_slide_method in ["take_atrts_0.005","take_innsta_0.003","take_innsta_0.005","take_innsta_0.0075","take_innsta_0.01","take_innsta_0.015","take_innsta_0.02","take_innsta_0.03"]: #["take_shorty_0.0015","take_shorty_0.003","take_shorty_0.005","take_shorty_0.0075","take_shorty_0.01","take_shorty_0.015","take_equity_0.005","take_equity_0.0075"]: #10
+            best_results = []
+            results_days_all, results_profit_all, results_procent = pa.start_analyzer_threaded(day_start=-1,day_end=-1,threads=6,direction_delta=0.0015,stop_loss=0.03,save_results = False, take_profit = 0, profit_method = take_slide_method)
             ranges = []
             for logic_key in ["simple_profit","std"]: #["best_ranges2","std","extra","extra2","median","std_median","period_profit","percentile","simple_profit"]:
                 ranges+=pa.get_best_ranges_new_gen(logic_key,results_days_all, 8,0.6,5,-10, return_all = True)
-            for delta in [0,0.0015,0.003,0.005,0.0075,0.01]:#7
-                for loss in [0.0015,0.003,0.005,0.0075,0.01,0.015,0.02,0.03,0.04,0.05]:#7
-                    for take in [0,0.001,0.003,0.005]:#,0.01,0.015,0.02]:#5
-                        log.info("Weekday %s, Delta %s, Stop %s, take %s, range method %s, take method %s" % (weekday, delta, loss,take,logic_key,take_slide_method))
+            #for delta2 in [-0.0015,-0.003,-0.005,-0.0075,0,0.0015,0.003,0.005,0.0075]:#7
+            for delta in [0,0.0015,0.003,0.005,0.0075]:#7
+                for loss in [0.01,0.02,0.03,0.04,0.05]:#7
+                    for take in [0,1,1.5,2,3,4,5,10]:#[0,0.001,0.003,0.005,0.0075,0.01,0.015,0.02]:#5
+                        #log.info("Weekday %s, Delta %s, Stop %s, take %s, range method %s, take method %s" % (weekday, delta, loss,take,logic_key,take_slide_method))
                         if ranges:
                             for single_range in ranges:
                                 begin_time,check_time,start_time,end_time,trade = single_range
                                 #log.info( "%s, %s, %s, %s" % (begin_time,check_time,start_time,end_time))
                                 
-                                day_profit, day_count, day_procent, day_list_profit = pa.analyze_by_day(day_tickers, check_time, start_time, end_time, 0, delta, loss,trade,take,True,take_slide_method)
-                                best_results.append([day_count,weekday,begin_time,check_time,start_time,end_time,trade,delta,loss,take,take_slide_method,day_profit, day_count, day_procent, day_list_profit])
-                        
-        best_results.sort()
-        for orig_result in best_results[-10:]:
-            for single_result in best_results:
-                if single_result[6:11] == orig_result[6:11]:
-                    log.info(single_result)
+                                day_profit, day_count, day_procent, day_list_profit, day_zero = pa.analyze_by_day(day_tickers, check_time, start_time, end_time, 0, delta, loss,trade,take,True,take_slide_method)
+                                best_results.append([day_count,float(day_profit)/(len(day_list_profit)-day_zero),weekday,begin_time,check_time,start_time,end_time,trade,delta,loss,take,take_slide_method,day_profit, day_count, day_procent, day_list_profit])
+            del results_days_all
+            del results_profit_all
+            del results_procent
+            best_results.sort()
+            for orig_result in best_results[-10:]:
+                for single_result in best_results:
+                    if single_result[7:12] == orig_result[7:12]:
+                        log.info(single_result)
     best_profit = []
     best_days = []
     best_balance = []

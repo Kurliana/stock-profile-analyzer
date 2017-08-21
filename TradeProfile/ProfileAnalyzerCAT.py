@@ -36,10 +36,10 @@ class ProfileAnalyserCAT(ProfileAnalyser):
     def get_ranges_by_dayweek_new(self,curr_date):
         day_of_week = self.get_day_week(curr_date)
         day_ranges={0:[160000, 160000, 160000, 160000,1],
-                    1:[94000, 114000, 120000, 135000, 1, 0, 0.01, 0.0075, 'take_equity_0.0025'],
-                    2:[94000, 102000, 103000, 112000, -1, 0.0075, 0.0075, 0.001, 'take_equity_0.0025'],
-                    3:[94000, 124000, 125000, 144000, 1, 0.005, 0.003, 0.001, 'take_equity_0.0075'],
-                    4:[94000, 101000, 102000, 132000, -1, 0, 0.005, 0.003, 'take_equity_0.0025'],
+                    1:[94000, 113000, 120000, 152000, 1, 0, 0.03, 3, 'take_innsta_0.01'],
+                    2:[94000, 101000, 103000, 121000, -1, 0, 0.05, 2, 'take_innsta_0.02'],
+                    3:[94000, 121000, 125000, 144000, 1, 0.0015, 0.03, 2, 'take_innsta_0.003'],
+                    4:[94000, 101000, 102000, 125000, -1, 0, 0.05, 1.5, 'take_innsta_0.0075'],
                     5:[160000, 160000, 160000, 160000,1],
                     6:[160000, 160000, 160000, 160000,1]}
         
@@ -81,7 +81,7 @@ class ProfileAnalyserCAT(ProfileAnalyser):
             return [-1], [-1], [-1], []
         
         if not self.results_days:
-            self.start_analyzer_threaded(-1,-1,16,delta,loss,save_results = True,take_profit = 0.001, profit_method = "take_equity_0.0025")
+            self.start_analyzer_threaded(-1,-1,16,delta,loss,save_results = True,take_profit = 2, profit_method = "take_innsta_0.01")
         
         period_day_tickers = self.filter_tickers(self.tickers, 94000,160000,self.days[curr_date_pos-period-1],self.days[curr_date_pos-1])
         results_days_all = self.start_analyzer(self.days[curr_date_pos-period-1],self.days[curr_date_pos-1],delta,loss)
@@ -125,7 +125,7 @@ class ProfileAnalyserCAT(ProfileAnalyser):
             return [-1], [-1], [-1], []
         best_ranges = best_ranges1 + best_ranges2 + best_ranges3 + best_ranges4 + best_ranges5 + best_ranges6 + best_ranges7 + best_ranges8+best_ranges9+best_ranges10
 
-        for tmp_delta, tmp_loss, tmp_prof,take_schema in [[delta, loss, 0.015,"Noschema"],[delta, loss, 0.01,"simple"],[delta, loss, 0.005,"take_equity_0.005"],[delta, loss,  0.0075, 'take_equity_0.0075']]: #[[delta, loss, 200],[0.0015, loss, 200],[0.0015, 0.015, 200],[0.005, 0.02, 200]]:
+        for tmp_delta, tmp_loss, tmp_prof,take_schema in [[delta, loss, 2,"Noschema"],[delta, loss, 2,"simple"],[delta, loss, 2,"take_innsta_0.01"],[delta, loss,  2, 'take_atrts_0.0075']]: #[[delta, loss, 200],[0.0015, loss, 200],[0.0015, 0.015, 200],[0.005, 0.02, 200]]:
             for best_range in best_ranges:
                 real_delta = tmp_delta
                 real_loss = tmp_loss
@@ -146,7 +146,7 @@ class ProfileAnalyserCAT(ProfileAnalyser):
                 log.info("Begin %s, check %s, start %s, end %s,trade direct %s" % (begin_time,check_time,start_time,end_time,best_range[4]))
                 if simulate_trade:
                     day_tickers = self.filter_tickers(self.tickers, begin_time,end_time,curr_date,curr_date)
-                    day_profit, day_count, day_procent, day_list_profit = self.analyze_by_day(day_tickers, check_time, start_time, end_time, 0, real_delta, real_loss, best_range[4], real_prof, True,real_schema)
+                    day_profit, day_count, day_procent, day_list_profit,zero_day = self.analyze_by_day(day_tickers, check_time, start_time, end_time, 0, real_delta, real_loss, best_range[4], real_prof, True,real_schema)
                     day_profit_list.append(day_profit)
                     day_count_list.append(day_count)
                     log.info("day_profit %s %s, day_count %s, day_procent %s" % (ranges_counter,day_profit, day_count, day_procent))
@@ -162,8 +162,8 @@ class ProfileAnalyserCAT(ProfileAnalyser):
     def robot(self, date_start=-1, period = 10, period2 = 0, day_end = -1, delta = 0.0015, loss = 0.015):
         self.tickers = self.filter_tickers(self.tickers, 94000,160000,-1,-1)
         best_prof=0
-        max_prof=2
-        methods_list=[8]
+        max_prof=3
+        methods_list=[9]
         changer_period=3
         if date_start > 0:
             date_start_index=self.days.index(date_start)
@@ -308,7 +308,7 @@ class ProfileAnalyserCAT(ProfileAnalyser):
         return [saved_times]
 
 if __name__ == "__main__":
-    # based on my_app_super_full_cat_5_p3x3_diff_shorty
+    # based on my_app_0617_full_cat_atr
     start_timer=time.time()
     temp_file_name="daily_CAT.txt"
     result_file="C:\Just2Trade Client\CAT.txt"
