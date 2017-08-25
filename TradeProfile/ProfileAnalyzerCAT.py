@@ -311,7 +311,7 @@ if __name__ == "__main__":
     # based on my_app_0617_full_cat_atr
     start_timer=time.time()
     temp_file_name="daily_CAT.txt"
-    result_file="C:\Just2Trade Client\CAT.txt"
+    result_file="C:\Just2Trade Client\CATERPILLAR Inc.txt"
     if os.path.exists(temp_file_name):
         os.remove(temp_file_name)
     cur_date=time.localtime()

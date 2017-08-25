@@ -527,13 +527,13 @@ class ProfileAnalyser():
                 
         return best_timeline
 
-    def is_up_direction(self, tickers_by_day, check_time=102000, direction_delta = 0):
-        ticker1=self.combine_multi_tickers(tickers_by_day,-1,check_time)
+    def is_up_direction(self, ticker1, check_time=102000, direction_delta = 0):
+
         if not ticker1:
             return 0
-        if (abs(ticker1[4] - ticker1[7]) > min(ticker1[4],ticker1[7])*direction_delta) and ticker1[4] < ticker1[7]:# and self.ticker1[9] > 0: #upstream
+        if (abs(ticker1[4] - ticker1[7]) > min(ticker1[4],ticker1[7])*direction_delta) and ticker1[4] < ticker1[7]: #and ticker1[9] > obv_delta: #upstream
             return 1
-        elif (abs(ticker1[4] - ticker1[7]) > min(ticker1[4],ticker1[7])*direction_delta) and ticker1[4] > ticker1[7]:# and self.ticker1[9] < 0:
+        elif (abs(ticker1[4] - ticker1[7]) > min(ticker1[4],ticker1[7])*direction_delta) and ticker1[4] > ticker1[7]: #and ticker1[9] < obv_delta:
             return -1
         else:
             return 0
@@ -1250,7 +1250,9 @@ class ProfileAnalyser():
                     real_loss = best_range[6]
                     real_prof = best_range[7]
                     real_schema = best_range[8]
-                used_ranges.append(best_range+[real_delta, real_loss, real_prof, real_schema])    
+                    used_ranges.append(best_range)
+                else:
+                    used_ranges.append(best_range+[real_delta, real_loss, real_prof, real_schema])   
                 #day_profit, day_count, day_procent, day_list_profit = self.analyze_by_day(period_day_tickers, check_time, start_time, end_time, 0, tmp_delta, tmp_loss, best_range[4], tmp_prof, True)
                 #log.info("Period %s: day_profit %s, day_count %s, day_procent %s" % (ranges_counter,day_profit, day_count, day_procent))
                 log.info("Begin %s, check %s, start %s, end %s,trade direct %s" % (begin_time,check_time,start_time,end_time,best_range[4]))

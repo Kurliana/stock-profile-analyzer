@@ -153,7 +153,7 @@ class ProfileAnalyserTATN(ProfileAnalyser):
                 log.info("Begin %s, check %s, start %s, end %s,trade direct %s" % (begin_time,check_time,start_time,end_time,best_range[4]))
                 if simulate_trade:
                     day_tickers = self.filter_tickers(self.tickers, begin_time,end_time,curr_date,curr_date)
-                    day_profit, day_count, day_procent, day_list_profit = self.analyze_by_day(day_tickers, check_time, start_time, end_time, 0, real_delta, real_loss, best_range[4], real_prof, True,real_schema)
+                    day_profit, day_count, day_procent, day_list_profit,zero_days = self.analyze_by_day(day_tickers, check_time, start_time, end_time, 0, real_delta, real_loss, best_range[4], real_prof, True,real_schema)
                     day_profit_list.append(day_profit)
                     day_count_list.append(day_count)
                     log.info("day_profit %s %s, day_count %s, day_procent %s" % (ranges_counter,day_profit, day_count, day_procent))
