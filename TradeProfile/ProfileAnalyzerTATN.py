@@ -23,7 +23,7 @@ class ProfileAnalyserTATN(ProfileAnalyser):
 
     def get_ranges_by_dayweek(self,curr_date):
         day_of_week =  self.get_day_week(curr_date)
-        day_ranges={0:[100000, 122000, 132000, 180000, 1, 0.003, 0.05, 3, 'take_innsta_0.01'],
+        day_ranges={0:[100000, 113000, 114000, 182000, 1, 0.0015, 0.03, 5, 'take_innsta_0.02'],
                     1:[100000, 121000, 152000, 180000, -1, 0, 0.05, 4, 'take_innsta_0.04'],
                     2:[100000, 104000, 112000, 154000, 1, 0, 0.05, 2, 'take_innsta_0.0075'],
                     3:[100000, 123000, 125000, 155000, 1, 0, 0.05, 3, 'take_innsta_0.015'],
@@ -35,11 +35,11 @@ class ProfileAnalyserTATN(ProfileAnalyser):
 
     def get_ranges_by_dayweek_new(self,curr_date):
         day_of_week = self.get_day_week(curr_date)
-        day_ranges={0:[100000, 122000, 132000, 175000, 1, 0.005, 0.02, 0.015, 'take_innsta_0.01'],
-                    1:[100000, 121000, 151000, 175000, -1, 0.0075, 0.05, 0, 'take_innsta_0.01'],
-                    2:[100000, 104000, 112000, 180000, 1, 0.003, 0.04, 0, 'take_innsta_0.0075'],
-                    3:[100000, 124000, 125000, 175000, 1, 0, 0.05, 0, 'take_innsta_0.005'],
-                    4:[100000, 112000, 123000, 180000, 1, 0.005, 0.02, 0.015, 'take_innsta_0.0075'],
+        day_ranges={0:[100000, 105000, 121000, 161000, -1, 0, 0.03, 3, 'take_innsta_0.01'],
+                    1:[100000, 121000, 122000, 180000, -1, 0, 0.02, 4, 'take_innsta_0.015'],
+                    2:[100000, 105000, 113000, 163000, -1, 0, 0.02, 3, 'take_innsta_0.015'],
+                    3:[100000, 105000, 110000, 132000, -1, 0, 0.03, 3, 'take_innsta_0.04'],
+                    4:[100000, 105000, 112000, 174000, -1, 0, 0.03, 4, 'take_innsta_0.01'],
                     5:[183000, 183000, 183000, 183000,1],
                     6:[183000, 183000, 183000, 183000,1]}
         
@@ -170,7 +170,7 @@ class ProfileAnalyserTATN(ProfileAnalyser):
         self.tickers = self.filter_tickers(self.tickers, 100000,184000,-1,-1)
         best_prof=0.3
         max_prof=3
-        methods_list=[8]
+        methods_list=[9]
         changer_period=3
         if date_start > 0:
             date_start_index=self.days.index(date_start)
