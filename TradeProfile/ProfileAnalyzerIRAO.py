@@ -14,12 +14,11 @@ import datetime
 from multiprocessing import Process, Manager
 from collections import Counter
 #import pythoncom
-
-logging.config.fileConfig('log_tatn.conf')
+logging.config.fileConfig('log_irao.conf')
 log=logging.getLogger('main')
 from ProfileAnalyzer import ProfileAnalyser
 
-class ProfileAnalyserGMKN(ProfileAnalyser):
+class ProfileAnalyserIRAO(ProfileAnalyser):
     
     def get_ranges_by_dayweek(self,curr_date):
         day_of_week =  self.get_day_week(curr_date)
@@ -35,11 +34,11 @@ class ProfileAnalyserGMKN(ProfileAnalyser):
 
     def get_ranges_by_dayweek_new(self,curr_date):
         day_of_week = self.get_day_week(curr_date)
-        day_ranges={0:[100000, 101000, 102000, 175000, -1, 0, 0.03, 4, 'take_innsta_0.003'],
-                    1:[100000, 104000, 110000, 174000, -1, 0, 0.01, 3, 'take_innsta_0.02'],
-                    2:[100000, 105000, 110000, 175000, -1, 0, 0.01, 3, 'take_innsta_0.04'],
-                    3:[100000, 101000, 104000, 172000, 1, 0, 0.02, 2, 'take_innsta_0.03'],
-                    4:[100000, 103000, 104000, 173000, -1, 0.003, 0.03, 3, 'take_innsta_0.015'],
+        day_ranges={0:[183000, 183000, 183000, 183000,1],
+                    1:[100000, 103000, 111000, 160000, -1, 0.0015, 0.02, 2, 'take_innsta_0.04'],
+                    2:[100000, 103000, 115000, 180000, -1, 0, 0.03, 5, 'take_innsta_0.01'],
+                    3:[100000, 104000, 111000, 154000, -1, 0, 0.01, 3, 'take_innsta_0.03'],
+                    4:[100000, 102000, 103000, 171000, -1, 0.0015, 0.03, 3, 'take_innsta_0.01'],
                     5:[183000, 183000, 183000, 183000,1],
                     6:[183000, 183000, 183000, 183000,1]}
         
@@ -306,11 +305,11 @@ class ProfileAnalyserGMKN(ProfileAnalyser):
                 if len(day_profit_list) > 1:
                     total_profit_list.append(day_count_list)
         return [saved_times]
-
 if __name__ == "__main__":
+    # based on my_app_0817_full_fees_atr
     start_timer=time.time()
-    temp_file_name="daily_gmkn.txt"
-    result_file="C:\Just2Trade Client\Nornickel.txt"
+    temp_file_name="daily_IRAO.txt"
+    result_file="C:\Just2Trade Client\Inter RAO.txt"
     if os.path.exists(temp_file_name):
         os.remove(temp_file_name)
     cur_date=time.localtime()
@@ -329,13 +328,13 @@ if __name__ == "__main__":
     get_file_string="http://export.finam.ru/export9.out"
     
     stock_params={"market":"1",
-                  "em":"795",
-                  "code":"GMKN",
+                  "em":"20516",
+                  "code":"IRAO",
                   "apply":"0",
-                  "df":"1",
-                  "mf":"0",
+                  "df":"2",
+                  "mf":"4",
                   "yf":"2017",
-                  "from":"01.01.2017",
+                  "from":"02.05.2017",
                   "dt":"%s" % cur_day,
                   "mt":"%s" % (cur_month-1),
                   "yt":"%s" % cur_year,
@@ -343,7 +342,7 @@ if __name__ == "__main__":
                   "p":"4", # period means 10 minutes
                   "e":".txt", # export format
                   "f":"%s" % temp_file_name.split(".")[0],
-                  "cn":"GMKN",
+                  "cn":"IRAO",
                   "dtf":"1",
                   "tmf":"1",
                   "sep":"1",
@@ -351,13 +350,13 @@ if __name__ == "__main__":
                   "datf":"1",
                   "at":"0",
                   "fsp":"1",
-                  "MSOR":"1",                   
+                  "MSOR":"1",                 
                   }
     r = requests.post(get_file_string, stock_params,stream=True,allow_redirects=True)
     with open(temp_file_name, 'wb') as f:
         shutil.copyfileobj(r.raw, f)
         
-    pa = ProfileAnalyserGMKN(temp_file_name)
+    pa = ProfileAnalyserIRAO(temp_file_name)
     log.info("All saved dayes %s " % len(pa.days))
     start_date=pa.days[-10]
     best_range = pa.robot(start_date, 5, day_end = int("%d%.2d%.2d" % (cur_year,cur_month,cur_day)),delta=0.0015,loss=0.03)[0]

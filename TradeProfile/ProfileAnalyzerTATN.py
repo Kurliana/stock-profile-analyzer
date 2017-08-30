@@ -126,7 +126,7 @@ class ProfileAnalyserTATN(ProfileAnalyser):
         best_ranges7 = self.get_best_ranges_new_gen("best_ranges",results_days,8,0.6,period,-5)
         best_ranges8 = self.get_best_ranges_new_gen("period_profit",results_days, 8,0.6,period,-1)
         best_ranges9 = self.get_ranges_by_dayweek(curr_date)
-        best_ranges10 = self.get_ranges_by_dayweek(curr_date)
+        best_ranges10 = self.get_ranges_by_dayweek_new(curr_date)
         if not best_ranges1 or not best_ranges2 or not best_ranges3 or not best_ranges4 or not best_ranges5 or not best_ranges6 or not best_ranges7 or not best_ranges8:
             log.info("No some best ranges, lets skip")
             return [-1], [-1], [-1], []

@@ -342,7 +342,7 @@ class ProfileAnalyser():
                                 take_price = tmp_take_price
                             if take_price < ticker[7] and take_value == 0:
                                 #if not take_value == 0:
-                                #    log.info("Take value already non-zero: direction %s, take_value %s, stop value %s" % (-1,take_value,(start_value/ticker[7])-1))
+                                #log.info("Take value already non-zero: direction %s, take_value %s, stop value %s" % (-1,take_value,(start_value/ticker[7])-1))
                                 #take_price=ticker[7]*(1+take)
                                 take_value=(start_value/ticker[7])-1                      
     
@@ -695,6 +695,7 @@ class ProfileAnalyser():
                 if combi_take == 0 and combi_stop == 0:
                     tmp_profit = self.check_direction(ticker2, is_up, start_time, end_time, delta, stop_loss, take_profit)-1
                 elif combi_stop == 0:
+                    #log.info("Banji!!! %s" % is_up)
                     tmp_profit = combi_take
                 elif combi_take == 0:
                     tmp_profit = combi_stop
@@ -1554,19 +1555,19 @@ class ProfileAnalyser():
 
 if __name__ == "__main__":
     start_timer=time.time()
-    pa = ProfileAnalyser("TATN_150105_170801.txt")
+    pa = ProfileAnalyser("CHMK_150105_170801.txt")
     """
     #log.info(pa.robot(-1,5,delta=0.0015,loss=0.03))
-    day_tickers = pa.filter_tickers(pa.tickers, 100000,184000,-1,-1,4)
+    day_tickers = pa.filter_tickers(pa.tickers, 100000,184000,20150105,20150105,0)
     pa.tickers = day_tickers
-    day_ranges={0:[100000, 102000, 104000, 181000, -1, 0, 0.04, 4, 'take_innsta_0.02'],
+    day_ranges={0:[100000, 131000, 132000, 183000, -1, 0, 0.04, 0, 'take_innsta_0.003'],
                     1:[100000, 121000, 152000, 180000, -1, 0, 0.05, 4, 'take_innsta_0.04'],
                     2:[100000, 104000, 112000, 154000, 1, 0, 0.05, 2, 'take_innsta_0.0075'],
                     3:[100000, 123000, 125000, 155000, 1, 0, 0.05, 3, 'take_innsta_0.015'],
                     4:[100000, 152000, 165000, 184000, -1, 0, 0.04, 3, 'take_innsta_0.02'],
                     5:[183000, 183000, 183000, 183000,1],
                     6:[183000, 183000, 183000, 183000,1]}
-    begin_time,check_time,start_time,end_time,trade,delta,stop,take,method = day_ranges[4][:9]
+    begin_time,check_time,start_time,end_time,trade,delta,stop,take,method = day_ranges[0][:9]
     log.info(pa.analyze_by_day(day_tickers, check_time,start_time,end_time, 0,  delta, stop, trade, take,True,method))
     #log.info(pa.analyze_by_day(day_tickers, check_time,start_time,end_time, 0,  delta, stop, trade, 1,True,method))
     #log.info(pa.analyze_by_day(day_tickers, check_time,start_time,end_time, 0,  delta, stop, trade, 1.5,True,method))
@@ -1588,18 +1589,19 @@ if __name__ == "__main__":
     #log.info(pa.analyze_by_day(day_tickers, check_time,start_time,end_time, 0, 0.0015, 0.015,1,0.001,True,"take_equity_0.0075"))
     #log.info(pa.analyze_by_day(day_tickers, check_time,start_time,end_time, 0, 0.0015, 0.015,1,0.01,True,"simple"))
     """
-    file_list=["FEES_150105_170801.txt","TATN_150105_170801.txt","GMKN_150105_170801.txt","RSTI_150105_170801.txt","ALRS_150105_170801.txt","GAZP_150105_170801.txt","HYDR_150105_170801.txt","IRAO_150105_170801.txt",]
+    file_list=["LKOH_150105_170801.txt","MAGN_150105_170801.txt","MGNT_150105_170801.txt","MOEX_150105_170801.txt"]
     for filename in file_list:
         log.info(filename)
         for weekday in [0,1,2,3,4]:
             best_results=[]
-            pa = ProfileAnalyser(filename,max_time=181000)
+            pa = ProfileAnalyser(filename,max_time=184000)
             #tmp_tickers=pa.tickers
-            #for day in pa.days[96:]:
+            #for day in [pa.days[5]]:
             #    log.info(day)
             #    log.info(pa.days.index(day))
-            #     pa.tickers = tmp_tickers
-            day_tickers = pa.filter_tickers(pa.tickers, 100000,180000,-1,-1,weekday)
+            #    pa.tickers = tmp_tickers
+            day_tickers = pa.filter_tickers(pa.tickers, 100000,183000,-1,-1,weekday)
+            
             #log.info(day_tickers[-1])
             pa.tickers = day_tickers
             #take_slide_method=["take_innsta_0.003","take_innsta_0.005","take_innsta_0.0075","take_innsta_0.01","take_innsta_0.015","take_innsta_0.02","take_innsta_0.03","take_innsta_0.04"]
@@ -1623,9 +1625,10 @@ if __name__ == "__main__":
                     #log.info("%s %s %s %s %s" %(day_profit, day_count, day_procent, day_list_profit, day_zero))
                     #best_results.append([day_procent,float(day_profit)/(len(day_list_profit)-day_zero),weekday]+single_range[:-1]+[take_method])
                     best_results.append([day_procent,float(day_profit)/(len(day_list_profit)-day_zero),weekday,begin_time,check_time,start_time,end_time,trade,direction_delta,stop_loss,take_profit,take_method,day_profit, day_count, day_procent, day_list_profit])
-                    log.info(best_results[-1])
+                    #log.info(best_results[-1])
                     #if max(single_range[0],day_procent)/min(single_range[0],day_procent)-1 > 0.01:
-                    if abs(single_range[5]-day_profit) > 2:
+                    if abs(single_range[0]-day_procent) > 0.01:
+                    #if abs(single_range[5]-day_profit) > 2:
                         log.info("Diff between CPU and GPU value")
                         log.info("GPU value")
                         log.info(single_range)
@@ -1637,7 +1640,7 @@ if __name__ == "__main__":
                 for single_result in best_results:
                     if single_result[7:12] == orig_result[7:12]:
                         log.info(single_result)
-    
+
     """
     for weekday in [0]:
         pa = ProfileAnalyser("FEES_150105_170801.txt",weekday)
