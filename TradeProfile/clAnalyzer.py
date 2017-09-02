@@ -94,6 +94,33 @@ class clAnalyzer:
                 return 0;
         }
         
+        int is_up_direction2(__global tticker *tickers_list, int start_ticker, int end_ticker, int start_time, int check_time, double direction_delta){
+            tticker total_ticker;
+            int total_ticker_exists=0;
+            tticker ticker1 = tickers_list[start_ticker];
+            tticker ticker2;
+            double min_value=20000;
+            double min_time=0;
+            double max_value=0;
+            double max_time=0;
+            double close_value=0;
+            int total_direction=0;
+ 
+            
+            for(int ticker_number = start_ticker+1; ticker_number <= end_ticker; ticker_number++){
+                ticker2=tickers_list[ticker_number];
+
+                if ((ticker2.ticker_time > (float)start_time) && (ticker2.ticker_time < (float)check_time+1)){
+                    if ((fabs(ticker2.start_price - ticker2.close_price) - min(ticker2.start_price,ticker2.close_price)*direction_delta > 0.00000000000000001) && (ticker2.start_price - ticker2.close_price < 0.00000000000000001))
+                        total_direction+=1;
+                    else if ((fabs(ticker2.start_price - ticker2.close_price) - min(ticker2.start_price,ticker2.close_price)*direction_delta > 0.00000000000000001) && (ticker2.start_price - ticker2.close_price > 0.00000000000000001))
+                        total_direction-=1;
+                }
+            }
+
+            return total_direction;
+        }
+        
         tticker combine_multi_tickers(__global tticker *tickers_list, int start_ticker, int end_ticker, int start_time, int end_time){
             tticker total_ticker;
             int total_ticker_exists=0;
@@ -418,6 +445,7 @@ class clAnalyzer:
                     day_count+=1;
                     ticker1=combine_multi_tickers(tickers,day_tickers_start,day_tickers_end,-1,check_time);
                     is_up = is_up_direction(ticker1,check_time,direction_delta)*reverse_trade;
+                    //is_up = is_up_direction2(tickers,day_tickers_start,day_tickers_end,-1,check_time,direction_delta)*reverse_trade;
                     if (is_up != 0){
                         tmp_profit = combine_multi_tickers_slide(tickers,day_tickers_start,day_tickers_end,start_time,end_time,stop_loss,take_profit,is_up,take_profit_schema);
 
@@ -445,6 +473,7 @@ class clAnalyzer:
             //day_tickers_end-=1;
             ticker1=combine_multi_tickers(tickers,day_tickers_start,day_tickers_end,-1,check_time);
             is_up = is_up_direction(ticker1,check_time,direction_delta)*reverse_trade;
+            //is_up = is_up_direction2(tickers,day_tickers_start,day_tickers_end,-1,check_time,direction_delta)*reverse_trade;
             if (is_up != 0){
                 tmp_profit = combine_multi_tickers_slide(tickers,day_tickers_start,day_tickers_end,start_time,end_time,stop_loss,take_profit,is_up,take_profit_schema);
                 if (tmp_profit>0)                             

@@ -14,11 +14,11 @@ import datetime
 from multiprocessing import Process, Manager
 from collections import Counter
 #import pythoncom
-logging.config.fileConfig('log_irao.conf')
+logging.config.fileConfig('log_rsti.conf')
 log=logging.getLogger('main')
 from ProfileAnalyzer import ProfileAnalyser
 
-class ProfileAnalyserIRAO(ProfileAnalyser):
+class ProfileAnalyserRSTI(ProfileAnalyser):
     
     def get_ranges_by_dayweek(self,curr_date):
         day_of_week =  self.get_day_week(curr_date)
@@ -34,11 +34,11 @@ class ProfileAnalyserIRAO(ProfileAnalyser):
 
     def get_ranges_by_dayweek_new(self,curr_date):
         day_of_week = self.get_day_week(curr_date)
-        day_ranges={0:[183000, 183000, 183000, 183000,1],
-                    1:[100000, 103000, 111000, 160000, -1, 0.0015, 0.02, 2, 'take_innsta_0.04'],
-                    2:[100000, 103000, 115000, 180000, -1, 0, 0.03, 5, 'take_innsta_0.01'],
-                    3:[100000, 104000, 111000, 154000, -1, 0, 0.01, 3, 'take_innsta_0.03'],
-                    4:[100000, 102000, 103000, 171000, -1, 0.0015, 0.03, 3, 'take_innsta_0.01'],
+        day_ranges={0:[100000, 101000, 102000, 175000, -1, 0, 0.04, 4, 'take_innsta_0.01'],
+                    1:[100000, 125000, 130000, 180000, -1, 0.0015, 0.04, 4, 'take_innsta_0.0075'],
+                    2:[100000, 102000, 103000, 174000, -1, 0, 0.04, 5, 'take_innsta_0.01'],
+                    3:[100000, 102000, 103000, 165000, -1, 0.003, 0.04, 3, 'take_innsta_0.0075'],
+                    4:[100000, 111000, 112000, 172000, -1, 0.0015, 0.02, 2, 'take_innsta_0.03'],
                     5:[183000, 183000, 183000, 183000,1],
                     6:[183000, 183000, 183000, 183000,1]}
         
@@ -308,8 +308,8 @@ class ProfileAnalyserIRAO(ProfileAnalyser):
 if __name__ == "__main__":
     # based on my_app_0817_full_fees_atr
     start_timer=time.time()
-    temp_file_name="daily_IRAO.txt"
-    result_file="C:\Just2Trade Client\Inter RAO.txt"
+    temp_file_name="daily_RSTI.txt"
+    result_file="C:\Just2Trade Client\Rosseti.txt"
     if os.path.exists(temp_file_name):
         os.remove(temp_file_name)
     cur_date=time.localtime()
@@ -328,8 +328,8 @@ if __name__ == "__main__":
     get_file_string="http://export.finam.ru/export9.out"
     
     stock_params={"market":"1",
-                  "em":"20516",
-                  "code":"IRAO",
+                  "em":"20971",
+                  "code":"RSTI",
                   "apply":"0",
                   "df":"1",
                   "mf":"5",
@@ -342,7 +342,7 @@ if __name__ == "__main__":
                   "p":"4", # period means 10 minutes
                   "e":".txt", # export format
                   "f":"%s" % temp_file_name.split(".")[0],
-                  "cn":"IRAO",
+                  "cn":"RSTI",
                   "dtf":"1",
                   "tmf":"1",
                   "sep":"1",
@@ -356,7 +356,7 @@ if __name__ == "__main__":
     with open(temp_file_name, 'wb') as f:
         shutil.copyfileobj(r.raw, f)
         
-    pa = ProfileAnalyserIRAO(temp_file_name)
+    pa = ProfileAnalyserRSTI(temp_file_name)
     log.info("All saved dayes %s " % len(pa.days))
     start_date=pa.days[-10]
     best_range = pa.robot(start_date, 5, day_end = int("%d%.2d%.2d" % (cur_year,cur_month,cur_day)),delta=0.0015,loss=0.03)[0]

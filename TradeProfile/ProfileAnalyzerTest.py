@@ -63,7 +63,7 @@ class ProfileAnalyser():
                 del self.time_range[one_time_counter]
         self.days.sort()
         ti = TradeIndicators(self.tickers)
-        self.tickers=ti.count_indicators(["ATR"])
+        self.tickers=ti.count_indicators(["ATR"], 14)
         del ti
 
     def filter_tickers(self, tikers, begin_time=100000, end_time=120000, date_start=-1,date_end=-1,day_of_week=-1,update_indicators = False):
@@ -112,6 +112,7 @@ class ProfileAnalyser():
         start_value=0
         start_values={}
         obv=0
+        
         #print tickers_list,start_time,end_time
         for ticker in tickers_list:
             if ticker[3] > start_time and ticker[3] <= end_time:
@@ -120,10 +121,7 @@ class ProfileAnalyser():
                     if (take == 0) or (direction > 0 and ticker[6] > ticker[9]["ATRTS"+str(take)]) or (direction < 0 and ticker[5] < ticker[9]["ATRTS"+str(take)]):
                         #log.info("%s Start time %s value %s high %s atr %s" % (ticker[2],ticker[3],ticker[4],ticker[5],ticker[9]["ATRTS"+str(take)]))
                         total_ticker+=ticker
-                    
-                    #elif (take == 0):
-                    #    total_ticker+=ticker
-                    #    direction = 0
+                        
                 if total_ticker:
                     if take_price == 0:
                         start_value=ticker[4]
@@ -370,6 +368,11 @@ class ProfileAnalyser():
                 take_value += (close_value/start_value)-1
             elif direction < 0:
                 take_value += (start_value/close_value)-1
+        #if stop_value == 0 and take_value == 0:
+        #    if direction > 0:
+        #        take_value = (close_value/start_value)-1
+        #    elif direction < 0:
+        #        take_value = (start_value/close_value)-1
         return total_ticker,stop_value,take_value
     
     def combine_multi_tickers(self, tickers_list, start_time = -1, end_time = 200000):
@@ -562,6 +565,31 @@ class ProfileAnalyser():
             return -1
         else:
             return 0
+
+
+    def is_up_direction2(self, tickers_list, start_time = -1, check_time=102000, direction_delta = 0):
+        total_ticker=[]
+        #high_low=[]
+        min_value=200000000
+        min_time=0
+        max_value=0
+        max_time=0
+        close_value=0
+        obv=0
+        direction=0
+        ticker1=[]
+     
+        #print tickers_list,start_time,end_time
+        for ticker2 in tickers_list:
+            if ticker2[3] > start_time and ticker2[3] <= check_time:
+                #if not ticker1:
+                #    ticker1 = ticker2
+                #else:
+                if (abs(ticker2[4] - ticker2[7]) > min(ticker2[4],ticker2[7])*direction_delta) and ticker2[4] < ticker2[7]: #and ticker1[9] > obv_delta: #upstream
+                    direction+=1
+                elif (abs(ticker2[4] - ticker2[7]) > min(ticker2[4],ticker2[7])*direction_delta) and ticker2[4] > ticker2[7]: #and ticker1[9] < obv_delta:
+                    direction-=1
+        return direction
         
     def check_direction_slide(self, ticker2, up_direction, start_time=102000, end_time=120000, delta=0, stop_loss=0.015, take_profit=200):
         if not ticker2:
@@ -656,6 +684,7 @@ class ProfileAnalyser():
                 day_count+=1
                 ticker1=self.combine_multi_tickers(day_tickers,-1,check_time)
                 is_up = self.is_up_direction(ticker1,check_time,direction_delta)*reverse_trade
+                #is_up = self.is_up_direction2(day_tickers,-1,check_time,direction_delta)*reverse_trade
                 if not is_up == 0:
                    #ticker2=self.combine_multi_tickers(day_tickers,start_time,end_time)
                     ticker2, combi_stop, combi_take = self.combine_multi_tickers_slide(day_tickers,start_time,end_time,stop_loss,take_profit,is_up,take_profit_schema)
@@ -689,6 +718,7 @@ class ProfileAnalyser():
         day_count+=1
         ticker1=self.combine_multi_tickers(day_tickers,-1,check_time)
         is_up = self.is_up_direction(ticker1,check_time,direction_delta)*reverse_trade
+        #is_up = self.is_up_direction2(day_tickers,-1,check_time,direction_delta)*reverse_trade
         if not is_up == 0:
             ticker2, combi_stop, combi_take = self.combine_multi_tickers_slide(day_tickers,start_time,end_time,stop_loss,take_profit,is_up,take_profit_schema)
             if ticker2:# and (ticker2[4]-ticker1[7])*is_up > delta:
@@ -1589,18 +1619,19 @@ if __name__ == "__main__":
     #log.info(pa.analyze_by_day(day_tickers, check_time,start_time,end_time, 0, 0.0015, 0.015,1,0.001,True,"take_equity_0.0075"))
     #log.info(pa.analyze_by_day(day_tickers, check_time,start_time,end_time, 0, 0.0015, 0.015,1,0.01,True,"simple"))
     """
-    file_list=["LKOH_150105_170801.txt","MAGN_150105_170801.txt","MGNT_150105_170801.txt","MOEX_150105_170801.txt"]
+    #file_list=["LKOH_150105_170801.txt","MAGN_150105_170801.txt","MGNT_150105_170801.txt","MOEX_150105_170801.txt","MTSS_150105_170801.txt","NVTK_150105_170801.txt","PIKK_150105_170801.txt","ROSN_150105_170801.txt","RASP_150105_170801.txt","SBER_150105_170801.txt","SBERP_150105_170801.txt"]
+    file_list=["FEES_150105_170801.txt"]
     for filename in file_list:
         log.info(filename)
         for weekday in [0,1,2,3,4]:
             best_results=[]
-            pa = ProfileAnalyser(filename,max_time=184000)
+            pa = ProfileAnalyser(filename,max_time=181000)
             #tmp_tickers=pa.tickers
             #for day in [pa.days[5]]:
             #    log.info(day)
             #    log.info(pa.days.index(day))
             #    pa.tickers = tmp_tickers
-            day_tickers = pa.filter_tickers(pa.tickers, 100000,183000,-1,-1,weekday)
+            day_tickers = pa.filter_tickers(pa.tickers, 100000,180000,-1,-1,weekday)
             
             #log.info(day_tickers[-1])
             pa.tickers = day_tickers

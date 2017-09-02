@@ -24,7 +24,7 @@ class TradeIndicators():
             if sigle_ticker_id < interval:
                 ATR_list.append(float(0))
             else:
-                ATR_list.append(numpy.mean(TrueRangeList[sigle_ticker_id-13:sigle_ticker_id+1]))
+                ATR_list.append(numpy.mean(TrueRangeList[sigle_ticker_id-interval+1:sigle_ticker_id+1]))
         return ATR_list
     
     def getATRTrailingStop(self,**kwargs):
@@ -52,9 +52,9 @@ class TradeIndicators():
         return ATRTS_list
                     
     
-    def count_indicators(self,indicators_list):
+    def count_indicators(self,indicators_list, interval = 14):
         #for indicator_name in indicators_list:
-        ATR_ind = self.getATR(tickers = self.all_tickers, interval = 14)
+        ATR_ind = self.getATR(tickers = self.all_tickers, interval =interval)
         for sigle_ticker_id in range(len(self.all_tickers)):
             self.all_tickers[sigle_ticker_id][9]["ATR"] = ATR_ind[sigle_ticker_id]
             
