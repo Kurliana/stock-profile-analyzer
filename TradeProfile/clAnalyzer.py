@@ -141,7 +141,7 @@ class clAnalyzer:
             double ticker_vwma1=-1;
             double ticker_vwma2=-1;
                         
-            for(int ticker_number = start_ticker+1; ticker_number <= end_ticker; ticker_number++){
+            for(int ticker_number = start_ticker; ticker_number <= end_ticker; ticker_number++){
                 ticker2=tickers_list[ticker_number];
                 if ((ticker2.ticker_time > (float)start_time) && (ticker2.ticker_time < (float)check_time+1)){
                     if ((ema1==0) && (ema2==0))
@@ -258,6 +258,8 @@ class clAnalyzer:
                     ticker_atrts=0;
                 if (fabs(take - 1) < 0.00000000000000001)
                     ticker_atrts=ticker.atr1;
+                if (fabs(take - 1.5) < 0.00000000000000001)
+                    ticker_atrts=ticker.atr15;
                 if (fabs(take - 2) < 0.00000000000000001)
                     ticker_atrts=ticker.atr2;
                 if (fabs (take - 3) < 0.00000000000000001)
@@ -596,14 +598,16 @@ class clAnalyzer:
             int best_ind;
         }bestpair;
         
-        bestpair getbesttp(__global long *tradeparam, __global double *procn_profit, int max_tp){
+        bestpair getbesttp(__global long *tradeparam, __global double *procn_profit, int max_tp, int trade_sign){
             bestpair besttp;
             long curr_tp;
             double max_prof=0;
             for (int i =0;i<max_tp;i++){
                 curr_tp=tradeparam[i];
-                if (curr_tp > 0)
+                if (curr_tp*trade_sign < 0)
                 {
+                    if (curr_tp < 0)
+                        curr_tp=-curr_tp;
                     //main_check=curr_tp%1000;
                     //main_ema=curr_tp/10000000000;
                     //if ((main_check == check)&&(main_ema==ema))
@@ -611,7 +615,7 @@ class clAnalyzer:
                         if (procn_profit[i] > max_prof)
                         {
                             max_prof=procn_profit[i];
-                            besttp.best_tp=curr_tp;
+                            besttp.best_tp=tradeparam[i];
                             besttp.best_ind=i;
                         }
                     //}
@@ -625,16 +629,20 @@ class clAnalyzer:
             int gid = get_global_id(0);
             long main_tp=tradeparam[gid];
             best_indexes[gid]=0;
-            int main_sign=main_tp/abs(main_tp);
+            int trade_sign=1;
             if (main_tp < 0)
             {
                 main_tp=-main_tp;
-                int real_trade_param_count=*trade_param_count;
-                long tp_candidate=-1;
-                double max_profit=-1.0;
-                bestpair besttp=getbesttp(tradeparam,procn_profit,real_trade_param_count);
-                best_indexes[gid]=besttp.best_ind;          
+                trade_sign=-1;
             }
+            if (procn_profit[gid] > 5)
+            {
+            int real_trade_param_count=*trade_param_count;
+            long tp_candidate=-1;
+            double max_profit=-1.0;
+            bestpair besttp=getbesttp(tradeparam,procn_profit,real_trade_param_count,trade_sign);
+            best_indexes[gid]=besttp.best_ind;
+            }          
         }
         """
         
@@ -742,10 +750,10 @@ class clAnalyzer:
             #if i < 0:
             #j=1
             j=best_indexes[i]
-            if j >0:
+            if j > 0:
                 results_days.append([procn_profit[i]*procn_profit[j],tradeparam_list[i],total_profit[i]+total_profit[j]-1,count_profit[i]+count_profit[j]-1,tradeparam_list[j]])
-            else:
-                results_days.append([procn_profit[i],tradeparam_list[i],total_profit[i],count_profit[i]])
+            #else:
+            #    results_days.append([procn_profit[i],tradeparam_list[i],total_profit[i],count_profit[i]])
                         
         del total_profit
         del count_profit

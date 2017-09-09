@@ -33,7 +33,7 @@ class ProfileAnalyser():
         if mode == "usa":
             self.comission=0.01
             self.go=20
-            self.begin_time=94000
+            self.begin_time=93000
             self.max_time=153000
             self.end_time=160000
         self.tickers=[]

@@ -19,7 +19,7 @@ logging.config.fileConfig('log_bac.conf')
 log=logging.getLogger('main')
 from ProfileAnalyzer import ProfileAnalyser
 
-class ProfileAnalyserBAC(ProfileAnalyser):
+class ProfileAnalyserC(ProfileAnalyser):
     
     def get_ranges_by_dayweek(self,curr_date):
         day_of_week = self.get_day_week(curr_date)
@@ -35,11 +35,11 @@ class ProfileAnalyserBAC(ProfileAnalyser):
     
     def get_ranges_by_dayweek_new(self,curr_date):
         day_of_week = datetime.datetime(int(str(curr_date)[:4]), int(str(curr_date)[4:6]), int(str(curr_date)[6:8]), 23, 55, 55, 173504).weekday()
-        day_ranges={0:[[93000, 95000, 100000, 123000, -1, 0, 0.01, 2, 'take_innsta_0.0075', 20, 27],[93000, 95000, 103000, 152000, 1, 0, 0.02, 2, 'take_innsta_0.01', 20, 27]],
-                    1:[[93000, 94000, 95000, 150000, -1, 0, 0.03, 3, 'take_innsta_0.01', 14, 0],[93000, 94000, 100000, 143000, 1, 0, 0.01, 2, 'take_innsta_0.015', 14, 0]],
-                    2:[[93000, 111000, 124000, 152000, -1, 0, 0.04, 2, 'take_innsta_0.04', 20, 27],[93000, 111000, 112000, 140000, 1, 0, 0.02, 2, 'take_innsta_0.0075', 20, 27]],
-                    3:[[93000, 94000, 95000, 142000, -1, 0, 0.03, 2, 'take_innsta_0.02', 9, 14, 21],[93000, 94000, 131000, 150000, 1, 0, 0.03, 2, 'take_innsta_0.0075', 9, 14]],
-                    4:[[93000, 94000, 103000, 152000, -1, 0, 0.03, 2, 'take_innsta_0.003', 14, 0],[93000, 94000, 103000, 124000, 1, 0, 0.01, 2, 'take_innsta_0.04', 14, 0]],
+        day_ranges={0:[[],[]],
+                    1:[[93000, 94000, 103000, 152000, 1, 0, 0.03, 2, 'take_innsta_0.015', 14, 27],[93000, 94000, 95000, 150000, -1, 0, 0.04, 3, 'take_innsta_0.01', 14, 27]],
+                    2:[[93000, 95000, 103000, 152000, -1, 0, 0.02, 2, 'take_innsta_0.03', 9, 20],[93000, 95000, 101000, 143000, 1, 0, 0.04, 3, 'take_innsta_0.003', 9, 20]],
+                    3:[[93000, 95000, 100000, 152000, -1, 0, 0.04, 2, 'take_innsta_0.003', 9, 0],[93000, 95000, 103000, 144000, 1, 0, 0.03, 2, 'take_innsta_0.02', 9, 0]],
+                    4:[[93000, 95000, 100000, 132000, -1, 0, 0.01, 2, 'take_innsta_0.0075', 9, 0],[93000, 95000, 103000, 145000, 1, 0, 0.01, 2, 'take_innsta_0.0075', 9, 0]],
                     5:[160000, 160000, 160000, 160000,1],
                     6:[160000, 160000, 160000, 160000,1]}
         return [day_ranges[day_of_week]]
@@ -48,7 +48,7 @@ if __name__ == "__main__":
     # based on my_app_0617_full_bac_atr
     start_timer=time.time()
     temp_file_name="daily_BAC.txt"
-    result_files=["C:\\Just2Trade Client\\BANK OF AMERICA CORPORATION.txt","C:\\Just2Trade Client\\reserv_BANK OF AMERICA CORPORATION.txt"]
+    result_files=["C:\\Just2Trade Client\\CITIGROUP Inc.txt","C:\\Just2Trade Client\\reserv_CITIGROUP Inc.txt"]
     if os.path.exists(temp_file_name):
         os.remove(temp_file_name)
     cur_date=time.localtime()
@@ -67,8 +67,8 @@ if __name__ == "__main__":
     get_file_string="http://export.finam.ru/export9.out"
     
     stock_params={"market":"25",
-                  "em":"18011",
-                  "code":"BAC",
+                  "em":"18023",
+                  "code":"C",
                   "apply":"0",
                   "df":"1",
                   "mf":"5",
@@ -96,7 +96,7 @@ if __name__ == "__main__":
     with open(temp_file_name, 'wb') as f:
         shutil.copyfileobj(r.raw, f)
         
-    pa = ProfileAnalyserBAC(temp_file_name,mode="usa")
+    pa = ProfileAnalyserC(temp_file_name,mode="usa")
     log.info("All saved dayes %s " % len(pa.days))
     start_date=pa.days[-10]
     best_ranges = pa.robot(start_date, 5, day_end = int("%d%.2d%.2d" % (cur_year,cur_month,cur_day)),delta=0.0015,loss=0.03)
