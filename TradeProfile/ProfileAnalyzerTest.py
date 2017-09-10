@@ -117,6 +117,7 @@ class ProfileAnalyser():
         take_price=0
         start_value=0
         obv=0
+        lets_enter=0
         
         #print tickers_list,start_time,end_time
         for ticker in tickers_list:
@@ -125,6 +126,8 @@ class ProfileAnalyser():
                     #log.info(ticker)
                     if (take == 0) or (direction > 0 and ticker[6] > ticker[9]["ATRTS"+str(take)]) or (direction < 0 and ticker[5] < ticker[9]["ATRTS"+str(take)]):
                         #log.info("%s Start time %s value %s high %s atr %s" % (ticker[2],ticker[3],ticker[4],ticker[5],ticker[9]["ATRTS"+str(take)]))
+                        #lets_enter+=1
+                        #if lets_enter > 1 or self.time_range.index(ticker[3])-1 == self.time_range.index(start_time):
                         total_ticker+=ticker
                     #else:
                     #    log.info("Failed to enter market %s" % (ticker[5] - ticker[9]["ATRTS"+str(take)]))
@@ -1678,7 +1681,8 @@ if __name__ == "__main__":
     #file_list=["US1.BA_160101_170531.txt","US1.BAC_160104_170630.txt","US1.C_160104_170630.txt","US1.CAT_160101_170531.txt","US1.GE_160104_170630.txt","US1.WMT_160104_170630.txt","US1.XOM_160104_170630.txt"]
     #file_list=["LKOH_150105_170801.txt","MAGN_150105_170801.txt","MGNT_150105_170801.txt","MOEX_150105_170801.txt","MTSS_150105_170801.txt","NVTK_150105_170801.txt","PIKK_150105_170801.txt","ROSN_150105_170801.txt","RASP_150105_170801.txt","SBER_150105_170801.txt","SBERP_150105_170801.txt"]
     #file_list=["TATN_150105_170801.txt","FEES_150105_170801.txt","ALRS_150105_170801.txt","RSTI_150105_170801.txt","GMKN_150105_170801.txt","IRAO_150105_170801.txt"]
-    file_list=["US1.BAC_160104_170630.txt","US1.CAT_160101_170531.txt"]
+    #file_list=["ALRS_150105_170801.txt","RSTI_150105_170801.txt","GMKN_150105_170801.txt","IRAO_150105_170801.txt","HYDR_150105_170801.txt","LKOH_150105_170801.txt","MAGN_150105_170801.txt","MGNT_150105_170801.txt","MOEX_150105_170801.txt","MTSS_150105_170801.txt","NVTK_150105_170801.txt","PIKK_150105_170801.txt","ROSN_150105_170801.txt","RASP_150105_170801.txt","SBER_150105_170801.txt","SBERP_150105_170801.txt"]
+    file_list=["US1.BAC_160104_170630.txt","US1.C_160104_170630.txt","US1.CAT_160101_170531.txt"]
     for filename in file_list:
         log.info(filename)
         for weekday in [0,1,2,3,4]:

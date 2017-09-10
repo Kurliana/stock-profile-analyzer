@@ -35,11 +35,11 @@ class ProfileAnalyserTATN(ProfileAnalyser):
 
     def get_ranges_by_dayweek_new(self,curr_date):
         day_of_week = self.get_day_week(curr_date)
-        day_ranges={0:[[self.begin_time, 103000, 104000, 172000, -1, 0, 0.03, 3, 'take_innsta_0.005', 9, 0],[self.begin_time, 103000, 143000, 180000, 1, 0, 0.02, 3, 'take_innsta_0.005', 9, 0]],
-                    1:[[self.begin_time, 103000, 105000, 171000, -1, 0, 0.02, 4, 'take_innsta_0.015', 27, 0],[self.begin_time, 103000, 105000, 172000, 1, 0, 0.01, 2, 'take_innsta_0.003', 27, 0]],
-                    2:[[self.begin_time, 105000, 110000, 172000, -1, 0, 0.04, 3, 'take_innsta_0.01', 9, 14],[self.begin_time, 105000, 121000, 175000, 1, 0, 0.01, 3, 'take_innsta_0.003', 9, 14]],
-                    3:[[self.begin_time, 103000, 104000, 180000, -1, 0, 0.02, 3, 'take_innsta_0.0075', 9, 0],[self.begin_time, 103000, 121000, 152000, 1, 0, 0.02, 3, 'take_innsta_0.02', 9, 0]],
-                    4:[[self.begin_time, 105000, 110000, 175000, -1, 0, 0.02, 3, 'take_innsta_0.005', 9, 0],[self.begin_time, 105000, 114000, 155000, 1, 0, 0.01, 2, 'take_innsta_0.005', 9, 0]],
+        day_ranges={0:[[100000, 101000, 102000, 171000, -1, 0, 0.01, 3, 'take_innsta_0.0075', 20, 0],[100000, 101000, 140000, 180000, 1, 0, 0.03, 3, 'take_innsta_0.003', 20, 0]],
+                    1:[[100000, 101000, 102000, 180000, -1, 0, 0.04, 4, 'take_innsta_0.003', 14, 27],[100000, 101000, 163000, 180000, 1, 0, 0.02, 4, 'take_innsta_0.003', 14, 27]],
+                    2:[[100000, 102000, 103000, 180000, -1, 0, 0.01, 3, 'take_innsta_0.003', 9, 0],[100000, 102000, 112000, 140000, 1, 0, 0.03, 3, 'take_innsta_0.0075', 9, 0]],
+                    3:[[100000, 103000, 104000, 180000, -1, 0, 0.02, 3, 'take_innsta_0.0075', 9, 0],[100000, 103000, 121000, 152000, 1, 0, 0.02, 3, 'take_innsta_0.02', 9, 0]],
+                    4:[[100000, 105000, 110000, 165000, -1, 0, 0.01, 3, 'take_innsta_0.005', 27, 0],[100000, 105000, 142000, 180000, 1, 0, 0.03, 3, 'take_innsta_0.003', 27, 0]],
                     5:[self.end_time, self.end_time, self.end_time, self.end_time,1],
                     6:[self.end_time, self.end_time, self.end_time, self.end_time,1]}
         

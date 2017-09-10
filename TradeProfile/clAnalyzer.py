@@ -356,6 +356,8 @@ class clAnalyzer:
         double combine_multi_tickers_slide(__global tticker *tickers_list, int start_ticker, int end_ticker, int start_time, int end_time, double stop, double take, int direction, double take_limit){
             tticker ticker;
             int total_ticker_exists=0;
+            int lets_enter=0;
+            int first_ricker=0;
             double min_value=20000;
             double max_value=0;
             double close_value=0;
@@ -365,6 +367,7 @@ class clAnalyzer:
             double start_value=0;
             double ticker_atrts=0;
             double tmp_take_price;
+            
             
             for(int ticker_number = start_ticker; ticker_number <= end_ticker; ticker_number++){
                 ticker=tickers_list[ticker_number];
@@ -384,12 +387,15 @@ class clAnalyzer:
                     ticker_atrts=ticker.atr10;  
                 
                 if ((ticker.ticker_time >(float)start_time) && (ticker.ticker_time <(float)end_time+1)){
-                    
+                    //if (first_ricker == 0)
+                    //    first_ricker=ticker_number;
                     if (total_ticker_exists==0){
                         
                         if ((take < 1) || ((direction > 0) && (ticker.low_price > ticker_atrts)) || ((direction < 0) && (ticker.high_price <ticker_atrts)))
                         {
-                            total_ticker_exists=1;
+                            //lets_enter+=1;
+                            //if ((lets_enter > 1) || (first_ricker == ticker_number)) 
+                                total_ticker_exists=1;
                         }
                     }
                     if (total_ticker_exists!=0){
@@ -598,21 +604,24 @@ class clAnalyzer:
             int best_ind;
         }bestpair;
         
-        bestpair getbesttp(__global long *tradeparam, __global double *procn_profit, int max_tp, int trade_sign){
+        bestpair getbesttp(__global long *tradeparam, __global double *procn_profit, int max_tp, int main_atr, int trade_sign){
             bestpair besttp;
+            besttp.best_ind=0;
             long curr_tp;
             double max_prof=0;
+            int curr_atr;
             for (int i =0;i<max_tp;i++){
                 curr_tp=tradeparam[i];
                 if (curr_tp*trade_sign < 0)
                 {
                     if (curr_tp < 0)
                         curr_tp=-curr_tp;
+                    curr_atr=(curr_tp/1000000000)%10;
                     //main_check=curr_tp%1000;
                     //main_ema=curr_tp/10000000000;
                     //if ((main_check == check)&&(main_ema==ema))
                     //{
-                        if (procn_profit[i] > max_prof)
+                        if ((procn_profit[i] > max_prof) && (curr_atr == main_atr))
                         {
                             max_prof=procn_profit[i];
                             besttp.best_tp=tradeparam[i];
@@ -630,17 +639,19 @@ class clAnalyzer:
             long main_tp=tradeparam[gid];
             best_indexes[gid]=0;
             int trade_sign=1;
+
             if (main_tp < 0)
             {
                 main_tp=-main_tp;
                 trade_sign=-1;
             }
+            int main_atr = (main_tp/1000000000)%10;
             if (procn_profit[gid] > 5)
             {
             int real_trade_param_count=*trade_param_count;
             long tp_candidate=-1;
             double max_profit=-1.0;
-            bestpair besttp=getbesttp(tradeparam,procn_profit,real_trade_param_count,trade_sign);
+            bestpair besttp=getbesttp(tradeparam,procn_profit,real_trade_param_count,main_atr,trade_sign);
             best_indexes[gid]=besttp.best_ind;
             }          
         }
