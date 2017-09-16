@@ -183,9 +183,9 @@ class clAnalyzer:
                         if (ema2==27) ticker_vwma2=ticker2.vwma27;
                     }
                     
-                    if (((fabs(ticker_vwma1 - ticker_vwma2) - min(ticker_vwma1,ticker_vwma2)*direction_delta > 0.00000000000000001) && (ticker_vwma2 - ticker_vwma1 < 0.00000000000000001)))
+                    if (((fabs(ticker_vwma1 - ticker_vwma2) > min(ticker_vwma1,ticker_vwma2)*direction_delta) && (ticker_vwma2 <ticker_vwma1)))
                         total_direction=1;
-                    else if (((fabs(ticker_vwma1 - ticker_vwma2) - min(ticker_vwma1,ticker_vwma2)*direction_delta > 0.00000000000000001) && (ticker_vwma2 - ticker_vwma1 > 0.00000000000000001)) )
+                    else if (((fabs(ticker_vwma1 - ticker_vwma2) >  min(ticker_vwma1,ticker_vwma2)*direction_delta) && (ticker_vwma2 >= ticker_vwma1)) )
                         total_direction=-1;
                     else
                         total_direction=0;
@@ -239,125 +239,12 @@ class clAnalyzer:
             return total_ticker;
         }
         
-    double combine_multi_tickers_slide2(__global tticker *tickers_list, int start_ticker, int end_ticker, int start_time, int end_time, double stop, double take, int direction, double take_limit){
-            tticker ticker;
-            int total_ticker_exists=0;
-            double min_value=20000;
-            double max_value=0;
-            double close_value=0;
-            double stop_value=0;
-            double take_value=0;
-            double take_price=0;
-            double start_value=0;
-            double ticker_atrts=0;
-            double tmp_take_price;
-            
-            for(int ticker_number = start_ticker; ticker_number <= end_ticker; ticker_number++){
-                ticker=tickers_list[ticker_number];
-                if (fabs(take) < 0.00000000000000001)
-                    ticker_atrts=0;
-                if (fabs(take - 1) < 0.00000000000000001)
-                    ticker_atrts=ticker.atr1;
-                if (fabs(take - 1.5) < 0.00000000000000001)
-                    ticker_atrts=ticker.atr15;
-                if (fabs(take - 2) < 0.00000000000000001)
-                    ticker_atrts=ticker.atr2;
-                if (fabs (take - 3) < 0.00000000000000001)
-                    ticker_atrts=ticker.atr3;
-                if (fabs(take - 4) < 0.00000000000000001)
-                    ticker_atrts=ticker.atr4;
-                if (fabs(take - 5) < 0.00000000000000001)
-                    ticker_atrts=ticker.atr5;
-                if (fabs(take - 10) < 0.00000000000000001)
-                    ticker_atrts=ticker.atr10;  
-                
-                if ((ticker.ticker_time >(float)start_time) && (ticker.ticker_time <(float)end_time+1)){
-                    
-                    if (total_ticker_exists==0){
-                        
-                        if ((take < 1) || ((direction > 0) && (ticker.low_price > ticker_atrts)) || ((direction < 0) && (ticker.high_price <ticker_atrts)))
-                        {
-                            total_ticker_exists=1;
-                        }
-                    }
-                    if (total_ticker_exists!=0){
-                        if (fabs(take_price) < 0.00000000000000001){
-                            start_value=ticker.start_price;
-                            if (direction > 0)
-                                take_price=ticker.start_price*(1-stop);
-                            if (direction < 0)
-                                take_price=ticker.start_price*(1+stop);
-                        }
-                        if (ticker.high_price > max_value){
-                            max_value = ticker.high_price;
-                        }
-                        if (ticker.low_price < min_value){
-                            min_value = ticker.low_price;
-                        }
-                        close_value=ticker.close_price;
-
-                        if (direction > 0)
-                        {
-                            if ((fabs(take_value) < 0.00000000000000001) && (fabs(stop_value) < 0.00000000000000001))
-                            {
-                                if ((total_ticker_exists!=0) && (take > 0) && (ticker.low_price < ticker_atrts))
-                                    take_value = (ticker.close_price/start_value)-1;
-    
-                                if ((ticker.low_price < take_price) && (fabs(take_value) < 0.00000000000000001))
-                                    take_value = (take_price/start_value)-1;
-    
-                                tmp_take_price = ticker.high_price*(1-(stop + take_limit)*max(0.0,1.0-(ticker.high_price-start_value)/((take_limit)*start_value)));
-                                if (tmp_take_price > take_price)
-                                    take_price = tmp_take_price;
-                                if ((take_price> ticker.close_price) && (fabs(take_value) < 0.00000000000000001))
-                                    take_value=(ticker.close_price/start_value)-1;
-                            }
-                            
-                            if ((ticker.low_price < start_value*(1-stop)) && (fabs(take_value) < 0.00000000000000001) && (fabs(stop_value) < 0.00000000000000001))
-                                stop_value = -stop;
-                        }
-                        else if (direction < 0)
-                        {
-                            if ((fabs(take_value) < 0.00000000000000001) && (fabs(stop_value) < 0.00000000000000001))
-                            {
-       
-                                if ((total_ticker_exists!=0) && (take > 0) && (ticker.high_price > ticker_atrts))
-                                    take_value = (start_value/ticker.close_price)-1;
-    
-                                if ((ticker.high_price > take_price) && (fabs(take_value) < 0.00000000000000001))
-                                    take_value = (start_value/take_price)-1;
-    
-                                tmp_take_price = ticker.low_price*(1+(stop + take_limit)*max(0.0,1.0-(start_value-ticker.low_price)/((take_limit)*start_value)));
-                                if (tmp_take_price < take_price)
-                                    take_price = tmp_take_price;
-                                if ((take_price < ticker.close_price) && (fabs(take_value) < 0.00000000000000001))
-                                    take_value=(start_value/ticker.close_price)-1;
-                            }
-                            if ((ticker.high_price > start_value*(1+stop)) && (fabs(take_value) < 0.00000000000000001) && (fabs(stop_value) < 0.000000000000000011))
-                                stop_value = -stop;
-                        }
-                    }
-                }
-            }
-            
-            
-            if (total_ticker_exists==0)
-                return 0;
-
-            if ((fabs(take_value) > 0.00000000000000001) || (fabs(stop_value) > 0.00000000000000001))
-                return stop_value+take_value;
-            if (direction > 0)
-                return (close_value/start_value)-1;
-            if (direction < 0)
-                return (start_value/close_value)-1;
-            return 0;
-        }
-                
         double combine_multi_tickers_slide(__global tticker *tickers_list, int start_ticker, int end_ticker, int start_time, int end_time, double stop, double take, int direction, double take_limit){
             tticker ticker;
             int total_ticker_exists=0;
             int lets_enter=0;
-            int first_ricker=0;
+            int first_ticker=0;
+            int last_ticker=0;
             double min_value=20000;
             double max_value=0;
             double close_value=0;
@@ -365,6 +252,7 @@ class clAnalyzer:
             double take_value=0;
             double take_price=0;
             double start_value=0;
+            double start_value_tmp=0;
             double ticker_atrts=0;
             double tmp_take_price;
             
@@ -386,39 +274,42 @@ class clAnalyzer:
                 if (fabs(take - 10) < 0.00000000000000001)
                     ticker_atrts=ticker.atr10;  
                 
-                if ((ticker.ticker_time >(float)start_time) && (ticker.ticker_time <(float)end_time+1)){
-                    //if (first_ricker == 0)
-                    //    first_ricker=ticker_number;
+                if ((ticker.ticker_time >(float)start_time-1) && (ticker.ticker_time <((float)end_time+1))){
+
+                  
                     if (total_ticker_exists==0){
-                        
-                        if ((take < 1) || ((direction > 0) && (ticker.low_price > ticker_atrts)) || ((direction < 0) && (ticker.high_price <ticker_atrts)))
+                        if ((ticker.ticker_time<((float)end_time-1)) &&((take < 1) || ((direction > 0) && (ticker.low_price > ticker_atrts)) || ((direction < 0) && (ticker.high_price <ticker_atrts))))
                         {
-                            //lets_enter+=1;
-                            //if ((lets_enter > 1) || (first_ricker == ticker_number)) 
+                            lets_enter+=1;
+                            if ((lets_enter > 1) || (ticker.ticker_time <(float)start_time+1))
+                            {
                                 total_ticker_exists=1;
+                                start_value_tmp=ticker.close_price;
+                                if (direction > 0)
+                                    take_price=start_value_tmp*(1-stop);
+                                if (direction < 0)
+                                    take_price=start_value_tmp*(1+stop);
+                                    
+                            }
                         }
                     }
-                    if (total_ticker_exists!=0){
-                        if (fabs(take_price) < 0.00000000000000001){
-                            start_value=ticker.start_price;
-                            if (direction > 0)
-                                take_price=ticker.start_price*(1-stop);
-                            if (direction < 0)
-                                take_price=ticker.start_price*(1+stop);
-                        }
+                    else
+                    {
                         if (ticker.high_price > max_value){
                             max_value = ticker.high_price;
                         }
                         if (ticker.low_price < min_value){
                             min_value = ticker.low_price;
                         }
+                        start_value=start_value_tmp;
                         close_value=ticker.close_price;
-
                         if (direction > 0)
                         {
                             if ((fabs(take_value) < 0.00000000000000001) && (fabs(stop_value) < 0.00000000000000001))
                             {
-                                if ((total_ticker_exists!=0) && (take > 0) && (ticker.low_price < ticker_atrts))
+                                //if ((total_ticker_exists!=0) && (take > 0) && (ticker.high_price >= (take_limit+1)*start_value))
+                                //    take_value = take_limit;
+                                if ((total_ticker_exists!=0) && (take > 0) && (ticker.low_price < ticker_atrts) && (fabs(take_value) < 0.00000000000000001))
                                     take_value = (ticker.close_price/start_value)-1;
     
                                 if ((ticker.low_price < take_price) && (fabs(take_value) < 0.00000000000000001))
@@ -438,8 +329,10 @@ class clAnalyzer:
                         {
                             if ((fabs(take_value) < 0.00000000000000001) && (fabs(stop_value) < 0.00000000000000001))
                             {
+                                //if ((total_ticker_exists!=0) && (take > 0) && (ticker.low_price <= (1-take_limit)*start_value))
+                                //    take_value = take_limit;
        
-                                if ((total_ticker_exists!=0) && (take > 0) && (ticker.high_price > ticker_atrts))
+                                if ((total_ticker_exists!=0) && (take > 0) && (ticker.high_price > ticker_atrts) && (fabs(take_value) < 0.00000000000000001))
                                     take_value = (start_value/ticker.close_price)-1;
     
                                 if ((ticker.high_price > take_price) && (fabs(take_value) < 0.00000000000000001))
@@ -458,16 +351,21 @@ class clAnalyzer:
                 }
             }
             
-            
-            if (total_ticker_exists==0)
-                return 0;
-
-            if ((fabs(take_value) > 0.00000000000000001) || (fabs(stop_value) > 0.00000000000000001))
+            //if (total_ticker_exists==0)
+            //    return 0;
+            if (start_value > 0)
+            {
+                if (fabs(take_value+stop_value) < 0.00000000000000001)
+                {
+                    if (direction > 0)
+                        take_value=(close_value/start_value)-1;
+                    if (direction < 0)
+                        take_value=(start_value/close_value)-1;
+                }
                 return stop_value+take_value;
-            if (direction > 0)
-                return (close_value/start_value)-1;
-            if (direction < 0)
-                return (start_value/close_value)-1;
+                
+                
+            }
             return 0;
         }
         
@@ -563,6 +461,8 @@ class clAnalyzer:
                     day_tickers_end=single_ticker_id;
                 }
             }
+            if(day_tickers_start != day_tickers_end)
+            {
             day_count+=1;
             //day_tickers_end-=1;
             if ((ema1 ==0)&&(ema2==0))
@@ -590,6 +490,7 @@ class clAnalyzer:
             else{
                 zero_days[gid]+=1;
 
+            }
             }
         }
         
@@ -761,10 +662,10 @@ class clAnalyzer:
             #if i < 0:
             #j=1
             j=best_indexes[i]
-            if j > 0:
-                results_days.append([procn_profit[i]*procn_profit[j],tradeparam_list[i],total_profit[i]+total_profit[j]-1,count_profit[i]+count_profit[j]-1,tradeparam_list[j]])
+            #if j == 0:
+                #results_days.append([procn_profit[i]*procn_profit[j],tradeparam_list[i],total_profit[i]+total_profit[j]-1,count_profit[i]+count_profit[j]-1,tradeparam_list[j]])
             #else:
-            #    results_days.append([procn_profit[i],tradeparam_list[i],total_profit[i],count_profit[i]])
+            results_days.append([procn_profit[i],tradeparam_list[i],total_profit[i],count_profit[i]])
                         
         del total_profit
         del count_profit

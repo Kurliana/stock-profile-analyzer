@@ -99,7 +99,7 @@ if __name__ == "__main__":
     pa = ProfileAnalyserBAC(temp_file_name,mode="usa")
     log.info("All saved dayes %s " % len(pa.days))
     start_date=pa.days[-10]
-    best_ranges = pa.robot(start_date, 5, day_end = int("%d%.2d%.2d" % (cur_year,cur_month,cur_day)),delta=0.0015,loss=0.03)
+    best_ranges = pa.robot(start_date, 5, day_end = -1)#int("%d%.2d%.2d" % (cur_year,cur_month,cur_day)),delta=0.0015,loss=0.03)
     for best_range_ind in range(len(best_ranges)):
         best_range=best_ranges[best_range_ind]
         result_file=result_files[best_range_ind]
@@ -119,12 +119,12 @@ if __name__ == "__main__":
             #period_day_tickers = pa.filter_tickers(pa.tickers, 100000,184000,pa.days[-6],pa.days[-1])
             #day_profit, day_count, day_procent, day_list_profit = pa.analyze_by_day(period_day_tickers, check_time, start_time, end_time, 0, 0.0005, 0.015, 1, 0.02, True)
             with open(result_file, 'wb') as f:
-                f.write(str(check_time)[:2]+"\n")
-                f.write(str(check_time)[2:4]+"\n")
-                f.write(str(start_time)[:2]+"\n")
-                f.write(str(start_time)[2:4]+"\n")
-                f.write(str(end_time)[:2]+"\n")
-                f.write(str(end_time)[2:4]+"\n")
+                f.write(str(check_time)[:-4]+"\n")
+                f.write(str(check_time)[-4:-2]+"\n")
+                f.write(str(start_time)[:-4]+"\n")
+                f.write(str(start_time)[-4:-2]+"\n")
+                f.write(str(end_time)[:-4]+"\n")
+                f.write(str(end_time)[-4:-2]+"\n")
                 f.write(str(trade)+"\n")
                 f.write(str(delta)+"\n")
                 f.write(str(loss)+"\n")

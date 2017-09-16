@@ -34,7 +34,7 @@ class ProfileAnalyserCAT(ProfileAnalyser):
 
     def get_ranges_by_dayweek_new(self,curr_date):
         day_of_week = self.get_day_week(curr_date)
-        day_ranges={0:[[],[]],
+        day_ranges={0:[[160000, 160000, 160000, 160000,1],[]],
                     1:[[93000, 95000, 102000, 142000, -1, 0, 0.01, 2, 'take_innsta_0.015', 14, 20],[93000, 95000, 100000, 145000, 1, 0, 0.04, 2, 'take_innsta_0.003', 14, 20]],
                     2:[[93000, 100000, 101000, 144000, -1, 0, 0.02, 3, 'take_innsta_0.005', 20, 0],[93000, 100000, 111000, 152000, 1, 0, 0.04, 3, 'take_innsta_0.0075', 20, 0]],
                     3:[[3000, 95000, 102000, 134000, -1, 0, 0.03, 2, 'take_innsta_0.005', 14, 0],[93000, 95000, 101000, 120000, 1, 0, 0.04, 2, 'take_innsta_0.01', 14, 0]],
@@ -119,12 +119,12 @@ if __name__ == "__main__":
             #period_day_tickers = pa.filter_tickers(pa.tickers, 100000,184000,pa.days[-6],pa.days[-1])
             #day_profit, day_count, day_procent, day_list_profit = pa.analyze_by_day(period_day_tickers, check_time, start_time, end_time, 0, 0.0005, 0.015, 1, 0.02, True)
             with open(result_file, 'wb') as f:
-                f.write(str(check_time)[:2]+"\n")
-                f.write(str(check_time)[2:4]+"\n")
-                f.write(str(start_time)[:2]+"\n")
-                f.write(str(start_time)[2:4]+"\n")
-                f.write(str(end_time)[:2]+"\n")
-                f.write(str(end_time)[2:4]+"\n")
+                f.write(str(check_time)[:-4]+"\n")
+                f.write(str(check_time)[-4:-2]+"\n")
+                f.write(str(start_time)[:-4]+"\n")
+                f.write(str(start_time)[-4:-2]+"\n")
+                f.write(str(end_time)[:-4]+"\n")
+                f.write(str(end_time)[-4:-2]+"\n")
                 f.write(str(trade)+"\n")
                 f.write(str(delta)+"\n")
                 f.write(str(loss)+"\n")

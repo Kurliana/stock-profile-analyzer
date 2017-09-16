@@ -217,3 +217,10 @@ class TradeIndicators():
             self.all_tickers[single_ticker_id][9]["EVWMA27"] = EVWMA_ind[single_ticker_id]
 
         return self.all_tickers
+    
+    def get_avg_indicator_value(self, tickers, ind_key):
+        ind_value_list=[]
+        for single_ticker in tickers:
+            ind_value_list.append(single_ticker[9][ind_key])
+        ind_value_list=numpy.array(ind_value_list)
+        return numpy.mean(ind_value_list)
