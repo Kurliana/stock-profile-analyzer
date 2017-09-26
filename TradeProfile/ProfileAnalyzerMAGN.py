@@ -97,7 +97,7 @@ if __name__ == "__main__":
         
     pa = ProfileAnalyserMAGN(temp_file_name)
     log.info("All saved dayes %s " % len(pa.days))
-    start_date=pa.days[-10]
+    start_date=pa.days[0]
     best_ranges = pa.robot(start_date, 5, day_end = int("%d%.2d%.2d" % (cur_year,cur_month,cur_day)),delta=0.005,loss=0.015)
     for best_range_ind in range(len(best_ranges)):
         best_range=best_ranges[best_range_ind]

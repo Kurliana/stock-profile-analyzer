@@ -25,6 +25,7 @@ class TradeIndicators():
                 ATR_list.append(float(0))
             else:
                 ATR_list.append(numpy.mean(TrueRangeList[single_ticker_id-interval+1:single_ticker_id+1]))
+                #ATR_list.append(numpy.mean(TrueRangeList))
         return ATR_list
     
     def getEMA(self,**kwargs):
@@ -46,6 +47,48 @@ class TradeIndicators():
             else:
                 EMA_list.append(alpha*PriceList[single_ticker_id]+(1-alpha)*EMA_list[-1])
         return EMA_list
+
+    def getPVV(self,**kwargs):
+        tickers=kwargs.get("tickers",[])
+        interval=kwargs.get("interval",14)
+        alpha=(2.0/(interval+1))
+        PVV_list=[]
+        PVV_list2=[]
+        tmp_pvv_list=[]
+        volume_list=[]
+        for single_ticker in tickers:
+            med_price=(single_ticker[4]+single_ticker[5]+single_ticker[6]+single_ticker[7])/4
+            #price_max_diff=(single_ticker[5]-single_ticker[6])/med_price
+            #price_tot_diff=(single_ticker[7]-single_ticker[4])/med_price
+            volume_list.append(single_ticker[8])
+            if single_ticker[7] >= single_ticker[4]:
+                tmp_pvv_list.append((single_ticker[5]-single_ticker[6]+abs(single_ticker[7]-single_ticker[4]))/(2*med_price))
+            else:
+                tmp_pvv_list.append(-(single_ticker[5]-single_ticker[6]+abs(single_ticker[7]-single_ticker[4]))/(2*med_price))
+        
+        volume_list=numpy.array(volume_list)
+        for single_ticker_id in range(len(tickers)):
+            single_ticker=tickers[single_ticker_id]
+            if single_ticker_id < interval:
+                PVV_list.append(float(0))
+            else:
+                PVV_list.append(tmp_pvv_list[single_ticker_id]*single_ticker[8]/numpy.mean(volume_list[single_ticker_id-interval+1:single_ticker_id]))
+                
+        PVV_list=numpy.array(PVV_list)       
+        for single_ticker_id in range(len(tickers)):
+            single_ticker=tickers[single_ticker_id]
+            if single_ticker_id <= interval:
+                PVV_list2.append(float(0))
+            #elif single_ticker_id == interval:
+             #   PVV_list2.append(numpy.mean(PVV_list[:interval+1]))
+            else:
+                #PVV_list2.append(alpha*PVV_list[single_ticker_id]+(1-alpha)*PVV_list[-1])
+                #PVV_list2.append(PVV_list[single_ticker_id])#/PVV_list[single_ticker_id-1])
+                #PVV_list2.append(PVV_list[single_ticker_id])
+                #PVV_list2.append(PVV_list[single_ticker_id]/abs(numpy.mean(PVV_list[single_ticker_id-interval+1:single_ticker_id])))
+                PVV_list2.append(numpy.sum(PVV_list[single_ticker_id-interval+1:single_ticker_id+1])/abs(numpy.sum(PVV_list[single_ticker_id-interval*2+1:single_ticker_id-interval+1])))
+
+        return PVV_list2
     
     def getVWAP(self,**kwargs):
         tickers=kwargs.get("tickers",[])
@@ -136,10 +179,14 @@ class TradeIndicators():
         for single_ticker_id in range(len(self.all_tickers)):
             self.all_tickers[single_ticker_id][9]["ATR"] = ATR_ind[single_ticker_id]
             
+        ATR_ind = self.getATRTrailingStop(tickers = self.all_tickers, multiplyer = 0)
+        for single_ticker_id in range(len(self.all_tickers)):
+            self.all_tickers[single_ticker_id][9]["ATRTS0"] = ATR_ind[single_ticker_id]
+        
         ATR_ind = self.getATRTrailingStop(tickers = self.all_tickers, multiplyer = 1)
         for single_ticker_id in range(len(self.all_tickers)):
             self.all_tickers[single_ticker_id][9]["ATRTS1"] = ATR_ind[single_ticker_id]
-        
+
         ATR_ind = self.getATRTrailingStop(tickers = self.all_tickers, multiplyer = 1.5)
         for single_ticker_id in range(len(self.all_tickers)):
             self.all_tickers[single_ticker_id][9]["ATRTS1.5"] = ATR_ind[single_ticker_id]
@@ -215,6 +262,10 @@ class TradeIndicators():
         EVWMA_ind = self.getEVWMA(tickers = self.all_tickers, interval =27)
         for single_ticker_id in range(len(self.all_tickers)):
             self.all_tickers[single_ticker_id][9]["EVWMA27"] = EVWMA_ind[single_ticker_id]
+
+        PVV_ind = self.getPVV(tickers = self.all_tickers, interval =5)
+        for single_ticker_id in range(len(self.all_tickers)):
+            self.all_tickers[single_ticker_id][9]["PVV"] = PVV_ind[single_ticker_id]
 
         return self.all_tickers
     

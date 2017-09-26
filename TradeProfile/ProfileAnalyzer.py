@@ -25,7 +25,7 @@ class ProfileAnalyser():
     def __init__(self, tick_file = "", day_of_week=-1, max_time=185000, mode="rus"):
         self.thread_index=0
         if mode == "rus":
-            self.comission=0.04
+            self.comission=0.05
             self.go=25
             self.begin_time=100000
             self.max_time=181000
@@ -130,7 +130,7 @@ class ProfileAnalyser():
                 if not total_ticker:
                     #log.info(ticker)
                     if (take == 0) or (direction > 0 and ticker[6] > ticker[9]["ATRTS"+str(take)]) or (direction < 0 and ticker[5] < ticker[9]["ATRTS"+str(take)]):
-                        log.info("%s Start time %s value %s high %s atr %s" % (ticker[2],ticker[3],ticker[4],ticker[7],ticker[9]["ATRTS"+str(take)]))
+                        #log.info("%s Start time %s value %s high %s atr %s" % (ticker[2],ticker[3],ticker[4],ticker[7],ticker[9]["ATRTS"+str(take)]))
                         #lets_enter+=1
                         #if lets_enter > 1 or self.time_range.index(ticker[3])-1 == self.time_range.index(start_time):
                         total_ticker+=ticker
@@ -241,8 +241,8 @@ class ProfileAnalyser():
                         if schema.find("take_innsta")>=0 and take_value == 0 and stop_value == 0:
                             #if total_ticker and take > 0 and ticker[5] >= start_value*(1+take_limit):
                             #    take_value=take_limit
-                            if total_ticker and take > 0 and ticker[6] < ticker[9]["ATRTS"+str(take)] and take_value == 0:
-                                take_value = (ticker[7]/start_value)-1
+                            #if total_ticker and take > 0 and ticker[6] < ticker[9]["ATRTS"+str(take)] and take_value == 0:
+                            #    take_value = (ticker[7]/start_value)-1
                                 #log.info(ticker)
                                 #log.info("Stop by atr at %s with start %s end %s" % (ticker[3],start_value,ticker[7]))
                             if ticker[6] < take_price and take_value == 0:
@@ -341,8 +341,8 @@ class ProfileAnalyser():
                         if schema.find("take_innsta")>=0 and take_value == 0 and stop_value == 0:
                             #if total_ticker and take > 0 and ticker[6] <= start_value*(1-take_limit):
                             #    take_value=take_limit
-                            if total_ticker and take > 0 and ticker[5] > ticker[9]["ATRTS"+str(take)] and take_value == 0:
-                                take_value = (start_value/ticker[7])-1
+                            #if total_ticker and take > 0 and ticker[5] > ticker[9]["ATRTS"+str(take)] and take_value == 0:
+                            #    take_value = (start_value/ticker[7])-1
                                 #log.info(ticker)
                                 #log.info("Stop by atr at %s with start %s end %s" % (ticker[3],start_value,ticker[7]))
                             if ticker[5] > take_price and take_value == 0:
