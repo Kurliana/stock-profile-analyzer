@@ -90,7 +90,7 @@ class ProfileAnalyser():
                         if day_of_week < 0 or day_of_week == self.get_day_week(single_ticker[2]):
                             if update_indicators:
                                 tmp_ind_list=[]
-                                for ind_name in ["ATR","ATRTS1","ATRTS1.5","ATRTS2","ATRTS3","ATRTS4","ATRTS5","ATRTS10","EMA9","EMA14","EMA20","EMA27","VWAP","VWMA9","VWMA14","VWMA20","VWMA27","PVV"]:
+                                for ind_name in ["ATR","ATRTS1","ATRTS1.5","ATRTS2","ATRTS3","ATRTS4","ATRTS5","ATRTS10","EMA9","EMA14","EMA20","EMA27","VWAP","VWMA9","VWMA14","VWMA20","VWMA27","PVV","PVVREL"]:
                                     tmp_ind_list.append(single_ticker[9][ind_name])
                                 #del single_ticker[9] 
                                 single_ticker+=tmp_ind_list
@@ -254,26 +254,29 @@ class ProfileAnalyser():
         start_value=0
         lets_enter=0
         pvv_limit=10
+        pvv_delta=0.01
         
         #print tickers_list,start_time,end_time
-        for ticker in tickers_list:
+        for ticker_id in range(len(tickers_list)):
+            ticker=tickers_list[ticker_id]
             if ticker[9]["PVV"] > pvv_max:
                 pvv_max=ticker[9]["PVV"]
             if ticker[9]["PVV"] < pvv_min:
                 pvv_min=ticker[9]["PVV"]
             if ticker[3] >= start_time and ticker[3] <= end_time:
                 prev_ticker=tickers_list[tickers_list.index(ticker)-1]
+                ema1_value=ticker[9]["VWMA%d" % max(ema1,ema2)]
+                ema2_value=ticker[9].get("VWMA%d" % min(ema1,ema2),ticker[7])
                 if not total_ticker:
                     
                     #log.info(ticker)
-                    if (ticker[3] < end_time) and ((take == 0) or (direction > 0 and ticker[6] > ticker[9]["ATRTS"+str(take)] and pvv_max<5) or (direction < 0 and ticker[5] < ticker[9]["ATRTS"+str(take)] and pvv_min > -5)):# and ((direction > 0 and ticker[9]["PVV"]<3 and ticker[9]["PVV"]>0)or(direction < 0 and ticker[9]["PVV"]>-3 and ticker[9]["PVV"]<0)):# and ((take == 0) or (direction > 0 and ticker[6] > ticker[9]["ATRTS"+str(take)]) or (direction < 0 and ticker[5] < ticker[9]["ATRTS"+str(take)])):
+                    if (ticker[3] < end_time) and ((take == 0) or (direction > 0 and (ticker[6] > ticker[9]["ATRTS"+str(take)])) or (direction < 0 and ticker[5] < ticker[9]["ATRTS"+str(take)])):
                         #log.info("%s Start time %s value %s high %s atr %s" % (ticker[2],ticker[3],ticker[4],ticker[7],ticker[9]["ATRTS"+str(take)]))
                         #lets_enter+=1
                         #if lets_enter > 1 or ticker[3] == start_time:
                         total_ticker+=ticker
                         #if take == 0:
                         start_value=ticker[7]
-                        
                         #log.info("Start %s, direction %s" % (ticker,direction))
                         pvv_min=200000000
                         pvv_max=-200000000
@@ -388,34 +391,28 @@ class ProfileAnalyser():
                         if schema.find("take_innsta")>=0 and take_value == 0 and stop_value == 0:
                             #if total_ticker and take > 0 and ticker[5] >= start_value*(1+take_limit):
                             #    take_value=take_limit
-                            #if total_ticker and take > 0 and ( ticker[5] > ticker[9]["ATRTS"+str(take)]+(take)*ticker[9]["ATR"]) and take_value == 0:
+                            #if total_ticker and take > 0 and ticker[6] < ticker[9]["ATRTS"+str(take)] and take_value == 0:
                             #    take_value = (ticker[7]/start_value)-1
                                 #log.info(ticker)
                                 #log.info("Stop by atr at %s with start %s end %s" % (ticker[3],start_value,ticker[7]))
-                            if total_ticker and take > 0 and ((abs(prev_ticker[9]["PVV"]/ticker[9]["PVV"]) > pvv_limit and prev_ticker[9]["PVV"]+ticker[9]["PVV"]>0 and prev_ticker[9]["PVV"] - ticker[9]["PVV"] > 5)or(abs(ticker[9]["PVV"]/pvv_max) > pvv_limit and pvv_max+ticker[9]["PVV"]<0 and pvv_max-ticker[9]["PVV"]> 5)):
-                            #if total_ticker and take > 0 and ((abs(pvv_max/ticker[9]["PVV"]) > pvv_limit and pvv_max+ticker[9]["PVV"]>0 and pvv_max - ticker[9]["PVV"] > 5)or(abs(ticker[9]["PVV"]/pvv_max) > pvv_limit and pvv_max+ticker[9]["PVV"]<0  and pvv_max - ticker[9]["PVV"] > 5)):
-                             
-                                #log.info("Up %s" % ticker)
-                                take_value = (ticker[7]/start_value)-1
-                            
-                            #if ticker[6] < take_price and take_value == 0:
-                            #    take_value = (take_price/start_value)-1
+                            if ticker[6] < take_price and take_value == 0:
+                                take_value = (take_price/start_value)-1
                                 #log.info(ticker)
                                 #log.info("Stop by limit at %s with start %s end %s" % (ticker[3],total_ticker[4],take_price))
                                 #log.info("Take profit take_equity %s up, take price %s, min price %s, profit %s" % (take_limit,take_price,ticker[6],take_value))
                             if take_limit > 0:
-                                #tmp_take_price = ticker[9]["ATRTS"+str(max(1,int(take*(1-max(0,ticker[7]/start_value-1)/take_limit))))]
-                                #tmp_take_price = ticker[9]["ATRTS"+str(take)]
                                 tmp_take_price = ticker[5]*(1-(stop + take_limit)*max(0,1-(ticker[5]-start_value)/((take_limit)*start_value)))
                                 if tmp_take_price > take_price:
                                     take_price = tmp_take_price
-                            #if take_price > ticker[7] and take_value == 0:
+                            if take_price > ticker[7] and take_value == 0:
                                 #if not take_value == 0:
                                 #    log.info("Take value already non-zero: direction %s, take_value %s, stop value %s" % (1,take_value,(ticker[7]/start_value)-1))
+                                take_value=(ticker[7]/start_value)-1
+                                
+                            #if ema1_value > ema2_value:
                             #    take_value=(ticker[7]/start_value)-1
-                                #log.info(ticker[7])
-                                #take_price=ticker[7]*(1-take)
-                                #log.info("Take profit take_shorty %s up, take price %s, max price %s, min price %s, profit %s" % (start_value,ticker[7],ticker[5],ticker[6],take_value))
+            
+            
                         if ticker[6] < real_stop_value and take_value == 0 and stop_value == 0:
                             stop_value = -stop
                         if schema.find("wrong_equity")>=0 and take_value == 0 and stop_value == 0:
@@ -497,32 +494,26 @@ class ProfileAnalyser():
                         if schema.find("take_innsta")>=0 and take_value == 0 and stop_value == 0:
                             #if total_ticker and take > 0 and ticker[6] <= start_value*(1-take_limit):
                             #    take_value=take_limit
-                            #if total_ticker and take > 0 and (ticker[6]< ticker[9]["ATRTS"+str(take)]-(take)*ticker[9]["ATR"])  and take_value == 0:
+                            #if total_ticker and take > 0 and ticker[5] > ticker[9]["ATRTS"+str(take)] and take_value == 0:
                             #    take_value = (start_value/ticker[7])-1
                                 #log.info(ticker)
                                 #log.info("Stop by atr at %s with start %s end %s" % (ticker[3],start_value,ticker[7]))
-                            if total_ticker and take > 0 and ((abs(prev_ticker[9]["PVV"]/ticker[9]["PVV"]) > pvv_limit and prev_ticker[9]["PVV"]+ticker[9]["PVV"]<0 and ticker[9]["PVV"] - prev_ticker[9]["PVV"]> 5) or (abs(ticker[9]["PVV"]/pvv_min) > pvv_limit and pvv_min+ticker[9]["PVV"]>0 and ticker[9]["PVV"]-pvv_min > 5)):
-                            #if total_ticker and take > 0 and ((abs(pvv_min/ticker[9]["PVV"]) > pvv_limit and pvv_min+ticker[9]["PVV"]<0 and ticker[9]["PVV"] - pvv_min> 5) or (abs(ticker[9]["PVV"]/pvv_min) > pvv_limit and pvv_min+ticker[9]["PVV"]>0 and ticker[9]["PVV"]-pvv_min > 5)):
-                                #log.info("Down %s" % ticker)
-                                take_value = (start_value/ticker[7])-1
-                            #if ticker[5] > take_price and take_value == 0:
+                            if ticker[5] > take_price and take_value == 0:
                                 #log.info(ticker)
                                 #log.info("Stop by limit at %s with start %s end %s" % (ticker[3],total_ticker[4],take_price))
-                            #    take_value = (start_value/take_price)-1
+                                take_value = (start_value/take_price)-1
                                 #log.info("Take profit take_equity %s down, take price %s, max price %s, profit %s" % (take_limit,take_price,ticker[5],take_value))
                             if take_limit > 0:
-                                #tmp_take_price = ticker[9]["ATRTS"+str(max(1,int(take*(1-max(0,start_value/ticker[7]-1)/take_limit))))]#ticker[6]*(1+(stop + take_limit)*max(0,1-(start_value-ticker[6])/((take_limit)*start_value)))
-                                #tmp_take_price = ticker[9]["ATRTS"+str(take)]
                                 tmp_take_price = ticker[6]*(1+(stop + take_limit)*max(0,1-(start_value-ticker[6])/((take_limit)*start_value)))
-                                
                                 if tmp_take_price < take_price:
                                     take_price = tmp_take_price
-                            #if take_price < ticker[7] and take_value == 0:
+                            if take_price < ticker[7] and take_value == 0:
                                 #if not take_value == 0:
                                 #log.info("Take value already non-zero: direction %s, take_value %s, stop value %s" % (-1,take_value,(start_value/ticker[7])-1))
                                 #take_price=ticker[7]*(1+take)
-                            #    take_value=(start_value/ticker[7])-1                      
-    
+                                take_value=(start_value/ticker[7])-1
+                            #if ema1_value < ema2_value:
+                            #    take_value=(ticker[7]/start_value)-1
                             #log.info("Take profit take_shorty %s down, take price %s, max price %s, min price %s, profit %s" % (total_ticker[4],take_price,ticker[5],ticker[6],take_value))
                         if schema.find("wrong_equity")>=0 and take_value == 0 and stop_value == 0:
                             if ticker[5] > take_price:
@@ -782,9 +773,9 @@ class ProfileAnalyser():
         #log.info(abs(start_price - end_price) - min(start_price,end_price))
         #log.info(start_price - end_price)
         #log.info(ticker2[6] - ticker2[9]["ATRTS"+str(atr)])
-        if (abs(start_price - end_price) > min(start_price,end_price)*direction_delta and start_price < end_price and (atr== 0 or ticker2[6] > ticker2[9]["ATRTS"+str(atr)])):
+        if abs(start_price - end_price) > min(start_price,end_price)*direction_delta and start_price < end_price: #and (atr== 0 or ticker2[6] > ticker2[9]["ATRTS"+str(atr)])):
             direction=1*reverse_trade
-        elif (abs(start_price - end_price) > min(start_price,end_price)*direction_delta and start_price >= end_price and (atr== 0 or ticker2[5] < ticker2[9]["ATRTS"+str(atr)])):
+        elif abs(start_price - end_price) > min(start_price,end_price)*direction_delta and start_price >= end_price: #and (atr== 0 or ticker2[5] < ticker2[9]["ATRTS"+str(atr)])):
             direction=-1*reverse_trade
         else:
             
@@ -1647,14 +1638,14 @@ class ProfileAnalyser():
         return [day_ranges[day_of_week]]
 
     def get_ranges_by_dayweek_new(self,curr_date):
-        day_of_week =  self.get_day_week(curr_date)
-        day_ranges={0:[[self.begin_time, 103000, 104000, 172000, -1, 0, 0.03, 3, 'take_innsta_0.005', 9, 0],[self.begin_time, 103000, 143000, 180000, 1, 0, 0.02, 3, 'take_innsta_0.005', 9, 0]],
-                    1:[[self.begin_time, 103000, 105000, 171000, -1, 0, 0.02, 4, 'take_innsta_0.015', 27, 0],[self.begin_time, 103000, 105000, 172000, 1, 0, 0.01, 2, 'take_innsta_0.003', 27, 0]],
-                    2:[[self.begin_time, 105000, 110000, 172000, -1, 0, 0.04, 3, 'take_innsta_0.01', 9, 14],[self.begin_time, 105000, 121000, 175000, 1, 0, 0.01, 3, 'take_innsta_0.003', 9, 14]],
-                    3:[[self.begin_time, 103000, 104000, 180000, -1, 0, 0.02, 3, 'take_innsta_0.0075', 9, 0],[self.begin_time, 103000, 121000, 152000, 1, 0, 0.02, 3, 'take_innsta_0.02', 9, 0]],
-                    4:[[self.begin_time, 105000, 110000, 175000, -1, 0, 0.02, 3, 'take_innsta_0.005', 9, 0],[self.begin_time, 105000, 114000, 155000, 1, 0, 0.01, 2, 'take_innsta_0.005', 9, 0]],
-                    5:[self.end_time, self.end_time, self.end_time, self.end_time,1],
-                    6:[self.end_time, self.end_time, self.end_time, self.end_time,1]}
+        day_of_week = self.get_day_week(curr_date)
+        day_ranges={0:[[100000, 124000, 151000, 180000, -1, 0, 0.04, 10, 'take_innsta_0.03', 9, 0],[]],
+                    1:[[183000, 183000, 183000, 183000,1],[]],
+                    2:[[100000, 111000, 141000, 174000, -1, 0, 0.04, 0, 'take_innsta_0.02', 20, 27],[]],
+                    3:[[100000, 113000, 131000, 175000, 1, 0, 0.04, 2, 'take_innsta_0.01', 9, 0],[]],
+                    4:[[100000, 104000, 121000, 174000, -1, 0, 0.02, 5, 'take_innsta_0.03', 20, 0],[]],
+                    5:[183000, 183000, 183000, 183000,1],
+                    6:[183000, 183000, 183000, 183000,1]}
         
         return [day_ranges[day_of_week]]
 
@@ -1922,26 +1913,27 @@ class ProfileAnalyser():
 
 if __name__ == "__main__":
     start_timer=time.time()
-    #pa = ProfileAnalyser("FEES_150105_170801.txt",mode="rus")
+    pa = ProfileAnalyser("FEES_150105_170801.txt",mode="rus")
     #for i in pa.tickers:
     #    if i[2]==20150216:
-    #       log.info(i[:-1]+[i[9]["PVV"]])
+         #log.info(i[:-1]+[i[9]["PVV"]]+[i[9]["PVVREL"]])
     #log.info(pa.robot(-1,5,delta=0.0015,loss=0.03))
     
     #
-    #day_tickers = pa.filter_tickers(pa.tickers, pa.begin_time,pa.max_time-1000,-1,-1,0,update_indicators=False)
+    day_tickers = pa.filter_tickers(pa.tickers, pa.begin_time,pa.max_time-1000,-1,-1,0)
     #pa.tickers = day_tickers
-    #log.info(pa.analyze_by_day(day_tickers, 105000, 110000, 180000, 0,  0, 0.03, 1, 3,True,"take_innsta_0.02",14,27))
+    #100000, 104000, 121000, 174000, -1, 0, 0.02, 5, 'take_innsta_0.03', 20, 0
+    #log.info(pa.analyze_by_day(day_tickers, 104000, 121000, 174000, 0,  0, 0.02, -1, 5,True,"take_innsta_0.03",20,0))
     
-    #day_ranges={0:[[100000, 101000, 104000, 175000, -1, 0, 0.03, 5, 'take_innsta_0.02', 9, 20],[100000, 101000, 115000, 180000, 1, 0, 0.02, 5, 'take_innsta_0.01', 9, 20]],
-    #                1:[[100000, 101000, 103000, 180000, -1, 0, 0.03, 3, 'take_innsta_0.015', 20, 0],[100000, 101000, 115000, 180000, 1, 0, 0.04, 3, 'take_innsta_0.01', 20, 0]],
-    #                2:[[100000, 103000, 104000, 180000, -1, 0, 0.01, 4, 'take_innsta_0.03', 9, 27],[100000, 103000, 105000, 180000, 1, 0, 0.04, 4, 'take_innsta_0.003', 9, 27]],
-    #                3:[[100000, 105000, 112000, 180000, -1, 0, 0.04, 2, 'take_innsta_0.0075', 9, 0],[100000, 105000, 135000, 174000, 1, 0, 0.03, 2, 'take_innsta_0.01', 9, 0]],
-    #                4:[[100000, 104000, 105000, 175000, -1, 0, 0.02, 4, 'take_innsta_0.04', 20, 0],[100000, 104000, 132000, 152000, 1, 0, 0.04, 4, 'take_innsta_0.01', 20, 0]],
-    #                5:[183000, 183000, 183000, 183000,1],
-    #                6:[183000, 183000, 183000, 183000,1]}
-    #begin_time,check_time,start_time,end_time,trade,delta,stop,take,method,ema1,ema2 = day_ranges[2][0][:11]
-    #log.info(pa.analyze_by_day(day_tickers, check_time,start_time,end_time, 0,  delta, stop, trade, take,True,method,ema1,ema2))
+    day_ranges={0:[[100000, 124000, 151000, 180000, -1, 0, 0.04, 10, 'take_innsta_0.03', 9, 0],[]],
+                1:[[183000, 183000, 183000, 183000,1],[]],
+                2:[[100000, 111000, 141000, 174000, -1, 0, 0.04, 0, 'take_innsta_0.02', 20, 27],[]],
+                3:[[100000, 113000, 131000, 175000, 1, 0, 0.04, 2, 'take_innsta_0.01', 9, 0],[]],
+                4:[[100000, 104000, 121000, 174000, -1, 0, 0.02, 5, 'take_innsta_0.03', 20, 0],[]],
+                5:[183000, 183000, 183000, 183000,1],
+                6:[183000, 183000, 183000, 183000,1]}
+    begin_time,check_time,start_time,end_time,trade,delta,stop,take,method,ema1,ema2 = day_ranges[0][0][:11]
+    log.info(pa.analyze_by_day(day_tickers, check_time,start_time,end_time, 0,  delta, stop, trade, take,True,method,ema1,ema2))
     """
     #log.info(pa.analyze_by_day(day_tickers, check_time,start_time,end_time, 0,  delta, stop, trade, 1,True,method))
     #log.info(pa.analyze_by_day(day_tickers, check_time,start_time,end_time, 0,  delta, stop, trade, 1.5,True,method))
@@ -1967,7 +1959,7 @@ if __name__ == "__main__":
     #file_list=["LKOH_150105_170801.txt","MAGN_150105_170801.txt","MGNT_150105_170801.txt","MOEX_150105_170801.txt","MTSS_150105_170801.txt","NVTK_150105_170801.txt","PIKK_150105_170801.txt","ROSN_150105_170801.txt","RASP_150105_170801.txt","SBER_150105_170801.txt","SBERP_150105_170801.txt"]
     #file_list=["TATN_150105_170801.txt","FEES_150105_170801.txt","ALRS_150105_170801.txt","RSTI_150105_170801.txt","GMKN_150105_170801.txt","IRAO_150105_170801.txt"]
     file_list=["FEES_150105_170801.txt","TATN_150105_170801.txt","ALRS_150105_170801.txt","RSTI_150105_170801.txt","GMKN_150105_170801.txt","IRAO_150105_170801.txt","HYDR_150105_170801.txt","LKOH_150105_170801.txt","MAGN_150105_170801.txt","MGNT_150105_170801.txt","MOEX_150105_170801.txt","MTSS_150105_170801.txt","NVTK_150105_170801.txt","PIKK_150105_170801.txt","ROSN_150105_170801.txt","RASP_150105_170801.txt","SBER_150105_170801.txt","SBERP_150105_170801.txt"]
-    #file_list=["FEES_150105_170801.txt","TATN_150105_170801.txt"]
+    #file_list=["FEES_150105_170801.txt"]
     for filename in file_list:
         log.info(filename)
         for weekday in [0,1,2,3,4]:
@@ -1979,12 +1971,12 @@ if __name__ == "__main__":
             #    log.info(pa.days.index(day))
             #    pa.tickers = tmp_tickers
             day_tickers = pa.filter_tickers(pa.tickers, pa.begin_time,pa.max_time-1000,-1,-1,weekday)
-            log.info("AVG ATR %s" % pa.ti.get_avg_indicator_value(day_tickers,"ATR"))
+            #log.info("AVG ATR %s" % pa.ti.get_avg_indicator_value(day_tickers,"ATR"))
             
             #log.info(day_tickers[-1])
             pa.tickers = day_tickers
             #take_slide_method=["take_innsta_0.003","take_innsta_0.005","take_innsta_0.0075","take_innsta_0.01","take_innsta_0.015","take_innsta_0.02","take_innsta_0.03","take_innsta_0.04"]
-            take_slide_method=[0.003]#,0.005,0.0075,0.01,0.015,0.02,0.03,0.04]#[0.003,0.005,0.0075,0.01,0.015,0.02,0.03,0.04]
+            take_slide_method=[0.003,0.005,0.0075,0.01,0.015,0.02,0.03,0.04]#[0.003,0.005,0.0075,0.01,0.015,0.02,0.03,0.04]
             delta=[0]#,0.0015,0.003]#,0.0075,0.01]
             loss=[0.01,0.02,0.03,0.04]
             take=[2,3,4,5,10]#[0,2,3,4,5]

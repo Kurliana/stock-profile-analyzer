@@ -54,6 +54,7 @@ class TradeIndicators():
         alpha=(2.0/(interval+1))
         PVV_list=[]
         PVV_list2=[]
+        PVV_rel=[]
         tmp_pvv_list=[]
         volume_list=[]
         for single_ticker in tickers:
@@ -61,10 +62,11 @@ class TradeIndicators():
             #price_max_diff=(single_ticker[5]-single_ticker[6])/med_price
             #price_tot_diff=(single_ticker[7]-single_ticker[4])/med_price
             volume_list.append(single_ticker[8])
-            if single_ticker[7] >= single_ticker[4]:
-                tmp_pvv_list.append((single_ticker[5]-single_ticker[6]+abs(single_ticker[7]-single_ticker[4]))/(2*med_price))
-            else:
-                tmp_pvv_list.append(-(single_ticker[5]-single_ticker[6]+abs(single_ticker[7]-single_ticker[4]))/(2*med_price))
+            #if single_ticker[7] >= single_ticker[4]:
+            #    tmp_pvv_list.append((single_ticker[5]-single_ticker[6]+abs(single_ticker[7]-single_ticker[4]))/(2*med_price))
+            #else:
+            #    tmp_pvv_list.append(-(single_ticker[5]-single_ticker[6]+abs(single_ticker[7]-single_ticker[4]))/(2*med_price))
+            tmp_pvv_list.append(2*(single_ticker[5]-single_ticker[6])-abs(single_ticker[7]-single_ticker[4]))
         
         volume_list=numpy.array(volume_list)
         for single_ticker_id in range(len(tickers)):
@@ -72,23 +74,27 @@ class TradeIndicators():
             if single_ticker_id < interval:
                 PVV_list.append(float(0))
             else:
-                PVV_list.append(tmp_pvv_list[single_ticker_id]*single_ticker[8]/numpy.mean(volume_list[single_ticker_id-interval+1:single_ticker_id]))
+                #PVV_list.append((tmp_pvv_list[single_ticker_id]*single_ticker[8])/numpy.mean(volume_list[single_ticker_id-interval+1:single_ticker_id]))
+                PVV_list.append(tmp_pvv_list[single_ticker_id])
                 
         PVV_list=numpy.array(PVV_list)       
         for single_ticker_id in range(len(tickers)):
             single_ticker=tickers[single_ticker_id]
-            if single_ticker_id <= interval:
+            if single_ticker_id < interval:
                 PVV_list2.append(float(0))
+                PVV_rel.append(float(0))
             #elif single_ticker_id == interval:
              #   PVV_list2.append(numpy.mean(PVV_list[:interval+1]))
             else:
                 #PVV_list2.append(alpha*PVV_list[single_ticker_id]+(1-alpha)*PVV_list[-1])
                 #PVV_list2.append(PVV_list[single_ticker_id])#/PVV_list[single_ticker_id-1])
-                #PVV_list2.append(PVV_list[single_ticker_id])
+                PVV_list2.append(numpy.mean(PVV_rel[single_ticker_id-interval+1:single_ticker_id+1]))
+                #PVV_rel.append(abs(PVV_list[single_ticker_id])/abs(PVV_list[single_ticker_id-1]))
+                PVV_rel.append(abs(PVV_list[single_ticker_id]))
                 #PVV_list2.append(PVV_list[single_ticker_id]/abs(numpy.mean(PVV_list[single_ticker_id-interval+1:single_ticker_id])))
-                PVV_list2.append(numpy.sum(PVV_list[single_ticker_id-interval+1:single_ticker_id+1])/abs(numpy.sum(PVV_list[single_ticker_id-interval*2+1:single_ticker_id-interval+1])))
+                #PVV_list2.append(numpy.sum(PVV_list[single_ticker_id-interval+1:single_ticker_id+1])/abs(numpy.sum(PVV_list[single_ticker_id-interval*2+1:single_ticker_id-interval+1])))
 
-        return PVV_list2
+        return PVV_list2, PVV_rel
     
     def getVWAP(self,**kwargs):
         tickers=kwargs.get("tickers",[])
@@ -151,25 +157,39 @@ class TradeIndicators():
     def getATRTrailingStop(self,**kwargs):
         tickers=kwargs.get("tickers",[])
         multiplyer=kwargs.get("multiplyer",3)
+        retries=kwargs.get("retries",0)
+        curr_retry=0
         ATRTS_list=[]
         for single_ticker_id in range(len(tickers)):
             single_ticker=tickers[single_ticker_id]
             ATR=0
-            if "ATR" in single_ticker[9].keys():
-                ATR=single_ticker[9]["ATR"]
+            if "PVV" in single_ticker[9].keys():
+                ATR=single_ticker[9]["PVV"]
             if not ATRTS_list:
                 ATRTS_list.append(single_ticker[5]-ATR*multiplyer) 
             else:
                 if ATRTS_list[-1] < tickers[single_ticker_id-1][6]: # upstream
                     if single_ticker[6] > ATRTS_list[-1]: #upstream continue
+                        #curr_retry=0
                         ATRTS_list.append(max(ATRTS_list[-1],single_ticker[5]-ATR*multiplyer))
                     else:
-                        ATRTS_list.append(single_ticker[6]+ATR*multiplyer)
+                        if curr_retry < retries:
+                            curr_retry+=1
+                            ATRTS_list.append(max(ATRTS_list[-1],single_ticker[5]-ATR*multiplyer))
+                        else:
+                            curr_retry=0
+                            ATRTS_list.append(single_ticker[6]+ATR*multiplyer)
                 else: # downsteam
                     if single_ticker[5] < ATRTS_list[-1]: #downsteam continue
+                        #curr_retry=0
                         ATRTS_list.append(min(ATRTS_list[-1],single_ticker[6]+ATR*multiplyer))
                     else:
-                        ATRTS_list.append(single_ticker[5]-ATR*multiplyer)
+                        if curr_retry < retries:
+                            curr_retry+=1
+                            ATRTS_list.append(min(ATRTS_list[-1],single_ticker[6]+ATR*multiplyer))
+                        else:
+                            curr_retry=0
+                            ATRTS_list.append(single_ticker[5]-ATR*multiplyer)
         return ATRTS_list
                     
     
@@ -178,6 +198,11 @@ class TradeIndicators():
         ATR_ind = self.getATR(tickers = self.all_tickers, interval =interval)
         for single_ticker_id in range(len(self.all_tickers)):
             self.all_tickers[single_ticker_id][9]["ATR"] = ATR_ind[single_ticker_id]
+            
+        PVV_ind, PVV_rel = self.getPVV(tickers = self.all_tickers, interval =14)
+        for single_ticker_id in range(len(self.all_tickers)):
+            self.all_tickers[single_ticker_id][9]["PVV"] = PVV_ind[single_ticker_id]
+            self.all_tickers[single_ticker_id][9]["PVVREL"] = PVV_rel[single_ticker_id]
             
         ATR_ind = self.getATRTrailingStop(tickers = self.all_tickers, multiplyer = 0)
         for single_ticker_id in range(len(self.all_tickers)):
@@ -262,10 +287,6 @@ class TradeIndicators():
         EVWMA_ind = self.getEVWMA(tickers = self.all_tickers, interval =27)
         for single_ticker_id in range(len(self.all_tickers)):
             self.all_tickers[single_ticker_id][9]["EVWMA27"] = EVWMA_ind[single_ticker_id]
-
-        PVV_ind = self.getPVV(tickers = self.all_tickers, interval =5)
-        for single_ticker_id in range(len(self.all_tickers)):
-            self.all_tickers[single_ticker_id][9]["PVV"] = PVV_ind[single_ticker_id]
 
         return self.all_tickers
     
