@@ -74,7 +74,7 @@ class TradeIndicators():
             if single_ticker_id < interval:
                 PVV_list.append(float(0))
             else:
-                #PVV_list.append((tmp_pvv_list[single_ticker_id]*single_ticker[8])/numpy.mean(volume_list[single_ticker_id-interval+1:single_ticker_id]))
+                #PVV_list.append((tmp_pvv_list[single_ticker_id]*single_ticker[8])/numpy.mean(volume_list[single_ticker_id-interval+1:single_ticker_id+1]))
                 PVV_list.append(tmp_pvv_list[single_ticker_id])
                 
         PVV_list=numpy.array(PVV_list)       
@@ -88,9 +88,9 @@ class TradeIndicators():
             else:
                 #PVV_list2.append(alpha*PVV_list[single_ticker_id]+(1-alpha)*PVV_list[-1])
                 #PVV_list2.append(PVV_list[single_ticker_id])#/PVV_list[single_ticker_id-1])
-                PVV_list2.append(numpy.mean(PVV_rel[single_ticker_id-interval+1:single_ticker_id+1]))
+                PVV_list2.append(numpy.mean(PVV_list[single_ticker_id-interval+1:single_ticker_id+1]))
                 #PVV_rel.append(abs(PVV_list[single_ticker_id])/abs(PVV_list[single_ticker_id-1]))
-                PVV_rel.append(abs(PVV_list[single_ticker_id]))
+                PVV_rel.append(numpy.mean(volume_list[single_ticker_id-interval+1:single_ticker_id+1])/numpy.sum(volume_list[single_ticker_id-interval+1:single_ticker_id+1]))
                 #PVV_list2.append(PVV_list[single_ticker_id]/abs(numpy.mean(PVV_list[single_ticker_id-interval+1:single_ticker_id])))
                 #PVV_list2.append(numpy.sum(PVV_list[single_ticker_id-interval+1:single_ticker_id+1])/abs(numpy.sum(PVV_list[single_ticker_id-interval*2+1:single_ticker_id-interval+1])))
 
@@ -154,6 +154,49 @@ class TradeIndicators():
                 EVWMA_list.append(alpha*VWMAList[single_ticker_id]+(1-alpha)*VWMAList[-1])
         return EVWMA_list    
     
+    def getATRTrailingStop_real(self,**kwargs):
+        tickers=kwargs.get("tickers",[])
+        multiplyer=kwargs.get("multiplyer",3)
+        retries=kwargs.get("retries",0)
+        curr_retry=0
+        ATRTS_list=[]
+        for single_ticker_id in range(len(tickers)):
+            single_ticker=tickers[single_ticker_id]
+            ATR=0
+            if "ATR" in single_ticker[9].keys():
+                PVV=single_ticker[9]["ATR"]
+                #VOL=single_ticker[9]["PVVREL"]
+                if multiplyer > 0:
+                    ATR=PVV*multiplyer
+                else:
+                    ATR=0
+            if not ATRTS_list:
+                ATRTS_list.append(single_ticker[5]-ATR)
+            else:
+                if ATRTS_list[-1] < tickers[single_ticker_id-1][6]: # upstream
+                    if single_ticker[6] > ATRTS_list[-1]: #upstream continue
+                        #curr_retry=0
+                        ATRTS_list.append(max(ATRTS_list[-1],single_ticker[5]-ATR))
+                    else:
+                        if curr_retry < retries:
+                            curr_retry+=1
+                            ATRTS_list.append(max(ATRTS_list[-1],single_ticker[5]-ATR))
+                        else:
+                            curr_retry=0
+                            ATRTS_list.append(single_ticker[6]+ATR)
+                else: # downsteam
+                    if single_ticker[5] < ATRTS_list[-1]: #downsteam continue
+                        #curr_retry=0
+                        ATRTS_list.append(min(ATRTS_list[-1],single_ticker[6]+ATR))
+                    else:
+                        if curr_retry < retries:
+                            curr_retry+=1
+                            ATRTS_list.append(min(ATRTS_list[-1],single_ticker[6]+ATR))
+                        else:
+                            curr_retry=0
+                            ATRTS_list.append(single_ticker[5]-ATR)
+        return ATRTS_list
+
     def getATRTrailingStop(self,**kwargs):
         tickers=kwargs.get("tickers",[])
         multiplyer=kwargs.get("multiplyer",3)
@@ -164,32 +207,37 @@ class TradeIndicators():
             single_ticker=tickers[single_ticker_id]
             ATR=0
             if "PVV" in single_ticker[9].keys():
-                ATR=single_ticker[9]["PVV"]
+                PVV=single_ticker[9]["PVV"]
+                #VOL=single_ticker[9]["PVVREL"]
+                if multiplyer > 0:
+                    ATR=PVV*multiplyer
+                else:
+                    ATR=0
             if not ATRTS_list:
-                ATRTS_list.append(single_ticker[5]-ATR*multiplyer) 
+                ATRTS_list.append(single_ticker[5]-ATR)
             else:
                 if ATRTS_list[-1] < tickers[single_ticker_id-1][6]: # upstream
                     if single_ticker[6] > ATRTS_list[-1]: #upstream continue
                         #curr_retry=0
-                        ATRTS_list.append(max(ATRTS_list[-1],single_ticker[5]-ATR*multiplyer))
+                        ATRTS_list.append(single_ticker[5]-ATR)
                     else:
                         if curr_retry < retries:
                             curr_retry+=1
-                            ATRTS_list.append(max(ATRTS_list[-1],single_ticker[5]-ATR*multiplyer))
+                            ATRTS_list.append(single_ticker[5]-ATR)
                         else:
                             curr_retry=0
-                            ATRTS_list.append(single_ticker[6]+ATR*multiplyer)
+                            ATRTS_list.append(single_ticker[6]+ATR)
                 else: # downsteam
                     if single_ticker[5] < ATRTS_list[-1]: #downsteam continue
                         #curr_retry=0
-                        ATRTS_list.append(min(ATRTS_list[-1],single_ticker[6]+ATR*multiplyer))
+                        ATRTS_list.append(single_ticker[6]+ATR)
                     else:
                         if curr_retry < retries:
                             curr_retry+=1
-                            ATRTS_list.append(min(ATRTS_list[-1],single_ticker[6]+ATR*multiplyer))
+                            ATRTS_list.append(single_ticker[6]+ATR)
                         else:
                             curr_retry=0
-                            ATRTS_list.append(single_ticker[5]-ATR*multiplyer)
+                            ATRTS_list.append(single_ticker[5]-ATR)
         return ATRTS_list
                     
     

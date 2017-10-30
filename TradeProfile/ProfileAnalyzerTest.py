@@ -256,7 +256,7 @@ class ProfileAnalyser():
         pvv_limit=10
         pvv_delta=0.01
         
-        #print tickers_list,start_time,end_time
+        #print tickers_list,start_time,end_time        `````````````````````````
         for ticker_id in range(len(tickers_list)):
             ticker=tickers_list[ticker_id]
             if ticker[9]["PVV"] > pvv_max:
@@ -1979,7 +1979,7 @@ if __name__ == "__main__":
             take_slide_method=[0.003,0.005,0.0075,0.01,0.015,0.02,0.03,0.04]#[0.003,0.005,0.0075,0.01,0.015,0.02,0.03,0.04]
             delta=[0]#,0.0015,0.003]#,0.0075,0.01]
             loss=[0.01,0.02,0.03,0.04]
-            take=[2,3,4,5,10]#[0,2,3,4,5]
+            take=[1,2,3,4,5,10]#[0,2,3,4,5]
             ema=[(9,0),(14,0),(20,0),(27,0),(9,14),(9,20),(9,27),(14,20),(14,27),(20,27)]
             ranges =  pa.start_analyzer_cl(day_start=-1,day_end=-1,direction_delta_list=delta,stop_loss_list=loss,take_profit_list = take, profit_method_list = take_slide_method, ema_list=ema)
             #ranges = []
