@@ -14,41 +14,42 @@ import datetime
 from multiprocessing import Process, Manager
 from collections import Counter
 #import pythoncom
-logging.config.fileConfig('log_alrs.conf')
+
+logging.config.fileConfig('log_mgnt.conf')
 log=logging.getLogger('main')
 from ProfileAnalyzer import ProfileAnalyser
 
-class ProfileAnalyserALRS(ProfileAnalyser):
-    
+class ProfileAnalyserMGNT(ProfileAnalyser):
+
     def get_ranges_by_dayweek(self,curr_date):
         day_of_week =  self.get_day_week(curr_date)
-        day_ranges={0:[100000, 101000, 102000, 144000, 1, 0, 0.04, 3, 'take_innsta_0.03', 14, 27],
-                    1:[100000, 101000, 102000, 175000, 1, 0, 0.04, 0, 'take_innsta_0.01', 27, 0],
-                    2:[100000, 102000, 103000, 134000, 1, 0, 0.03, 10, 'take_innsta_0.015', 20, 0],
-                    3:[100000, 114000, 121000, 172000, 1, 0, 0.04, 3, 'take_innsta_0.01', 27, 0],
-                    4:[100000, 121000, 122000, 175000, 1, 0, 0.02, 10, 'take_innsta_0.015', 27, 0],
+        day_ranges={0:[100000, 101000, 102000, 132000, 1, 0, 0.04, 10, 'take_innsta_0.01', 20, 0],
+                    1:[100000, 103000, 104000, 150000, 1, 0, 0.04, 10, 'take_innsta_0.03', 14, 27],
+                    2:[100000, 113000, 114000, 175000, 1, 0, 0.04, 0, 'take_innsta_0.02', 27, 0],
+                    3:[100000, 110000, 112000, 152000, 1, 0, 0.04, 10, 'take_innsta_0.03', 14, 27],
+                    4:[100000, 103000, 110000, 142000, 1, 0, 0.03, 10, 'take_innsta_0.03', 27, 0],
                     5:[183000, 183000, 183000, 183000,1],
                     6:[183000, 183000, 183000, 183000,1]}
-        
+
         return [day_ranges[day_of_week]]
 
     def get_ranges_by_dayweek_new(self,curr_date):
         day_of_week = self.get_day_week(curr_date)
-        day_ranges={0:[[100000, 101000, 111000, 180000, -1, 0, 0.04, 10, 'take_innsta_0.01', 9, 0],[]],
-                    1:[[100000, 102000, 112000, 174000, -1, 0, 0.04, 10, 'take_innsta_0.015', 14, 20],[]],
-                    2:[[100000, 113000, 120000, 153000, -1, 0, 0.03, 10, 'take_innsta_0.04', 27, 0],[]],
-                    3:[[183000, 183000, 183000, 183000,1],[]],
-                    4:[[100000, 104000, 105000, 164000, -1, 0, 0.03, 4, 'take_innsta_0.03', 9, 0],[]],
+        day_ranges={0:[[100000, 101000, 102000, 173000, -1, 0, 0.04, 10, 'take_innsta_0.02', 9, 27],[]],
+                    1:[[100000, 102000, 115000, 173000, -1, 0, 0.03, 10, 'take_innsta_0.01', 20, 0],[]],
+                    2:[[100000, 125000, 133000, 172000, -1, 0, 0.03, 10, 'take_innsta_0.04', 9, 14],[]],
+                    3:[[100000, 103000, 122000, 173000, -1, 0, 0.04, 0, 'take_innsta_0.02', 9, 27],[]],
+                    4:[[183000, 183000, 183000, 183000,1],[]],
                     5:[183000, 183000, 183000, 183000,1],
                     6:[183000, 183000, 183000, 183000,1]}
         
         return [day_ranges[day_of_week]]
-
+    
 if __name__ == "__main__":
-    # based on my_app_0817_full_fees_atr
+    # based on my_app_0817_full_tatn_atr
     start_timer=time.time()
-    temp_file_name="daily_ALRS.txt"
-    result_files=["C:\\Just2Trade Client\\AK Alrosa.txt","C:\\Just2Trade Client\\reserv_AK Alrosa.txt"]
+    temp_file_name="daily_MGNT.txt"
+    result_files=["C:\\Just2Trade Client\\Magnit.txt","C:\\Just2Trade Client\\reserv_Magnit.txt"]
     if os.path.exists(temp_file_name):
         os.remove(temp_file_name)
     cur_date=time.localtime()
@@ -65,10 +66,9 @@ if __name__ == "__main__":
     results_profit_dir=[]
     results_procent_dir=[]
     get_file_string="http://export.finam.ru/export9.out"
-    
     stock_params={"market":"1",
-                  "em":"81820",
-                  "code":"ALRS",
+                  "em":"17086",
+                  "code":"MGNT",
                   "apply":"0",
                   "df":"1",
                   "mf":"5",
@@ -81,7 +81,7 @@ if __name__ == "__main__":
                   "p":"4", # period means 10 minutes
                   "e":".txt", # export format
                   "f":"%s" % temp_file_name.split(".")[0],
-                  "cn":"ALRS",
+                  "cn":"MGNT",
                   "dtf":"1",
                   "tmf":"1",
                   "sep":"1",
@@ -95,10 +95,10 @@ if __name__ == "__main__":
     with open(temp_file_name, 'wb') as f:
         shutil.copyfileobj(r.raw, f)
         
-    pa = ProfileAnalyserALRS(temp_file_name)
+    pa = ProfileAnalyserMGNT(temp_file_name)
     log.info("All saved dayes %s " % len(pa.days))
     start_date=pa.days[-10]
-    best_ranges = pa.robot(start_date, 5, day_end = int("%d%.2d%.2d" % (cur_year,cur_month,cur_day)),delta=0.0015,loss=0.03)
+    best_ranges = pa.robot(start_date, 5, day_end = int("%d%.2d%.2d" % (cur_year,cur_month,cur_day)),delta=0.005,loss=0.015)
     for best_range_ind in range(len(best_ranges)):
         best_range=best_ranges[best_range_ind]
         result_file=result_files[best_range_ind]

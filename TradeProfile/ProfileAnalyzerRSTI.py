@@ -22,11 +22,11 @@ class ProfileAnalyserRSTI(ProfileAnalyser):
     
     def get_ranges_by_dayweek(self,curr_date):
         day_of_week =  self.get_day_week(curr_date)
-        day_ranges={0:[100000, 105000, 112000, 180000, 1, 0, 0.04, 4, 'take_innsta_0.03', 20, 27],
-                    1:[100000, 102000, 103000, 160000, -1, 0, 0.04, 3, 'take_innsta_0.02', 9, 0],
-                    2:[100000, 111000, 112000, 180000, -1, 0, 0.04, 5, 'take_innsta_0.01', 9, 0],
-                    3:[100000, 122000, 140000, 174000, -1, 0, 0.04, 4, 'take_innsta_0.03', 14, 20],
-                    4:[100000, 111000, 114000, 173000, -1, 0, 0.02, 5, 'take_innsta_0.02', 9, 0],
+        day_ranges={0:[100000, 122000, 131000, 174000, 1, 0, 0.03, 2, 'take_innsta_0.01', 27, 0],
+                    1:[100000, 105000, 110000, 130000, 1, 0, 0.03, 0, 'take_innsta_0.04', 20, 0],
+                    2:[100000, 103000, 105000, 141000, 1, 0, 0.04, 2, 'take_innsta_0.03', 14, 27],
+                    3:[100000, 105000, 115000, 180000, -1, 0, 0.03, 2, 'take_innsta_0.02', 20, 0],
+                    4:[100000, 141000, 142000, 170000, 1, 0, 0.03, 0, 'take_innsta_0.03', 27, 0],
                     5:[183000, 183000, 183000, 183000,1],
                     6:[183000, 183000, 183000, 183000,1]}
         
@@ -97,7 +97,7 @@ if __name__ == "__main__":
         
     pa = ProfileAnalyserRSTI(temp_file_name)
     log.info("All saved dayes %s " % len(pa.days))
-    start_date=pa.days[-10]
+    start_date=pa.days[0]
     best_ranges = pa.robot(start_date, 5, day_end = int("%d%.2d%.2d" % (cur_year,cur_month,cur_day)),delta=0.0015,loss=0.03)
     for best_range_ind in range(len(best_ranges)):
         best_range=best_ranges[best_range_ind]

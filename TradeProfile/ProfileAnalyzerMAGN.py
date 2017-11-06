@@ -23,11 +23,11 @@ class ProfileAnalyserMAGN(ProfileAnalyser):
 
     def get_ranges_by_dayweek(self,curr_date):
         day_of_week =  self.get_day_week(curr_date)
-        day_ranges={0:[100000, 105000, 110000, 175000, -1, 0, 0.04, 3, 'take_innsta_0.005', 14, 0],
-                    1:[100000, 120000, 122000, 180000, -1, 0, 0.02, 4, 'take_innsta_0.015', 27, 0],
-                    2:[100000, 105000, 110000, 161000, -1, 0, 0.03, 3, 'take_innsta_0.01', 9, 14],
-                    3:[100000, 102000, 103000, 173000, -1, 0, 0.03, 4, 'take_innsta_0.0075', 9, 14],
-                    4:[100000, 105000, 110000, 175000, -1, 0, 0.02, 3, 'take_innsta_0.005', 9, 0],
+        day_ranges={0:[100000, 132000, 133000, 173000, 1, 0, 0.03, 0, 'take_innsta_0.02', 9, 27],
+                    1:[100000, 103000, 112000, 174000, 1, 0, 0.04, 2, 'take_innsta_0.04', 9, 27],
+                    2:[100000, 104000, 110000, 145000, 1, 0, 0.03, 1, 'take_innsta_0.03', 27, 0],
+                    3:[100000, 120000, 121000, 160000, 1, 0, 0.03, 10, 'take_innsta_0.02', 27, 0],
+                    4:[100000, 121000, 122000, 172000, 1, 0, 0.03, 0, 'take_innsta_0.01', 27, 0],
                     5:[183000, 183000, 183000, 183000,1],
                     6:[183000, 183000, 183000, 183000,1]}
 
@@ -97,7 +97,7 @@ if __name__ == "__main__":
         
     pa = ProfileAnalyserMAGN(temp_file_name)
     log.info("All saved dayes %s " % len(pa.days))
-    start_date=pa.days[0]
+    start_date=pa.days[-10]
     best_ranges = pa.robot(start_date, 5, day_end = int("%d%.2d%.2d" % (cur_year,cur_month,cur_day)),delta=0.005,loss=0.015)
     for best_range_ind in range(len(best_ranges)):
         best_range=best_ranges[best_range_ind]

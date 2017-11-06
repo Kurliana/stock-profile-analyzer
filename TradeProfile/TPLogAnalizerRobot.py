@@ -169,8 +169,8 @@ class TPLogAnalizer():
 
 if __name__ == "__main__":
     start_timer=time.time()
-    file_list=["my_app_0617_full_bac_atr.log"]
-    for ranges in [[9]]:#,range(10,30,1),range(10,20,1)+range(30,40,1),range(0,10,1)+range(20,30,1),range(0,10,1)+range(30,40,1)]:
+    file_list=["my_app.log"]
+    for ranges in [range(0,13,1)]:#,range(10,30,1),range(10,20,1)+range(30,40,1),range(0,10,1)+range(20,30,1),range(0,10,1)+range(30,40,1)]:
         for filename in file_list:
             log.info("Analyze file %s with ranges %s" % (filename,ranges))
             tp = TPLogAnalizer(filename,"out.csv")
