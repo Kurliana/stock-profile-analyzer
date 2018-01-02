@@ -35,11 +35,11 @@ class ProfileAnalyserROSN(ProfileAnalyser):
 
     def get_ranges_by_dayweek_new(self,curr_date):
         day_of_week = self.get_day_week(curr_date)
-        day_ranges={0:[[100000, 112000, 114000, 162000, 1, 0, 0.01, 3, 'take_innsta_0.04', 27, 0],[]],
-                    1:[[100000, 101000, 102000, 171000, 1, 0, 0.04, 4, 'take_innsta_0.03', 14, 20],[]],
-                    2:[[100000, 101000, 121000, 175000, -1, 0, 0.03, 3, 'take_innsta_0.02', 14, 20],[]],
-                    3:[[183000, 183000, 183000, 183000,1],[]],
-                    4:[[183000, 183000, 183000, 183000,1],[]],
+        day_ranges={0:[100000, 122000, 123000, 165000, 1, 0, 0.03, 1, 'take_innsta_0.015', 27, 0],
+                    1:[100000, 104000, 105000, 152000, 1, 0, 0.04, 1, 'take_innsta_0.04', 20, 27],
+                    2:[100000, 103000, 123000, 180000, -1, 0, 0.04, 1, 'take_innsta_0.01', 9, 27],
+                    3:[100000, 102000, 104000, 135000, 1, 0, 0.03, 1, 'take_innsta_0.04', 27, 0],
+                    4:[100000, 102000, 112000, 154000, 1, 0, 0.04, 1, 'take_innsta_0.04', 9, 27],
                     5:[self.end_time, self.end_time, self.end_time, self.end_time,1],
                     6:[self.end_time, self.end_time, self.end_time, self.end_time,1]}
         

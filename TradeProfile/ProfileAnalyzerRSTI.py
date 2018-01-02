@@ -34,11 +34,11 @@ class ProfileAnalyserRSTI(ProfileAnalyser):
 
     def get_ranges_by_dayweek_new(self,curr_date):
         day_of_week = self.get_day_week(curr_date)
-        day_ranges={0:[[100000, 101000, 102000, 180000, -1, 0, 0.01, 4, 'take_innsta_0.003', 9, 27],[100000, 101000, 112000, 175000, 1, 0, 0.04, 4, 'take_innsta_0.03', 9, 27]],
-                    1:[[100000, 101000, 110000, 174000, 1, 0, 0.01, 3, 'take_innsta_0.003', 14, 0],[100000, 101000, 102000, 172000, -1, 0, 0.04, 3, 'take_innsta_0.01', 14, 0]],
-                    2:[[100000, 103000, 104000, 180000, -1, 0, 0.02, 5, 'take_innsta_0.01', 9, 0],[100000, 103000, 112000, 141000, 1, 0, 0.04, 5, 'take_innsta_0.04', 9, 0]],
-                    3:[[100000, 101000, 102000, 171000, -1, 0, 0.04, 3, 'take_innsta_0.003', 9, 27],[100000, 101000, 121000, 180000, 1, 0, 0.04, 3, 'take_innsta_0.005', 9, 27]],
-                    4:[[100000, 110000, 113000, 173000, -1, 0, 0.02, 5, 'take_innsta_0.02', 9, 0],[100000, 110000, 144000, 180000, 1, 0, 0.01, 5, 'take_innsta_0.04', 9, 0]],
+        day_ranges={0:[100000, 125000, 131000, 162000, 1, 0, 0.04, 1, 'take_innsta_0.015', 27, 0],
+                    1:[100000, 105000, 110000, 131000, 1, 0, 0.03, 0, 'take_innsta_0.04', 20, 0],
+                    2:[100000, 102000, 105000, 142000, 1, 0, 0.04, 1, 'take_innsta_0.03', 27, 0],
+                    3:[100000, 103000, 160000, 175000, -1, 0, 0.04, 1, 'take_innsta_0.02', 20, 0],
+                    4:[100000, 101000, 140000, 171000, -1, 0, 0.03, 1, 'take_innsta_0.03', 27, 0],
                     5:[183000, 183000, 183000, 183000,1],
                     6:[183000, 183000, 183000, 183000,1]}
         
@@ -97,7 +97,7 @@ if __name__ == "__main__":
         
     pa = ProfileAnalyserRSTI(temp_file_name)
     log.info("All saved dayes %s " % len(pa.days))
-    start_date=pa.days[0]
+    start_date=pa.days[-10]
     best_ranges = pa.robot(start_date, 5, day_end = int("%d%.2d%.2d" % (cur_year,cur_month,cur_day)),delta=0.0015,loss=0.03)
     for best_range_ind in range(len(best_ranges)):
         best_range=best_ranges[best_range_ind]

@@ -270,14 +270,14 @@ class ProfileAnalyser():
                 if not total_ticker:
                     
                     #log.info(ticker)
-                    if (ticker[3] < end_time) and ((take == 0) or (direction > 0 and (ticker[6] > ticker[9]["ATRTS"+str(take)])) or (direction < 0 and ticker[5] < ticker[9]["ATRTS"+str(take)])):
+                    if (ticker[3] < end_time) and ((take == 0) or (direction > 0 and (self.ready_to_trade(ticker,ticker, 1, take,ema1,ema2) == direction)) or (direction < 0 and (self.ready_to_trade(ticker,ticker, 1, take,ema1,ema2) == direction))):
                         #log.info("%s Start time %s value %s high %s atr %s" % (ticker[2],ticker[3],ticker[4],ticker[7],ticker[9]["ATRTS"+str(take)]))
                         #lets_enter+=1
                         #if lets_enter > 1 or ticker[3] == start_time:
                         total_ticker+=ticker
                         #if take == 0:
                         start_value=ticker[7]
-                        #log.info("Start %s, direction %s" % (ticker,direction))
+                        log.debug("Start trade after ticker %s, direction %s" % (ticker,direction))
                         pvv_min=200000000
                         pvv_max=-200000000
                         #else:
@@ -396,9 +396,9 @@ class ProfileAnalyser():
                                 #log.info(ticker)
                                 #log.info("Stop by atr at %s with start %s end %s" % (ticker[3],start_value,ticker[7]))
                             if ticker[6] < take_price and take_value == 0:
+                                log.debug("Stop trade with old limit %s after ticker %s" % (take_price,ticker))
                                 take_value = (take_price/start_value)-1
                                 #log.info(ticker)
-                                #log.info("Stop by limit at %s with start %s end %s" % (ticker[3],total_ticker[4],take_price))
                                 #log.info("Take profit take_equity %s up, take price %s, min price %s, profit %s" % (take_limit,take_price,ticker[6],take_value))
                             if take_limit > 0:
                                 tmp_take_price = ticker[5]*(1-(stop + take_limit)*max(0,1-(ticker[5]-start_value)/((take_limit)*start_value)))
@@ -406,10 +406,11 @@ class ProfileAnalyser():
                                     take_price = tmp_take_price
                             if take_price > ticker[7] and take_value == 0:
                                 #if not take_value == 0:
-                                #    log.info("Take value already non-zero: direction %s, take_value %s, stop value %s" % (1,take_value,(ticker[7]/start_value)-1))
+                                log.debug("Stop trade with new limit %s after ticker %s" % (take_price,ticker))
                                 take_value=(ticker[7]/start_value)-1
                                 
                             if self.ready_to_trade(ticker,ticker, 1, take,ema1,ema2) == -direction and take_value == 0:
+                                log.debug("Stop trade with ready to trade after ticker %s" % (ticker))
                                 take_value=(ticker[7]/start_value)-1
             
             
@@ -501,6 +502,7 @@ class ProfileAnalyser():
                             if ticker[5] > take_price and take_value == 0:
                                 #log.info(ticker)
                                 #log.info("Stop by limit at %s with start %s end %s" % (ticker[3],total_ticker[4],take_price))
+                                log.debug("Stop trade with old limit %s after ticker %s" % (take_price,ticker))
                                 take_value = (start_value/take_price)-1
                                 #log.info("Take profit take_equity %s down, take price %s, max price %s, profit %s" % (take_limit,take_price,ticker[5],take_value))
                             if take_limit > 0:
@@ -511,8 +513,10 @@ class ProfileAnalyser():
                                 #if not take_value == 0:
                                 #log.info("Take value already non-zero: direction %s, take_value %s, stop value %s" % (-1,take_value,(start_value/ticker[7])-1))
                                 #take_price=ticker[7]*(1+take)
+                                log.debug("Stop trade with new limit %s after ticker %s" % (take_price,ticker))
                                 take_value=(start_value/ticker[7])-1
                             if self.ready_to_trade(ticker,ticker, 1, take,ema1,ema2) == -direction and take_value == 0:
+                                log.debug("Stop trade with ready to trade after ticker %s" % (ticker))
                                 take_value=(ticker[7]/start_value)-1
                             #log.info("Take profit take_shorty %s down, take price %s, max price %s, min price %s, profit %s" % (total_ticker[4],take_price,ticker[5],ticker[6],take_value))
                         if schema.find("wrong_equity")>=0 and take_value == 0 and stop_value == 0:
@@ -1769,7 +1773,7 @@ class ProfileAnalyser():
             
         return day_profit_list, day_count_list,trade_direction_list,used_ranges
 
-    def robot(self, date_start=-1, period = 10, period2 = 0, day_end = -1, delta = 0.0015, loss = 0.015,best_prof=0.3,max_prof=5,methods_list=[7],changer_period=3):
+    def robot(self, date_start=-1, period = 10, period2 = 0, day_end = -1, delta = 0.0015, loss = 0.015,best_prof=0.3,max_prof=5,methods_list=[5],changer_period=3):
         self.tickers = self.filter_tickers(self.tickers, self.begin_time,self.end_time,-1,-1)
         if date_start > 0:
             date_start_index=self.days.index(date_start)
