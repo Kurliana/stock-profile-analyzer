@@ -144,7 +144,7 @@ class ProfileAnalyser():
                 if not total_ticker:
                     
                     #log.info(ticker)
-                    if (direction == 0) and (ticker[3] < end_time) and ((take == 0) or (ticker[9]["PVVREL"] > 0 and ticker[9]["PVV"] >= 0 and prev_ticker[9]["PVVREL"] < 0 and prev_ticker[9]["PVV"] >= 0) or (ticker[9]["PVVREL"] < 0 and ticker[9]["PVV"] <= 0 and prev_ticker[9]["PVVREL"] > 0 and prev_ticker[9]["PVV"] <= 0)):
+                    if (direction == 0) and (ticker[3] < end_time) and ((take == 0) or (ticker[9]["PVVREL"] > 0 and ticker[9]["PVV"] >= 0 and prev_ticker[9]["PVVREL"] > 0 and prev_ticker[9]["PVV"] >= 0) or (ticker[9]["PVVREL"] < 0 and ticker[9]["PVV"] <= 0 and prev_ticker[9]["PVVREL"] < 0 and prev_ticker[9]["PVV"] <= 0)):
                         #log.info("%s Start time %s value %s high %s atr %s" % (ticker[2],ticker[3],ticker[4],ticker[7],ticker[9]["ATRTS"+str(take)]))
                         #lets_enter+=1
                         #if lets_enter > 1 or ticker[3] == start_time:
@@ -174,7 +174,7 @@ class ProfileAnalyser():
                     #    log.info("Failed to enter market %s" % (ticker[5] - ticker[9]["ATRTS"+str(take)]))
                 else:
                     #if direction==-tmp_direction:
-                    if (direction < 0 and ticker[9]["PVVREL"] > 0 and ticker[9]["PVV"] >= 0 and prev_ticker[9]["PVVREL"] < 0 and prev_ticker[9]["PVV"] >= 0) or (direction > 0 and ticker[9]["PVVREL"] < 0 and ticker[9]["PVV"] <= 0 and prev_ticker[9]["PVVREL"] > 0 and prev_ticker[9]["PVV"] <= 0):
+                    if (direction < 0 and ticker[9]["PVVREL"] > 0 and ticker[9]["PVV"] >= 0 and prev_ticker[9]["PVVREL"] > 0 and prev_ticker[9]["PVV"] >= 0) or (direction > 0 and ticker[9]["PVVREL"] < 0 and ticker[9]["PVV"] <= 0 and prev_ticker[9]["PVVREL"] < 0 and prev_ticker[9]["PVV"] <= 0):
                         if direction > 0:
                             take_value+=(ticker[7]/start_value)-1
                         elif direction < 0: 
@@ -2073,7 +2073,7 @@ if __name__ == "__main__":
     #log.info(pa.robot(-1,0,delta=0.0015,loss=0.03,methods_list=[0,2,4,6,8,10,12],best_prof=0,max_prof=1000,changer_period=5))
     
     #
-    day_tickers = pa.filter_tickers(pa.tickers, pa.begin_time,pa.max_time-1000,-1,-1,0)
+    day_tickers = pa.filter_tickers(pa.tickers, pa.begin_time,pa.max_time-1000,-1,-1)
     pa.tickers = day_tickers
     #100000, 104000, 121000, 174000, -1, 0, 0.02, 5, 'take_innsta_0.03', 20, 0
     #log.info(pa.analyze_by_day(day_tickers, 104000, 121000, 174000, 0,  0, 0.02, -1, 5,True,"take_innsta_0.03",20,0))

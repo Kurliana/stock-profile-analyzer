@@ -20,14 +20,14 @@ class TradeIndicators():
         else:
             if abs(ticker[5]-max(ticker[4],ticker[7])) > abs(min(ticker[4],ticker[7])-ticker[6]):
                 if ticker[4] > ticker[7]:
-                    sign=-1
-                else:
-                    sign=0
-            else:
-                if ticker[4] <= ticker[7]:
                     sign=1
                 else:
-                    sign=0
+                    sign=-1
+            else:
+                if ticker[4] <= ticker[7]:
+                    sign=-1
+                else:
+                    sign=1
                 
         return sign
     
@@ -94,7 +94,13 @@ class TradeIndicators():
             #    tmp_pvv_list.append(((single_ticker[5]-single_ticker[6])+abs(single_ticker[7]-single_ticker[4]))*(single_ticker[7]-single_ticker[4])/single_ticker[7])
             #else:
             #    tmp_pvv_list.append(0)
-            tmp_pvv_list.append(sign*((single_ticker[5]-single_ticker[6])+abs(single_ticker[7]-single_ticker[4]))*abs(single_ticker[7]-single_ticker[4])/single_ticker[7])
+            #tmp_pvv_list.append(sign*((single_ticker[5]-single_ticker[6])+abs(single_ticker[7]-single_ticker[4]))*abs(single_ticker[7]-single_ticker[4])/single_ticker[7])
+            full_move=max(0,single_ticker[5]-max(single_ticker[7],single_ticker[4]))*2+max(0,min(single_ticker[7],single_ticker[4])-single_ticker[6])*2+abs(single_ticker[7]-single_ticker[4])
+            if abs(single_ticker[7]-single_ticker[4]) > 0:
+                #tmp_pvv_list.append((single_ticker[7]-single_ticker[4])/((single_ticker[8]*abs(single_ticker[7]-single_ticker[4])/full_move)))
+                tmp_pvv_list.append(sign/(single_ticker[8]/full_move))
+            else:
+                tmp_pvv_list.append(0)
             
         volume_list=numpy.array(volume_list)
         for single_ticker_id in range(len(tickers)):
@@ -118,8 +124,8 @@ class TradeIndicators():
                 PVV_list2.append(PVV_list[single_ticker_id])#/PVV_list[single_ticker_id-1])
                 #PVV_list2.append(numpy.mean(PVV_list[single_ticker_id-interval+1:single_ticker_id+1]))
                 pvlist_cut=numpy.array(PVV_list[single_ticker_id-interval+1:single_ticker_id+1])
-                #PVV_rel.append((pvlist_cut.sum())/(interval))
-                PVV_rel.append((pvlist_cut.sum()-pvlist_cut.min()-pvlist_cut.max())/(interval-2))#*abs(single_ticker[7]-single_ticker[4]))#/abs(single_ticker[7]-single_ticker[4]))#/single_ticker[7])
+                PVV_rel.append((pvlist_cut.sum())/(interval))
+                #PVV_rel.append((pvlist_cut.sum()-pvlist_cut.min()-pvlist_cut.max())/(interval-2))#*abs(single_ticker[7]-single_ticker[4]))#/abs(single_ticker[7]-single_ticker[4]))#/single_ticker[7])
                 #PVV_rel.append(numpy.mean(volume_list[single_ticker_id-interval+1:single_ticker_id+1])/numpy.sum(volume_list[single_ticker_id-interval+1:single_ticker_id+1]))
                 #PVV_list2.append(PVV_list[single_ticker_id]/abs(numpy.mean(PVV_list[single_ticker_id-interval+1:single_ticker_id])))
                 #PVV_list2.append(numpy.sum(PVV_list[single_ticker_id-interval+1:single_ticker_id+1])/abs(numpy.sum(PVV_list[single_ticker_id-interval*2+1:single_ticker_id-interval+1])))
