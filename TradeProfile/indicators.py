@@ -9,6 +9,27 @@ class TradeIndicators():
     
     def __init__(self, all_tickers):
         self.all_tickers=all_tickers
+        
+    def _get_pvv_sign(self,ticker):
+        sign=0
+        if abs(ticker[4]-ticker[7]) >= 0.5*abs(ticker[5]-ticker[6]):
+            if ticker[4] > ticker[7]:
+                sign=-1
+            else:
+                sign=1
+        else:
+            if abs(ticker[5]-max(ticker[4],ticker[7])) > abs(min(ticker[4],ticker[7])-ticker[6]):
+                if ticker[4] > ticker[7]:
+                    sign=-1
+                else:
+                    sign=0
+            else:
+                if ticker[4] <= ticker[7]:
+                    sign=1
+                else:
+                    sign=0
+                
+        return sign
     
     def getATR(self,**kwargs):
         tickers=kwargs.get("tickers",[])
@@ -62,6 +83,7 @@ class TradeIndicators():
             #price_max_diff=(single_ticker[5]-single_ticker[6])/med_price
             #price_tot_diff=(single_ticker[7]-single_ticker[4])/med_price
             volume_list.append(single_ticker[8])
+            sign = self._get_pvv_sign(single_ticker)
             #if single_ticker[7] >= single_ticker[4]:
             #    tmp_pvv_list.append((single_ticker[5]-single_ticker[6]+abs(single_ticker[7]-single_ticker[4]))/(2*med_price))
             #else:
@@ -72,7 +94,7 @@ class TradeIndicators():
             #    tmp_pvv_list.append(((single_ticker[5]-single_ticker[6])+abs(single_ticker[7]-single_ticker[4]))*(single_ticker[7]-single_ticker[4])/single_ticker[7])
             #else:
             #    tmp_pvv_list.append(0)
-            tmp_pvv_list.append(((single_ticker[5]-single_ticker[6])+abs(single_ticker[7]-single_ticker[4]))*(single_ticker[7]-single_ticker[4])/single_ticker[7])
+            tmp_pvv_list.append(sign*((single_ticker[5]-single_ticker[6])+abs(single_ticker[7]-single_ticker[4]))*abs(single_ticker[7]-single_ticker[4])/single_ticker[7])
             
         volume_list=numpy.array(volume_list)
         for single_ticker_id in range(len(tickers)):

@@ -144,7 +144,7 @@ class ProfileAnalyser():
                 if not total_ticker:
                     
                     #log.info(ticker)
-                    if (direction == 0) and (ticker[3] < end_time) and ((take == 0) or (ticker[9]["PVVREL"] > 0 and ticker[9]["PVV"] > 0 and prev_ticker[9]["PVVREL"] > 0 and prev_ticker[9]["PVV"] > 0) or (ticker[9]["PVVREL"] < 0 and ticker[9]["PVV"] < 0 and prev_ticker[9]["PVVREL"] < 0 and prev_ticker[9]["PVV"] < 0)):
+                    if (direction == 0) and (ticker[3] < end_time) and ((take == 0) or (ticker[9]["PVVREL"] > 0 and ticker[9]["PVV"] >= 0 and prev_ticker[9]["PVVREL"] < 0 and prev_ticker[9]["PVV"] >= 0) or (ticker[9]["PVVREL"] < 0 and ticker[9]["PVV"] <= 0 and prev_ticker[9]["PVVREL"] > 0 and prev_ticker[9]["PVV"] <= 0)):
                         #log.info("%s Start time %s value %s high %s atr %s" % (ticker[2],ticker[3],ticker[4],ticker[7],ticker[9]["ATRTS"+str(take)]))
                         #lets_enter+=1
                         #if lets_enter > 1 or ticker[3] == start_time:
@@ -174,7 +174,7 @@ class ProfileAnalyser():
                     #    log.info("Failed to enter market %s" % (ticker[5] - ticker[9]["ATRTS"+str(take)]))
                 else:
                     #if direction==-tmp_direction:
-                    if (direction < 0 and ticker[9]["PVVREL"] > 0 and ticker[9]["PVV"] > 0 and prev_ticker[9]["PVVREL"] > 0 and prev_ticker[9]["PVV"] > 0) or (direction > 0 and ticker[9]["PVVREL"] < 0 and ticker[9]["PVV"] < 0 and prev_ticker[9]["PVVREL"] < 0 and prev_ticker[9]["PVV"] < 0):
+                    if (direction < 0 and ticker[9]["PVVREL"] > 0 and ticker[9]["PVV"] >= 0 and prev_ticker[9]["PVVREL"] < 0 and prev_ticker[9]["PVV"] >= 0) or (direction > 0 and ticker[9]["PVVREL"] < 0 and ticker[9]["PVV"] <= 0 and prev_ticker[9]["PVVREL"] > 0 and prev_ticker[9]["PVV"] <= 0):
                         if direction > 0:
                             take_value+=(ticker[7]/start_value)-1
                         elif direction < 0: 
@@ -183,9 +183,9 @@ class ProfileAnalyser():
                         direction = -direction
                         start_value=ticker[7]
                         #else:
-                        #direction=0
-                        #start_value=0
-                        #total_ticker=[]
+                        #    direction=0
+                        #    start_value=0
+                            #total_ticker=[]
                         log.debug("Stop trade by isup after ticker %s, direction %s" % (ticker,direction))
                         
                     if ticker[5] > max_value:
