@@ -133,18 +133,20 @@ class ProfileAnalyser():
                 pvv_max=ticker[9]["PVV"]
             if ticker[9]["PVV"] < pvv_min:
                 pvv_min=ticker[9]["PVV"]
-            if ticker[3] >= 100000 and ticker[3] <= end_time:
+            if ticker[3] >= start_time and ticker[3] <= end_time:
                 prev_ticker2=tickers_list[tickers_list.index(ticker)-2]
                 prev_ticker=tickers_list[tickers_list.index(ticker)-1]
                 org_direction=self.is_up_direction_multi(tickers_list,100000,101000,ema1,ema2,1)
                 tmp_direction=self.is_up_direction_multi(tickers_list,prev_ticker[3],ticker[3],ema1,ema2,1)
-                
+
                 #take_limit = 0.01*max(int(ticker[9]["PVVREL"]/0.001),1)
                 #isup2=self.is_up_direction(tickers_list,-1,ticker[3],0,ema1,ema2)*reverse_trade#+self.is_up_direction3(tickers_list,-1,ticker[3],0,ema1,ema2)*reverse_trade
                 if not total_ticker:
                     
                     #log.info(ticker)
-                    if (direction == 0) and (ticker[3] < end_time) and ((take == 0) or (ticker[9]["PVVREL"] > 0 and ticker[9]["PVV"] >= 0 and prev_ticker[9]["PVVREL"] > 0 and prev_ticker[9]["PVV"] >= 0) or (ticker[9]["PVVREL"] < 0 and ticker[9]["PVV"] <= 0 and prev_ticker[9]["PVVREL"] < 0 and prev_ticker[9]["PVV"] <= 0)):
+                    #if (direction == 0) and (ticker[3] < end_time) and ((take == 0) or (tmp_direction > 0 and ticker[9]["PVVREL"] > 0 and ticker[9]["PVV"] >= 0 and prev_ticker[9]["PVVREL"] > 0 and prev_ticker[9]["PVV"] >= 0) or (tmp_direction < 0 and ticker[9]["PVVREL"] < 0 and ticker[9]["PVV"] <= 0 and prev_ticker[9]["PVVREL"] < 0 and prev_ticker[9]["PVV"] <= 0)):
+                    if (direction == 0) and (ticker[3] < end_time) and ((take == 0) or (tmp_direction < 0 and ticker[9]["PVVREL"] > 0 and prev_ticker[9]["PVVREL"] > 0 and ticker[9]["PVV"] >= 0 and prev_ticker[9]["PVV"] >= 0) or (tmp_direction > 0 and ticker[9]["PVVREL"] < 0 and prev_ticker[9]["PVVREL"] < 0 and ticker[9]["PVV"] <= 0 and prev_ticker[9]["PVV"] <= 0)):
+                    #if (direction == 0) and (ticker[3] < end_time) and ((take == 0) or (abs(ticker[9]["PVV"])> 10*abs(prev_ticker[9]["PVVREL"]) and abs(prev_ticker[9]["PVVREL"]) > 0 and (abs(ticker[9]["PVV"])>50000))):
                         #log.info("%s Start time %s value %s high %s atr %s" % (ticker[2],ticker[3],ticker[4],ticker[7],ticker[9]["ATRTS"+str(take)]))
                         #lets_enter+=1
                         #if lets_enter > 1 or ticker[3] == start_time:
@@ -159,22 +161,28 @@ class ProfileAnalyser():
                         #log.info("Start %s, direction %s" % (ticker,direction))
                         pvv_min=200000000
                         pvv_max=-200000000
+                        min_value=200000000
+                        min_time=0
                         #else:
                         #    start_value_tmp=prev_ticker[9]["VWAP"]#ticker[7]
                         
                         if direction > 0:
                             #log.info("Direction upstream")
                             take_price=start_value*(1-stop)
+                            real_stop_value=start_value*(1-0.01)
                         if direction < 0:
                             #log.info("Direction downstram")
                             take_price=start_value*(1+stop)
-                        #real_stop_value = ticker[9]["ATRTS"+str(take)]
+                            real_stop_value=start_value*(1+0.01)
+                        #   real_stop_value = ticker[9]["ATRTS"+str(take)]
                         #close_value=ticker[7]
                     #else:
                     #    log.info("Failed to enter market %s" % (ticker[5] - ticker[9]["ATRTS"+str(take)]))
                 else:
                     #if direction==-tmp_direction:
-                    if (direction < 0 and ticker[9]["PVVREL"] > 0 and ticker[9]["PVV"] >= 0 and prev_ticker[9]["PVVREL"] > 0 and prev_ticker[9]["PVV"] >= 0) or (direction > 0 and ticker[9]["PVVREL"] < 0 and ticker[9]["PVV"] <= 0 and prev_ticker[9]["PVVREL"] < 0 and prev_ticker[9]["PVV"] <= 0):
+                    
+                    if (direction < 0 and ticker[9]["PVVREL"] > 0 and prev_ticker[9]["PVVREL"] > 0 and ticker[9]["PVV"] >= 0 and prev_ticker[9]["PVV"] >= 0) or (direction > 0 and ticker[9]["PVVREL"] < 0 and prev_ticker[9]["PVVREL"] < 0 and ticker[9]["PVV"] <= 0 and prev_ticker[9]["PVV"] <= 0):
+                    #if (abs(ticker[9]["PVV"])> 10*abs(prev_ticker[9]["PVVREL"]) and abs(prev_ticker[9]["PVVREL"]) > 0) and (direction*ticker[9]["PVV"]>0) and (abs(ticker[9]["PVV"])>50000):
                         if direction > 0:
                             take_value+=(ticker[7]/start_value)-1
                         elif direction < 0: 
@@ -182,25 +190,40 @@ class ProfileAnalyser():
                         #if tmp_direction == -direction:
                         direction = -direction
                         start_value=ticker[7]
+                        if direction > 0:
+                            #log.info("Direction upstream")
+                            take_price=start_value*(1-stop)
+                            real_stop_value=start_value*(1-0.01)
+                        if direction < 0:
+                            #log.info("Direction downstram")
+                            take_price=start_value*(1+stop)
+                            real_stop_value=start_value*(1+0.01)
                         #else:
-                        #    direction=0
-                        #    start_value=0
-                            #total_ticker=[]
+                        direction=0
+                        start_value=0
+                        #total_ticker=[]
                         log.debug("Stop trade by isup after ticker %s, direction %s" % (ticker,direction))
-                        
+
                     if ticker[5] > max_value:
                         max_value = ticker[5]
                         max_time = ticker[3]
                     if ticker[6] < min_value:
                         min_value = ticker[6]
                         min_time = ticker[3]
+
                     #high_low.append(ticker[5])
                     #high_low.append(ticker[6])
                     close_value=ticker[7]
+                    if schema.find("stop_limit")>=0:
+                        take_limit = float(schema[11:])
                     if schema.find("take_innsta")>=0:
                         take_limit = float(schema[12:])
                         #take_limit = 0.01
                     if direction > 0:
+                        if schema.find("stop_limit")>=0 and max_value*(1-take_limit) > ticker[6]:
+                            direction = 0
+                            take_value += ((max_value*(1-take_limit))/start_value)-1
+                            log.debug("Stop trade by simple stop lossat price %s with tiker %s" % (max_value*(1-take_limit),ticker))
                         if schema.find("take_innsta")>=0 and take_value == 0 and stop_value == 0:
                             #if total_ticker and take > 0 and ticker[5] >= start_value*(1+take_limit):
                             #    take_value=take_limit
@@ -210,6 +233,7 @@ class ProfileAnalyser():
                                 #log.info("Stop by atr at %s with start %s end %s" % (ticker[3],start_value,ticker[7]))
                             if ticker[6] < take_price and take_value == 0:
                                 log.debug("Stop trade with old limit %s after ticker %s" % (take_price,ticker))
+                                direction = 0
                                 take_value += (take_price/start_value)-1
                                 #log.info(ticker)
                                 #log.info("Stop by limit at %s with start %s end %s" % (ticker[3],total_ticker[4],take_price))
@@ -222,6 +246,7 @@ class ProfileAnalyser():
                                 #if not take_value == 0:
                                 #    log.info("Take value already non-zero: direction %s, take_value %s, stop value %s" % (1,take_value,(ticker[7]/start_value)-1))
                                 log.debug("Stop trade with new limit %s after ticker %s" % (take_price,ticker))
+                                direction = 0
                                 take_value+=(ticker[7]/start_value)-1
                                 
                             #if (self.is_up_direction(tickers_list,-1,ticker[3],take) == -direction) and take_value == 0:
@@ -229,9 +254,15 @@ class ProfileAnalyser():
                             #    take_value=(ticker[7]/start_value)-1
             
             
-                        #if ticker[6] < real_stop_value and take_value == 0 and stop_value == 0:
-                        #    stop_value = -stop
+                        if ticker[6] < real_stop_value and stop_value == 0 and direction == -tmp_direction:
+                            log.debug("Stop trade with stoploss after ticker %s" % (ticker))
+                            direction = 0
+                            take_value += (ticker[7]/start_value)-1
                     elif direction < 0:
+                        if schema.find("stop_limit")>=0 and min_value*(1+take_limit) < ticker[5]:
+                            direction = 0
+                            log.debug("Stop trade by simple stop lossat price %s with tiker %s" % (min_value*(1+take_limit),ticker))
+                            take_value += (start_value/(min_value*(1+take_limit)))-1
                         if schema.find("take_innsta")>=0 and take_value == 0 and stop_value == 0:
                             #if total_ticker and take > 0 and ticker[6] <= start_value*(1-take_limit):
                             #    take_value=take_limit
@@ -243,6 +274,7 @@ class ProfileAnalyser():
                                 #log.info(ticker)
                                 #log.info("Stop by limit at %s with start %s end %s" % (ticker[3],total_ticker[4],take_price))
                                 log.debug("Stop trade with old limit %s after ticker %s" % (take_price,ticker))
+                                direction = 0
                                 take_value += (start_value/take_price)-1
                                 #log.info("Take profit take_equity %s down, take price %s, max price %s, profit %s" % (take_limit,take_price,ticker[5],take_value))
                             if take_limit > 0:
@@ -254,13 +286,16 @@ class ProfileAnalyser():
                                 #log.info("Take value already non-zero: direction %s, take_value %s, stop value %s" % (-1,take_value,(start_value/ticker[7])-1))
                                 #take_price=ticker[7]*(1+take)
                                 log.debug("Stop trade with new limit %s after ticker %s" % (take_price,ticker))
+                                direction = 0
                                 take_value+=(start_value/ticker[7])-1
                             #if (self.is_up_direction(tickers_list,-1,ticker[3],take) == -direction) and take_value == 0:
                             #    log.debug("Stop trade with ready to trade after ticker %s" % (ticker))
                             #    take_value=(start_value/ticker[7])-1
                             #log.info("Take profit take_shorty %s down, take price %s, max price %s, min price %s, profit %s" % (total_ticker[4],take_price,ticker[5],ticker[6],take_value))
-                        #if ticker[5] > real_stop_value and take_value == 0 and stop_value == 0:
-                        #    stop_value = -stop
+                        if ticker[5] > real_stop_value and stop_value == 0 and direction == -tmp_direction:
+                            log.debug("Stop trade with stoploss after ticker %s" % (ticker))
+                            direction = 0
+                            take_value += (start_value/ticker[7])-1
         #return [],0,1#float(self.tickers.index(last_ticker)-self.tickers.index(first_ticker)+1)/10
         if total_ticker:
            

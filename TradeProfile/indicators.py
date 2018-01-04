@@ -10,27 +10,73 @@ class TradeIndicators():
     def __init__(self, all_tickers):
         self.all_tickers=all_tickers
         
-    def _get_pvv_sign(self,ticker):
-        sign=0
-        if abs(ticker[4]-ticker[7]) >= 0.5*abs(ticker[5]-ticker[6]):
-            if ticker[4] > ticker[7]:
-                sign=-1
-            else:
-                sign=1
+    def _get_pvv_sign(self,ticker,prev_sign):
+        #if abs(ticker[4]-ticker[7]) >= 0.5*abs(ticker[5]-ticker[6]):
+        """ N/B this is finally resolved config
+        if abs(ticker[5]-ticker[7]) > abs(ticker[7]-ticker[6]):
+            sign=-1
         else:
-            if abs(ticker[5]-max(ticker[4],ticker[7])) > abs(min(ticker[4],ticker[7])-ticker[6]):
+            sign=1
+        """
+        #if abs(ticker[4]-ticker[7]) >= 0.5*abs(ticker[5]-ticker[6]):
+        if abs(ticker[5]-ticker[7]) > abs(ticker[7]-ticker[6]):
+            sign=-1
+        else:
+            sign=1
+        #else:
+        #    sign=0
+        """else:
+            #if abs(ticker[5]-max(ticker[4],ticker[7])) > abs(min(ticker[4],ticker[7])-ticker[6]):
+            if abs(ticker[5]-ticker[7]) > abs(ticker[7]-ticker[6]):
                 if ticker[4] > ticker[7]:
-                    sign=1
+                    sign=0
                 else:
-                    sign=-1
+                    sign=0
             else:
                 if ticker[4] <= ticker[7]:
-                    sign=-1
+                    sign=0
                 else:
-                    sign=1
-                
+                    sign=0"""
+                    
         return sign
     
+    def _get_skating_mean_old(self, index_arr):
+        skating_plus = 0
+        skating_minus = 0
+        for ind in range(len(index_arr)-1,-1,-1):
+            if index_arr[ind] > 0:
+                skating_plus+=1
+            elif index_arr[ind] < 0:
+                skating_minus+=1
+            if skating_plus > len(index_arr)/2:
+                return abs(index_arr.mean())
+            if skating_minus > len(index_arr)/2:
+                return -abs(index_arr.mean())
+        return 0
+    
+    def _get_skating_mean_weight(self, index_arr):
+        skating=0
+        for ind in range(len(index_arr)-1):
+            skating=0.3*skating+0.7*index_arr[ind]
+        return skating
+
+    def _get_skating_mean(self, index_arr):
+        skating=0
+        min_value=999999999999999999
+        max_value=0
+        for ind in range(len(index_arr)-1):
+            if index_arr[ind][5] > max_value:
+                max_value = index_arr[ind][5]
+            if index_arr[ind][6] < min_value:
+                min_value = index_arr[ind][6]
+        if abs(max_value-index_arr[-1][7]) > abs(index_arr[-1][7]-min_value):
+            skating=-1
+        else:
+            skating=1
+
+
+        return skating
+            
     def getATR(self,**kwargs):
         tickers=kwargs.get("tickers",[])
         interval=kwargs.get("interval",14)
@@ -70,6 +116,8 @@ class TradeIndicators():
         return EMA_list
 
     def getPVV(self,**kwargs):
+        sign=0
+        prev_sign=0
         tickers=kwargs.get("tickers",[])
         interval=kwargs.get("interval",14)
         alpha=(2.0/(interval+1))
@@ -83,7 +131,8 @@ class TradeIndicators():
             #price_max_diff=(single_ticker[5]-single_ticker[6])/med_price
             #price_tot_diff=(single_ticker[7]-single_ticker[4])/med_price
             volume_list.append(single_ticker[8])
-            sign = self._get_pvv_sign(single_ticker)
+            prev_sign=sign
+            sign = self._get_pvv_sign(single_ticker,prev_sign)
             #if single_ticker[7] >= single_ticker[4]:
             #    tmp_pvv_list.append((single_ticker[5]-single_ticker[6]+abs(single_ticker[7]-single_ticker[4]))/(2*med_price))
             #else:
@@ -124,7 +173,8 @@ class TradeIndicators():
                 PVV_list2.append(PVV_list[single_ticker_id])#/PVV_list[single_ticker_id-1])
                 #PVV_list2.append(numpy.mean(PVV_list[single_ticker_id-interval+1:single_ticker_id+1]))
                 pvlist_cut=numpy.array(PVV_list[single_ticker_id-interval+1:single_ticker_id+1])
-                PVV_rel.append((pvlist_cut.sum())/(interval))
+                PVV_rel.append(pvlist_cut.mean())
+                #PVV_rel.append(self._get_skating_mean(tickers[single_ticker_id-interval+1:single_ticker_id+1]))
                 #PVV_rel.append((pvlist_cut.sum()-pvlist_cut.min()-pvlist_cut.max())/(interval-2))#*abs(single_ticker[7]-single_ticker[4]))#/abs(single_ticker[7]-single_ticker[4]))#/single_ticker[7])
                 #PVV_rel.append(numpy.mean(volume_list[single_ticker_id-interval+1:single_ticker_id+1])/numpy.sum(volume_list[single_ticker_id-interval+1:single_ticker_id+1]))
                 #PVV_list2.append(PVV_list[single_ticker_id]/abs(numpy.mean(PVV_list[single_ticker_id-interval+1:single_ticker_id])))
