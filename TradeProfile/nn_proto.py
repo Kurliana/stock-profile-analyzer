@@ -19,7 +19,7 @@ from keras import backend as K
 
 num_classes=2
 
-pa = ProfileAnalyser("FEES_150105_170801.txt",mode="rus")
+pa = ProfileAnalyser("TATN_150105_170801.txt",mode="rus")
 
 day_tickers = pa.filter_tickers(pa.tickers, pa.begin_time,pa.max_time-1000,-1,-1)
 pa.tickers = day_tickers
@@ -81,11 +81,11 @@ x_total=numpy.array(x_total)
 for ind in range(len(pa.tickers)): 
     if ind > 6 and ind <= len(x_total)*7/10:
         x_train.append(x_total[ind-5:ind+1])
-        print "BEFORE"
-        print x_train[-1]
+        #print "BEFORE"
+        #print x_train[-1]
         x_train[-1]+=pa.best_directions[ind-5:ind]+[0]#+pa.best_directions[ind+1:ind+3]
-        print "AFTER"
-        print x_train[-1]
+        #print "AFTER"
+        #print x_train[-1]
         #x_train[-1][-5][-2] = 0
         #x_train.append(x_total[ind])
         if not pa.best_directions[ind] == 0:
@@ -138,17 +138,16 @@ print('Test accuracy:', score[1])
 
 new_best_directions=[-1,1,1,1,1,1]
 
-x_check=[]
 
 for ind in range(len(pa.tickers)):
     i = pa.tickers[ind]
-    x_check.append(x_total[ind+5:ind+1])
-    x_check[-1]+=new_best_directions[-6:-1]+[0]
-    #x_total.append(i[:-1])
-    #for param_name in i[9].keys():
-    #    x_total[-1].append(i[9][param_name])
+    x_check=[]
     if ind >= 6:
-        predict = model.predict(numpy.expand_dims(x_check[-1].reshape(1,6*len(x_total[0])), axis=0))
+        x_check.append(x_total[ind-5:ind+1])
+        x_check[-1]+=new_best_directions[-6:-1]+[0]
+        x_check=numpy.array(x_check)
+        x_check=x_check.reshape(1,6*len(x_total[0]))
+        predict = model.predict(x_check)
         if predict[0][0] > predict[0][1]:
             new_best_directions.append(-1)
         else:
