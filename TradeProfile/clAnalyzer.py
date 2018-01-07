@@ -70,6 +70,7 @@ class clAnalyzer:
             double atr4;
             double atr5;
             double atr10;
+            double vwma5;
             double vwma9;
             double vwma14;
             double vwma20;
@@ -114,6 +115,7 @@ class clAnalyzer:
         double get_ticker_vwma(tticker ticker, int vwma){
             double ticker_vwma=0;
             if (vwma==0) ticker_vwma=ticker.close_price;
+            if (vwma==5) ticker_vwma=ticker.vwma5;
             if (vwma==9) ticker_vwma=ticker.vwma9;
             if (vwma==14) ticker_vwma=ticker.vwma14;
             if (vwma==20) ticker_vwma=ticker.vwma20;
@@ -175,8 +177,7 @@ class clAnalyzer:
                 //if ((ticker2.ticker_time > (float)start_time) && (ticker2.ticker_time < (float)check_time+1)){
                     if ((ema1==0) && (ema2==0))
                     {
-                        if (ticker_vwma2 < 0)
-                            ticker_vwma2=ticker2.start_price;
+                        ticker_vwma2=ticker2.start_price;
                         ticker_vwma1=ticker2.close_price;
                     }
                     else if ((ema1>0) && (ema2==0))
@@ -207,17 +208,17 @@ class clAnalyzer:
                     }
                     
                     if (sum_ind > 0.00000000000000001)
-                        total_direction+=1;
+                        total_direction+=0;
                     else
-                        total_direction-=1;
+                        total_direction-=0;
                 
-                    if (total_direction >= limit)
-                        return 1;
-                    if (total_direction <= -limit)
-                        return -1;
+
                 }    
             }    
-  
+            if (total_direction >= limit)
+                return 1;
+            if (total_direction <= -limit)
+                return -1;  
             return 0;
         }
 
@@ -437,9 +438,11 @@ class clAnalyzer:
         
         double combine_multi_tickers_slide(__global tticker *tickers_list, int start_ticker, int end_ticker, int start_time, int end_time, double stop, double take, int direction, double take_limit, int reverse_trade, int ema1, int ema2){
             tticker ticker;
+            tticker prev_ticker;
             int total_ticker_exists=0;
             int ticker_time=0;
-            int isup2;
+            int isup2 = 0;
+            int isup3 = 0;
             double close_value=0;
             double stop_value=0;
             double take_value=0;
@@ -454,15 +457,21 @@ class clAnalyzer:
                 
                 ticker_time=(int)(ticker.ticker_time+0.5);
                 if ((ticker_time >=start_time-1) && (ticker_time <=end_time+1)){
+                    prev_ticker=tickers_list[ticker_number-1];
                     //take_limit=0.01*max((int)(ticker.pvvrel/0.001),1);
                     ticker_atrts=get_ticker_atr(ticker, take);
-                    isup2 = is_up_direction4(tickers_list,start_ticker,end_ticker,-1,ticker.ticker_time,take);
+                    isup2 = isup3;
+                    //isup2 = is_up_direction3(tickers_list,start_ticker,end_ticker,-1,tickers_list[ticker_number-1].ticker_time,0,ema1,ema2); 
+                    isup3 = is_up_direction3(tickers_list,start_ticker,end_ticker,-1,ticker.ticker_time,0,ema1,ema2)*reverse_trade;
                     //isup2 += is_up_direction3(tickers_list,start_ticker,end_ticker,-1,ticker.ticker_time,0,ema1,ema2);
                     //isup2=isup2/2;
                     if (total_ticker_exists==0){
+                        if (isup3 == isup2)
+                            direction = isup3;
                         
-                        //if ((floor(tickers_list[ticker_number+1].ticker_time+0.5)<=end_time+1) && (ticker_number+1<= end_ticker) &&((take < 1) || ((direction > 0) && (ticker.low_price < get_ticker_vwma(ticker,ema1))) || ((direction < 0) && (ticker.high_price > get_ticker_vwma(ticker,ema1)))))
+                        //if ((floor(tickers_list[ticker_number+1].ticker_time+0.5)<=end_time+1) && (ticker_number+1<= end_ticker) &&((take < 1) || ((direction > 0) && (ticker.low_price < ticker.wma9)) || ((direction < 0) && (ticker.high_price > ticker.wma9))))
                         if ((floor(tickers_list[ticker_number+1].ticker_time+0.5)<=end_time+1) && (ticker_number+1<= end_ticker) &&((take < 1) || ((direction > 0) && (ticker.low_price > ticker_atrts)) || ((direction < 0) && (ticker.high_price <ticker_atrts))))
+                        //if ((floor(tickers_list[ticker_number+1].ticker_time+0.5)<=end_time+1) && (ticker_number+1<= end_ticker) &&((take < 1) || ((direction > 0) && (ticker.pvvrel > 0) && (ticker.pvv >= 0) && (prev_ticker.pvvrel > 0) && (prev_ticker.pvv >= 0)) || ((direction < 0) && (ticker.pvvrel < 0) && (ticker.pvv <= 0) && (prev_ticker.pvvrel < 0) && (prev_ticker.pvv <= 0))))
                         {
                             total_ticker_exists=1;
                             start_value=ticker.close_price;
@@ -474,6 +483,14 @@ class clAnalyzer:
                     }
                     else
                     {
+                        if ((1 == 0)&&(isup3 == -direction) && (isup2 == -direction) && (fabs(take_value) < 0.00000000000000001))
+                        {
+                            if (direction > 0)
+                                take_value = (ticker.close_price/start_value)-1;
+                            if (direction < 0)
+                                take_value = (start_value/ticker.close_price)-1;
+                            direction=0;
+                        }
                         close_value=ticker.close_price;
                         if (direction > 0)
                         {
