@@ -19,7 +19,7 @@ from keras import backend as K
 
 num_classes=2
 
-pa = ProfileAnalyser("TATN_150105_170801.txt",mode="rus")
+pa = ProfileAnalyser("FEES_1.txt",mode="rus")
 
 day_tickers = pa.filter_tickers(pa.tickers, pa.begin_time,pa.max_time-1000,-1,-1)
 pa.tickers = day_tickers
@@ -136,8 +136,56 @@ score = model.evaluate(x_test, y_test)
 print('Test loss:', score[0])
 print('Test accuracy:', score[1])
 
+
+pa = ProfileAnalyser("FEES_2.txt",mode="rus")
+day_tickers = pa.filter_tickers(pa.tickers, pa.begin_time,pa.max_time-1000,-1,-1)
+pa.tickers = day_tickers
+
 new_best_directions=[-1,1,1,1,1,1]
 
+x_total=[]
+y_total=[]
+x_train=[]
+y_train=[]
+x_test=[]
+y_test=[]
+
+wrong = 0
+for ind in range(len(pa.tickers)):
+    i = pa.tickers[ind]
+
+    x_total.append([(i[4]-i[7])/i[7],(i[5]-i[7])/i[7],(i[7]-i[6])/i[7],i[9]["PVV"],i[9]["PVVREL"],(i[9]["EVWMA9"]-i[9]["EVWMA20"])/i[7]])
+    #x_total.append(convert_to_comp_array(i))
+    #x_total.append([abs(i[4]-i[7])/i[7],abs(i[5]-i[7])/i[7],abs(i[7]-i[6])/i[7]])
+    #for param_name in i[9].keys():
+    #    x_total[-1].append(i[9][param_name])
+    #if pa.best_directions[ind] > 0:
+    #    y_total.append(pa.best_directions[ind])
+    #elif pa.best_directions[ind] < 0:
+    #    y_total.append(0)
+    #elif pa.best_directions[ind] == 0:
+    #    y_total.append(2)
+
+x_total=numpy.array(x_total)
+for ind in range(len(pa.tickers)): 
+    if ind > 6 and ind < len(x_total)-6: #and ind < len(x_total)*5/10:
+        x_test.append(x_total[ind-5:ind+1])
+        x_test[-1]+=pa.best_directions[ind-5:ind]+[0]#+pa.best_directions[ind+1:ind+3]
+        #x_test[-1][-5][-2] = 0
+        #if not pa.best_directions[ind] == 0:
+        #    y_test.append(y_total[ind])
+        #else:
+        #    del x_test[-1]
+        
+x_test=numpy.array(x_test)
+x_test = x_test.reshape(len(x_test), 6*len(x_total[0]))
+#y_test=numpy.array(y_test)
+x_test = x_test.astype('float32')
+#y_test = keras.utils.to_categorical(y_test,num_classes=num_classes)
+
+#score = model.evaluate(x_test, y_test)
+#print('Test loss:', score[0])
+#print('Test accuracy:', score[1])
 
 for ind in range(len(pa.tickers)):
     i = pa.tickers[ind]
@@ -146,8 +194,10 @@ for ind in range(len(pa.tickers)):
         x_check.append(x_total[ind-5:ind+1])
         x_check[-1]+=new_best_directions[-6:-1]+[0]
         x_check=numpy.array(x_check)
+        x_check = x_check.astype('float32')
         x_check=x_check.reshape(1,6*len(x_total[0]))
         predict = model.predict(x_check)
+        #print predict
         if predict[0][0] > predict[0][1]:
             new_best_directions.append(-1)
         else:
@@ -157,9 +207,6 @@ if not len(x_total) == len(new_best_directions):
     print "ERROR: tickers %s and directions %s" % (len(x_total),len(new_best_directions))
     exit(0)
 
-
-day_tickers = pa.filter_tickers(pa.tickers, pa.begin_time,pa.max_time-1000,-1,-1)
-pa.tickers = day_tickers
 pa.best_directions=new_best_directions
 
 day_ranges={0:[100000, 104000, 100000, 180000, 1, 0, 0.04, 1, 'simple_0.04', 9, 20],
