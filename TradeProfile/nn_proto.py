@@ -10,16 +10,12 @@ Test module for Keras neuron network
 import numpy
 from ProfileAnalyzerTest import ProfileAnalyser
 import keras
-from keras.preprocessing import sequence
-from keras.utils import np_utils
 from keras.models import Sequential
-from keras.layers import Dense, Dropout, Flatten,Activation
-from keras.layers import Conv2D, MaxPooling2D,LSTM
-from keras import backend as K
+from keras.layers import Dense, Dropout
 
 num_classes=2
 
-pa = ProfileAnalyser("FEES_1.txt",mode="rus")
+pa = ProfileAnalyser("FEES_150105_170801.txt",mode="rus")
 
 day_tickers = pa.filter_tickers(pa.tickers, pa.begin_time,pa.max_time-1000,-1,-1)
 pa.tickers = day_tickers
@@ -79,11 +75,11 @@ print y_total[:10]
 
 x_total=numpy.array(x_total)
 for ind in range(len(pa.tickers)): 
-    if ind > 6 and ind <= len(x_total)*7/10:
+    if ind > 5 and ind <= len(x_total)*7/10:
         x_train.append(x_total[ind-5:ind+1])
         #print "BEFORE"
         #print x_train[-1]
-        x_train[-1]+=pa.best_directions[ind-5:ind]+[0]#+pa.best_directions[ind+1:ind+3]
+        x_train[-1]+=pa.best_directions[ind-6:ind]#+pa.best_directions[ind+1:ind+3]
         #print "AFTER"
         #print x_train[-1]
         #x_train[-1][-5][-2] = 0
@@ -95,7 +91,7 @@ for ind in range(len(pa.tickers)):
 
     elif ind > len(x_total)*7/10 and ind < len(x_total)-6: #and ind < len(x_total)*5/10:
         x_test.append(x_total[ind-5:ind+1])
-        x_test[-1]+=pa.best_directions[ind-5:ind]+[0]#+pa.best_directions[ind+1:ind+3]
+        x_test[-1]+=pa.best_directions[ind-6:ind]#+pa.best_directions[ind+1:ind+3]
         #x_test[-1][-5][-2] = 0
         if not pa.best_directions[ind] == 0:
             y_test.append(y_total[ind])
@@ -131,13 +127,15 @@ model.summary()
 model.compile(loss=keras.losses.categorical_crossentropy,
               optimizer='adam',
               metrics=['accuracy'])
-model.fit(x_train, y_train, epochs=1, batch_size=128, verbose=1,validation_data=(x_test, y_test))
+model.fit(x_train, y_train, epochs=10, batch_size=1, verbose=1,validation_data=(x_test, y_test))
 score = model.evaluate(x_test, y_test)
 print('Test loss:', score[0])
 print('Test accuracy:', score[1])
+exit(0)
+model.save('nn_trade_test_model5.h5')
+print "Model saved"
 
-
-pa = ProfileAnalyser("FEES_2.txt",mode="rus")
+pa = ProfileAnalyser("TATN_150105_170801.txt",mode="rus")
 day_tickers = pa.filter_tickers(pa.tickers, pa.begin_time,pa.max_time-1000,-1,-1)
 pa.tickers = day_tickers
 
@@ -167,10 +165,11 @@ for ind in range(len(pa.tickers)):
     #    y_total.append(2)
 
 x_total=numpy.array(x_total)
+
 for ind in range(len(pa.tickers)): 
     if ind > 6 and ind < len(x_total)-6: #and ind < len(x_total)*5/10:
         x_test.append(x_total[ind-5:ind+1])
-        x_test[-1]+=pa.best_directions[ind-5:ind]+[0]#+pa.best_directions[ind+1:ind+3]
+        x_test[-1]+=pa.best_directions[ind-6:ind]#+pa.best_directions[ind+1:ind+3]
         #x_test[-1][-5][-2] = 0
         #if not pa.best_directions[ind] == 0:
         #    y_test.append(y_total[ind])
@@ -182,7 +181,7 @@ x_test = x_test.reshape(len(x_test), 6*len(x_total[0]))
 #y_test=numpy.array(y_test)
 x_test = x_test.astype('float32')
 #y_test = keras.utils.to_categorical(y_test,num_classes=num_classes)
-
+pa.best_directions=[]
 #score = model.evaluate(x_test, y_test)
 #print('Test loss:', score[0])
 #print('Test accuracy:', score[1])
@@ -192,7 +191,7 @@ for ind in range(len(pa.tickers)):
     x_check=[]
     if ind >= 6:
         x_check.append(x_total[ind-5:ind+1])
-        x_check[-1]+=new_best_directions[-6:-1]+[0]
+        x_check[-1]+=new_best_directions[-6:]
         x_check=numpy.array(x_check)
         x_check = x_check.astype('float32')
         x_check=x_check.reshape(1,6*len(x_total[0]))

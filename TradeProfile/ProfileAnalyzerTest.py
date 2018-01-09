@@ -39,6 +39,18 @@ class ProfileAnalyser():
             self.begin_time=93000
             self.max_time=153000
             self.end_time=160000
+        if mode == "world":
+            self.comission=0.01
+            self.go=20
+            self.begin_time=10000
+            self.max_time=233000
+            self.end_time=235000
+        if mode == "forex":
+            self.comission=0.01
+            self.go=200
+            self.begin_time=10000
+            self.max_time=233000
+            self.end_time=235000
         self.tickers=[]
         self.days=[]
         self.results_days=[]
@@ -2161,7 +2173,7 @@ class ProfileAnalyser():
 
 if __name__ == "__main__":
     start_timer=time.time()
-    pa = ProfileAnalyser("FEES_150105_170801.txt",mode="rus")
+    pa = ProfileAnalyser("C:\\Just2Trade Client\\tickers_BTCUSD.txt",mode="rus")
     #log.info(day_tickers[-1])
     #log.info(pa.robot(-1,0,delta=0.0015,loss=0.03,methods_list=[0,2,4,6,8,10,12],best_prof=0,max_prof=1000,changer_period=5))
     
