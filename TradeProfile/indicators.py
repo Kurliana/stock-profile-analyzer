@@ -180,10 +180,13 @@ class TradeIndicators():
                 pvlist_cut=numpy.array(PVV_list[single_ticker_id-interval+1:single_ticker_id+1])
                 #PVV_rel.append(abs(PVV_list[single_ticker_id])/pvlist_cut.mean())
                 #pvlist_cut=numpy.array(PVV_list2[single_ticker_id-interval+1:single_ticker_id+1])
-                #PVV_rel2.append(abs(PVV_list2[single_ticker_id])/pvlist_cut.mean())
-                PVV_rel.append(PVV_list[single_ticker_id])
+                if not PVV_list2[single_ticker_id] == 0:
+                    PVV_rel2.append(PVV_list2[single_ticker_id]/abs(PVV_list2[single_ticker_id]))
+                else:
+                    PVV_rel2.append(0)
+                PVV_rel.append(numpy.mean(PVV_list[single_ticker_id-interval+1:single_ticker_id+1]))
                 #PVV_rel.append(self._get_skating_mean(tickers[single_ticker_id-interval+1:single_ticker_id+1]))
-                PVV_rel2.append((pvlist_cut.sum()-pvlist_cut.min()-pvlist_cut.max())/(interval-2))#*abs(single_ticker[7]-single_ticker[4]))#/abs(single_ticker[7]-single_ticker[4]))#/single_ticker[7])
+                #PVV_rel2.append((pvlist_cut.sum()-pvlist_cut.min()-pvlist_cut.max())/(interval-2))#*abs(single_ticker[7]-single_ticker[4]))#/abs(single_ticker[7]-single_ticker[4]))#/single_ticker[7])
                 #PVV_rel.append(numpy.mean(volume_list[single_ticker_id-interval+1:single_ticker_id+1])/numpy.sum(volume_list[single_ticker_id-interval+1:single_ticker_id+1]))
                 #PVV_list2.append(PVV_list[single_ticker_id]/abs(numpy.mean(PVV_list[single_ticker_id-interval+1:single_ticker_id])))
                 #PVV_list2.append(numpy.sum(PVV_list[single_ticker_id-interval+1:single_ticker_id+1])/abs(numpy.sum(PVV_list[single_ticker_id-interval*2+1:single_ticker_id-interval+1])))
@@ -331,7 +334,93 @@ class TradeIndicators():
                             curr_retry=0
                             ATRTS_list.append(single_ticker[5]-ATR)
         return ATRTS_list
-                    
+    
+    def _get_day_min_max_lists(self, day_tickers):
+        min_list = []
+        max_list = []
+        min_value=200000000
+        min_ticker=0
+        max_value=0
+        max_ticker=0
+        for single_ticker_id in range(len(day_tickers)):
+            single_ticker=day_tickers[single_ticker_id]
+            if single_ticker[5] > max_value:
+                max_value=single_ticker[5]
+                max_ticker=single_ticker_id
+            if single_ticker[6] < min_value:
+                min_value=single_ticker[6]
+                min_ticker=single_ticker_id
+            min_list.append(single_ticker[7]-min_value)
+            max_list.append(max_value-single_ticker[7])
+        return min_list, max_list
+    
+    def times_from_last_minmax(self,**kwargs):
+        day_tickers=[]
+        min_index_list=[]
+        max_index_list=[]
+        tickers=kwargs.get("tickers",[])
+        for single_ticker_id in range(len(tickers)):
+            single_ticker=tickers[single_ticker_id]
+            if not day_tickers or single_ticker[2] == day_tickers[-1][2]:
+                day_tickers.append(single_ticker)
+            else:
+                tmp_min_index_list, tmp_max_index_list = self._get_day_min_max_lists(day_tickers)
+                min_index_list+=tmp_min_index_list
+                max_index_list+=tmp_max_index_list
+                day_tickers=[single_ticker]
+        tmp_min_index_list, tmp_max_index_list = self._get_day_min_max_lists(day_tickers)
+        min_index_list+=tmp_min_index_list
+        max_index_list+=tmp_max_index_list
+        return min_index_list, max_index_list
+    
+    def getOBV(self,**kwargs):
+        day_tickers=[]
+        obv_list=[]
+        max_volume=0
+        tickers=kwargs.get("tickers",[])
+        for single_ticker_id in range(len(tickers)):
+            single_ticker=tickers[single_ticker_id]
+            if not day_tickers or single_ticker[2] == day_tickers[-1][2]:
+                day_tickers.append(single_ticker)
+            else:
+                obv_value=0
+                max_volume=0
+                sum_volume=0
+                tmp_obv_list=[]
+                for one_ticker in day_tickers:
+                    sum_volume+=one_ticker[8]
+                    full_move=max(0,one_ticker[5]-max(one_ticker[7],one_ticker[4]))*2+max(0,min(one_ticker[7],one_ticker[4])-one_ticker[6])*2+abs(one_ticker[7]-one_ticker[4])
+                    if full_move > 0:
+                        obv_value+=one_ticker[8]*(one_ticker[7]-one_ticker[4])/full_move
+                        tmp_obv_list.append(obv_value)
+                    else:
+                        tmp_obv_list.append(0)
+                    if abs(obv_value) > max_volume:
+                        max_volume=abs(obv_value)
+                    if max_volume == 0:
+                        obv_list.append(0)
+                    else:
+                        obv_list.append(tmp_obv_list[-1])
+                day_tickers=[single_ticker]
+        obv_value=0
+        max_volume=0
+        sum_volume=0
+        tmp_obv_list=[]
+        for one_ticker in day_tickers:
+            sum_volume+=one_ticker[8]
+            full_move=max(0,one_ticker[5]-max(one_ticker[7],one_ticker[4]))*2+max(0,min(one_ticker[7],one_ticker[4])-one_ticker[6])*2+abs(one_ticker[7]-one_ticker[4])
+            if full_move > 0:
+                obv_value+=one_ticker[8]*(one_ticker[7]-one_ticker[4])/full_move
+                tmp_obv_list.append(obv_value)
+            else:
+                tmp_obv_list.append(0)
+            if abs(obv_value) > max_volume:
+                max_volume=abs(obv_value)
+            if max_volume == 0:
+                obv_list.append(0)
+            else:
+                obv_list.append(tmp_obv_list[-1])
+        return obv_list
     
     def count_indicators(self,indicators_list, interval = 14):
         #for indicator_name in indicators_list:
@@ -405,6 +494,16 @@ class TradeIndicators():
         for single_ticker_id in range(len(self.all_tickers)):
             self.all_tickers[single_ticker_id][9]["EVWMA27"] = EVWMA_ind[single_ticker_id]
 
+        min_ind, max_ind = self.times_from_last_minmax(tickers = self.all_tickers)
+        for single_ticker_id in range(len(self.all_tickers)):
+            self.all_tickers[single_ticker_id][9]["MININD"] = min_ind[single_ticker_id]
+            self.all_tickers[single_ticker_id][9]["MAXIND"] = max_ind[single_ticker_id]
+        
+        OBV_ind = self.getOBV(tickers = self.all_tickers)
+        for single_ticker_id in range(len(self.all_tickers)):
+            self.all_tickers[single_ticker_id][9]["OBV"] = OBV_ind[single_ticker_id]
+
+        
         return self.all_tickers
     
     def get_avg_indicator_value(self, tickers, ind_key):

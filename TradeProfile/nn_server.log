@@ -4011,3 +4011,70 @@ ImportError: No module named pygpu
 2018-01-10 00:10:20.43 INFO in 'nn_server' at line 41: NNServer: direction 1 was written to file C:\Just2Trade Client\trade_BTCUSD.txt
 2018-01-10 00:20:23.717 INFO in 'nn_server' at line 50: NNServer: found file tickers_BTCUSD.txt with updated modification time 1515532801.17
 2018-01-10 00:20:23.898 INFO in 'nn_server' at line 41: NNServer: direction 1 was written to file C:\Just2Trade Client\trade_BTCUSD.txt
+2018-01-10 03:30:43.765 WARNING in 'blas_headers' at line 988: Using NumPy C-API based implementation for BLAS functions.
+2018-01-10 03:30:43.783 WARNING in 'blas' at line 187: Failed to import scipy.linalg.blas, and Theano flag blas.ldflags is empty. Falling back on slower implementations for dot(matrix, vector), dot(vector, matrix) and dot(vector, vector) (DLL load failed: Не найден указанный модуль.)
+2018-01-10 03:30:43.990 ERROR in '__init__' at line 259: pygpu was configured but could not be imported or is too old (version 0.7 or higher required)
+Traceback (most recent call last):
+  File "C:\Python27\lib\site-packages\theano-1.0.1-py2.7.egg\theano\gpuarray\__init__.py", line 23, in <module>
+    import pygpu
+ImportError: No module named pygpu
+2018-01-10 03:40:23.540 INFO in 'nn_server' at line 51: NNServer: found file tickers_BTCUSD.txt with updated modification time 1515544815.92
+2018-01-10 03:40:23.721 INFO in 'nn_server' at line 42: NNServer: direction -1 was written to file C:\Just2Trade Client\trade_BTCUSD.txt
+2018-01-10 03:50:53.842 INFO in 'nn_server' at line 51: NNServer: found file tickers_BTCUSD.txt with updated modification time 1515545452.73
+2018-01-10 04:00:24.10 INFO in 'nn_server' at line 51: NNServer: found file tickers_BTCUSD.txt with updated modification time 1515545999.27
+2018-01-10 04:00:24.65 INFO in 'nn_server' at line 42: NNServer: direction 1 was written to file C:\Just2Trade Client\trade_BTCUSD.txt
+2018-01-10 04:10:24.181 INFO in 'nn_server' at line 51: NNServer: found file tickers_BTCUSD.txt with updated modification time 1515546612.62
+2018-01-10 04:20:24.351 INFO in 'nn_server' at line 51: NNServer: found file tickers_BTCUSD.txt with updated modification time 1515547203.57
+2018-01-10 04:30:54.526 INFO in 'nn_server' at line 51: NNServer: found file tickers_BTCUSD.txt with updated modification time 1515547840.38
+2018-01-10 04:40:24.694 INFO in 'nn_server' at line 51: NNServer: found file tickers_BTCUSD.txt with updated modification time 1515548413.5
+2018-01-10 04:40:24.752 INFO in 'nn_server' at line 42: NNServer: direction -1 was written to file C:\Just2Trade Client\trade_BTCUSD.txt
+2018-01-10 04:50:24.868 INFO in 'nn_server' at line 51: NNServer: found file tickers_BTCUSD.txt with updated modification time 1515548998.62
+2018-01-10 04:50:24.924 INFO in 'nn_server' at line 42: NNServer: direction -1 was written to file C:\Just2Trade Client\trade_BTCUSD.txt
+2018-01-10 05:02:25.62 INFO in 'nn_server' at line 51: NNServer: found file tickers_BTCUSD.txt with updated modification time 1515549718.62
+2018-01-10 05:02:25.118 INFO in 'nn_server' at line 42: NNServer: direction -1 was written to file C:\Just2Trade Client\trade_BTCUSD.txt
+2018-01-10 05:10:25.209 INFO in 'nn_server' at line 51: NNServer: found file tickers_BTCUSD.txt with updated modification time 1515550207.52
+2018-01-10 05:10:25.266 INFO in 'nn_server' at line 42: NNServer: direction 1 was written to file C:\Just2Trade Client\trade_BTCUSD.txt
+2018-01-10 05:20:25.381 INFO in 'nn_server' at line 51: NNServer: found file tickers_BTCUSD.txt with updated modification time 1515550816.94
+2018-01-10 05:20:25.438 INFO in 'nn_server' at line 42: NNServer: direction 1 was written to file C:\Just2Trade Client\trade_BTCUSD.txt
+2018-01-10 05:30:55.565 INFO in 'nn_server' at line 51: NNServer: found file tickers_BTCUSD.txt with updated modification time 1515551427.24
+2018-01-10 05:40:25.743 INFO in 'nn_server' at line 51: NNServer: found file tickers_BTCUSD.txt with updated modification time 1515551998.71
+2018-01-10 05:40:25.802 INFO in 'nn_server' at line 42: NNServer: direction -1 was written to file C:\Just2Trade Client\trade_BTCUSD.txt
+2018-01-10 05:44:45.572 WARNING in 'blas_headers' at line 988: Using NumPy C-API based implementation for BLAS functions.
+2018-01-10 05:44:45.592 WARNING in 'blas' at line 187: Failed to import scipy.linalg.blas, and Theano flag blas.ldflags is empty. Falling back on slower implementations for dot(matrix, vector), dot(vector, matrix) and dot(vector, vector) (DLL load failed: Не найден указанный модуль.)
+2018-01-10 05:44:45.802 ERROR in '__init__' at line 259: pygpu was configured but could not be imported or is too old (version 0.7 or higher required)
+Traceback (most recent call last):
+  File "C:\Python27\lib\site-packages\theano-1.0.1-py2.7.egg\theano\gpuarray\__init__.py", line 23, in <module>
+    import pygpu
+ImportError: No module named pygpu
+2018-01-10 05:52:55.923 INFO in 'nn_server' at line 51: NNServer: found file tickers_BTCUSD.txt with updated modification time 1515552751.81
+2018-01-10 05:52:56.127 INFO in 'nn_server' at line 42: NNServer: direction 1 was written to file C:\Just2Trade Client\trade_BTCUSD.txt
+2018-01-10 05:59:56.213 INFO in 'nn_server' at line 51: NNServer: found file tickers_BTCUSD3.txt with updated modification time 1515553172.09
+2018-01-10 05:59:56.280 INFO in 'nn_server' at line 42: NNServer: direction -1 was written to file C:\Just2Trade Client\trade_BTCUSD3.txt
+2018-01-10 06:00:26.288 INFO in 'nn_server' at line 51: NNServer: found file tickers_BTCUSD.txt with updated modification time 1515553201.72
+2018-01-10 06:00:26.355 INFO in 'nn_server' at line 42: NNServer: direction 1 was written to file C:\Just2Trade Client\trade_BTCUSD.txt
+2018-01-10 06:01:56.375 INFO in 'nn_server' at line 51: NNServer: found file tickers_BTCUSD3.txt with updated modification time 1515553293.27
+2018-01-10 06:01:56.448 INFO in 'nn_server' at line 42: NNServer: direction 1 was written to file C:\Just2Trade Client\trade_BTCUSD3.txt
+2018-01-10 06:10:26.553 INFO in 'nn_server' at line 51: NNServer: found file tickers_BTCUSD.txt with updated modification time 1515553798.44
+2018-01-10 06:10:26.622 INFO in 'nn_server' at line 42: NNServer: direction 1 was written to file C:\Just2Trade Client\trade_BTCUSD.txt
+2018-01-10 06:11:56.644 INFO in 'nn_server' at line 51: NNServer: found file tickers_BTCUSD3.txt with updated modification time 1515553911.25
+2018-01-10 06:11:56.711 INFO in 'nn_server' at line 42: NNServer: direction -1 was written to file C:\Just2Trade Client\trade_BTCUSD3.txt
+2018-01-10 06:16:26.769 INFO in 'nn_server' at line 51: NNServer: found file tickers_BTCUSD3.txt with updated modification time 1515554173.17
+2018-01-10 06:16:26.862 INFO in 'nn_server' at line 42: NNServer: direction 1 was written to file C:\Just2Trade Client\trade_BTCUSD3.txt
+2018-01-10 06:20:26.914 INFO in 'nn_server' at line 51: NNServer: found file tickers_BTCUSD.txt with updated modification time 1515554420.91
+2018-01-10 06:20:26.986 INFO in 'nn_server' at line 42: NNServer: direction 1 was written to file C:\Just2Trade Client\trade_BTCUSD.txt
+2018-01-10 06:24:57.43 INFO in 'nn_server' at line 51: NNServer: found file tickers_BTCUSD3.txt with updated modification time 1515554676.01
+2018-01-10 06:24:57.112 INFO in 'nn_server' at line 42: NNServer: direction -1 was written to file C:\Just2Trade Client\trade_BTCUSD3.txt
+2018-01-10 06:27:27.148 INFO in 'nn_server' at line 51: NNServer: found file tickers_BTCUSD3.txt with updated modification time 1515554824.83
+2018-01-10 06:27:27.214 INFO in 'nn_server' at line 42: NNServer: direction 1 was written to file C:\Just2Trade Client\trade_BTCUSD3.txt
+2018-01-10 06:29:57.247 INFO in 'nn_server' at line 51: NNServer: found file tickers_BTCUSD3.txt with updated modification time 1515554989.59
+2018-01-10 06:29:57.319 INFO in 'nn_server' at line 42: NNServer: direction -1 was written to file C:\Just2Trade Client\trade_BTCUSD3.txt
+2018-01-10 06:31:27.338 INFO in 'nn_server' at line 51: NNServer: found file tickers_BTCUSD.txt with updated modification time 1515555059.16
+2018-01-10 06:31:27.405 INFO in 'nn_server' at line 42: NNServer: direction -1 was written to file C:\Just2Trade Client\trade_BTCUSD.txt
+2018-01-10 06:33:27.431 INFO in 'nn_server' at line 51: NNServer: found file tickers_BTCUSD3.txt with updated modification time 1515555180.75
+2018-01-10 06:33:27.499 INFO in 'nn_server' at line 42: NNServer: direction 1 was written to file C:\Just2Trade Client\trade_BTCUSD3.txt
+2018-01-10 06:35:57.529 INFO in 'nn_server' at line 51: NNServer: found file tickers_BTCUSD3.txt with updated modification time 1515555342.58
+2018-01-10 06:35:57.595 INFO in 'nn_server' at line 42: NNServer: direction -1 was written to file C:\Just2Trade Client\trade_BTCUSD3.txt
+2018-01-10 06:38:27.628 INFO in 'nn_server' at line 51: NNServer: found file tickers_BTCUSD3.txt with updated modification time 1515555507.62
+2018-01-10 06:38:27.696 INFO in 'nn_server' at line 42: NNServer: direction 1 was written to file C:\Just2Trade Client\trade_BTCUSD3.txt
+2018-01-10 06:40:27.717 INFO in 'nn_server' at line 51: NNServer: found file tickers_BTCUSD.txt with updated modification time 1515555603.04
+2018-01-10 06:40:27.786 INFO in 'nn_server' at line 42: NNServer: direction -1 was written to file C:\Just2Trade Client\trade_BTCUSD.txt

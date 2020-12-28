@@ -1,0 +1,861 @@
+
+;; Function constexpr double std::abs(double) (_ZSt3absd, funcdef_no=4, decl_uid=1257, cgraph_uid=1, symbol_order=1)
+
+__attribute__((nothrow, leaf, const))
+constexpr double std::abs(double) (double __x)
+{
+  double D.4374;
+  double _2;
+
+;;   basic block 2, loop depth 0
+;;    pred:       ENTRY
+  _2 = ABS_EXPR <__x_1(D)>;
+;;    succ:       3
+
+;;   basic block 3, loop depth 0
+;;    pred:       2
+<L0>:
+  return _2;
+;;    succ:       EXIT
+
+}
+
+
+
+Partition map 
+
+Partition 1 (__x_1(D) - 1 )
+Partition 2 (_2 - 2 )
+Partition 4 (_4(D) - 4 )
+
+
+Partition map 
+
+Partition 0 (__x_1(D) - 1 )
+Partition 1 (_4(D) - 4 )
+
+
+Conflict graph:
+
+After sorting:
+Coalesce List:
+
+Partition map 
+
+Partition 0 (__x_1(D) - 1 )
+Partition 1 (_4(D) - 4 )
+
+After Coalescing:
+
+Partition map 
+
+Partition 0 (__x_1(D) - 1 )
+Partition 1 (_2 - 2 )
+Partition 2 (_4(D) - 4 )
+
+__attribute__((nothrow, leaf, const))
+constexpr double std::abs(double) (double __x)
+{
+  double D.4374;
+  double _2;
+
+;;   basic block 2, loop depth 0
+;;    pred:       ENTRY
+  _2 = ABS_EXPR <__x_1(D)>;
+;;    succ:       3
+
+;;   basic block 3, loop depth 0
+;;    pred:       2
+<L0>:
+  return _2;
+;;    succ:       EXIT
+
+}
+
+
+
+;; Generating RTL for gimple basic block 2
+
+;; _2 = ABS_EXPR <__x_1(D)>;
+
+(insn 9 8 10 (set (reg:DF 91)
+        (mem/c:DF (plus:SI (reg/f:SI 82 virtual-stack-vars)
+                (const_int -8 [0xfffffffffffffff8])) [1 __x+0 S8 A64])) c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\cmath:86 -1
+     (nil))
+
+(insn 10 9 0 (set (reg:DF 87 [ _2 ])
+        (abs:DF (reg:DF 91))) c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\cmath:86 -1
+     (nil))
+
+;; Generating RTL for gimple basic block 3
+
+;; <L0>:
+
+(code_label 11 10 12 2 "" [0 uses])
+
+(note 12 11 0 NOTE_INSN_BASIC_BLOCK)
+
+;; return _2;
+
+(insn 13 12 14 (set (reg:DF 88 [ <retval> ])
+        (reg:DF 87 [ _2 ])) c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\cmath:86 -1
+     (nil))
+
+(jump_insn 14 13 15 (set (pc)
+        (label_ref 0)) c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\cmath:86 -1
+     (nil))
+
+(barrier 15 14 0)
+
+
+try_optimize_cfg iteration 1
+
+Merging block 3 into block 2...
+Merged blocks 2 and 3.
+Merged 2 and 3 without moving.
+Merging block 4 into block 2...
+Merged blocks 2 and 4.
+Merged 2 and 4 without moving.
+Removing jump 14.
+Merging block 5 into block 2...
+Merged blocks 2 and 5.
+Merged 2 and 5 without moving.
+
+
+try_optimize_cfg iteration 2
+
+fix_loop_structure: fixing up loops for function
+
+
+;;
+;; Full RTL generated for this function:
+;;
+(note 1 0 7 NOTE_INSN_DELETED)
+;; basic block 2, loop depth 0, count 0, freq 0, maybe hot
+;;  prev block 0, next block 1, flags: (NEW, REACHABLE, RTL)
+;;  pred:       ENTRY (FALLTHRU)
+(note 7 1 2 2 [bb 2] NOTE_INSN_BASIC_BLOCK)
+(insn 2 7 3 2 (set (reg:SI 89)
+        (mem/c:SI (reg/f:SI 81 virtual-incoming-args) [1 __x+0 S4 A32])) c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\cmath:86 -1
+     (nil))
+(insn 3 2 4 2 (set (mem/c:SI (plus:SI (reg/f:SI 82 virtual-stack-vars)
+                (const_int -8 [0xfffffffffffffff8])) [1 __x+0 S4 A64])
+        (reg:SI 89)) c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\cmath:86 -1
+     (nil))
+(insn 4 3 5 2 (set (reg:SI 90)
+        (mem/c:SI (plus:SI (reg/f:SI 81 virtual-incoming-args)
+                (const_int 4 [0x4])) [1 __x+4 S4 A32])) c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\cmath:86 -1
+     (nil))
+(insn 5 4 6 2 (set (mem/c:SI (plus:SI (reg/f:SI 82 virtual-stack-vars)
+                (const_int -4 [0xfffffffffffffffc])) [1 __x+4 S4 A32])
+        (reg:SI 90)) c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\cmath:86 -1
+     (nil))
+(note 6 5 9 2 NOTE_INSN_FUNCTION_BEG)
+(insn 9 6 10 2 (set (reg:DF 91)
+        (mem/c:DF (plus:SI (reg/f:SI 82 virtual-stack-vars)
+                (const_int -8 [0xfffffffffffffff8])) [1 __x+0 S8 A64])) c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\cmath:86 -1
+     (nil))
+(insn 10 9 13 2 (set (reg:DF 87 [ _2 ])
+        (abs:DF (reg:DF 91))) c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\cmath:86 -1
+     (nil))
+(insn 13 10 17 2 (set (reg:DF 88 [ <retval> ])
+        (reg:DF 87 [ _2 ])) c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\cmath:86 -1
+     (nil))
+(insn 17 13 18 2 (set (reg/i:DF 8 st)
+        (reg:DF 88 [ <retval> ])) c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\cmath:86 -1
+     (nil))
+(insn 18 17 0 2 (use (reg/i:DF 8 st)) c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\cmath:86 -1
+     (nil))
+;;  succ:       EXIT [100,0%]  (FALLTHRU)
+
+
+;; Function constexpr float std::sqrt(float) (_ZSt4sqrtf, funcdef_no=64, decl_uid=687, cgraph_uid=42, symbol_order=42)
+
+__attribute__((nothrow, leaf))
+constexpr float std::sqrt(float) (float __x)
+{
+  float D.4372;
+  float _4;
+
+;;   basic block 2, loop depth 0
+;;    pred:       ENTRY
+  _4 = __builtin_sqrtf (__x_2(D));
+;;    succ:       3
+
+;;   basic block 3, loop depth 0
+;;    pred:       2
+<L0>:
+  return _4;
+;;    succ:       EXIT
+
+}
+
+
+
+Partition map 
+
+Partition 2 (__x_2(D) - 2 )
+Partition 4 (_4 - 4 )
+Partition 5 (_5(D) - 5 )
+
+
+Partition map 
+
+Partition 0 (__x_2(D) - 2 )
+Partition 1 (_5(D) - 5 )
+
+
+Conflict graph:
+
+After sorting:
+Coalesce List:
+
+Partition map 
+
+Partition 0 (__x_2(D) - 2 )
+Partition 1 (_5(D) - 5 )
+
+After Coalescing:
+
+Partition map 
+
+Partition 0 (__x_2(D) - 2 )
+Partition 1 (_4 - 4 )
+Partition 2 (_5(D) - 5 )
+
+__attribute__((nothrow, leaf))
+constexpr float std::sqrt(float) (float __x)
+{
+  float D.4372;
+  float _4;
+
+;;   basic block 2, loop depth 0
+;;    pred:       ENTRY
+  _4 = __builtin_sqrtf (__x_2(D));
+;;    succ:       3
+
+;;   basic block 3, loop depth 0
+;;    pred:       2
+<L0>:
+  return _4;
+;;    succ:       EXIT
+
+}
+
+
+
+;; Generating RTL for gimple basic block 2
+
+;; _4 = __builtin_sqrtf (__x_2(D));
+
+(insn 5 4 6 (set (reg:SF 89)
+        (mem/c:SF (reg/f:SI 81 virtual-incoming-args) [2 __x+0 S4 A32])) c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\cmath:487 -1
+     (nil))
+
+(insn 6 5 7 (set (mem:SF (reg/f:SI 84 virtual-outgoing-args) [0  S4 A32])
+        (reg:SF 89)) c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\cmath:487 -1
+     (nil))
+
+(call_insn 7 6 8 (set (reg:SF 8 st)
+        (call (mem:QI (symbol_ref:SI ("sqrtf") [flags 0x43]  <function_decl 04478400 __builtin_sqrtf>) [0 __builtin_sqrtf S1 A8])
+            (const_int 4 [0x4]))) c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\cmath:487 -1
+     (expr_list:REG_EH_REGION (const_int 0 [0])
+        (nil))
+    (expr_list:SF (use (mem:SF (reg/f:SI 84 virtual-outgoing-args) [0  S4 A32]))
+        (nil)))
+
+(insn 8 7 0 (set (reg:SF 87 [ _4 ])
+        (reg:SF 8 st)) c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\cmath:487 -1
+     (nil))
+
+;; Generating RTL for gimple basic block 3
+
+;; <L0>:
+
+(code_label 9 8 10 4 "" [0 uses])
+
+(note 10 9 0 NOTE_INSN_BASIC_BLOCK)
+
+;; return _4;
+
+(insn 11 10 12 (set (reg:SF 88 [ <retval> ])
+        (reg:SF 87 [ _4 ])) c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\cmath:487 -1
+     (nil))
+
+(jump_insn 12 11 13 (set (pc)
+        (label_ref 0)) c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\cmath:487 -1
+     (nil))
+
+(barrier 13 12 0)
+
+
+try_optimize_cfg iteration 1
+
+Merging block 3 into block 2...
+Merged blocks 2 and 3.
+Merged 2 and 3 without moving.
+Merging block 4 into block 2...
+Merged blocks 2 and 4.
+Merged 2 and 4 without moving.
+Removing jump 12.
+Merging block 5 into block 2...
+Merged blocks 2 and 5.
+Merged 2 and 5 without moving.
+
+
+try_optimize_cfg iteration 2
+
+fix_loop_structure: fixing up loops for function
+
+
+;;
+;; Full RTL generated for this function:
+;;
+(note 1 0 3 NOTE_INSN_DELETED)
+;; basic block 2, loop depth 0, count 0, freq 0, maybe hot
+;;  prev block 0, next block 1, flags: (NEW, REACHABLE, RTL)
+;;  pred:       ENTRY (FALLTHRU)
+(note 3 1 2 2 [bb 2] NOTE_INSN_BASIC_BLOCK)
+(note 2 3 5 2 NOTE_INSN_FUNCTION_BEG)
+(insn 5 2 6 2 (set (reg:SF 89)
+        (mem/c:SF (reg/f:SI 81 virtual-incoming-args) [2 __x+0 S4 A32])) c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\cmath:487 -1
+     (nil))
+(insn 6 5 7 2 (set (mem:SF (reg/f:SI 84 virtual-outgoing-args) [0  S4 A32])
+        (reg:SF 89)) c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\cmath:487 -1
+     (nil))
+(call_insn 7 6 8 2 (set (reg:SF 8 st)
+        (call (mem:QI (symbol_ref:SI ("sqrtf") [flags 0x43]  <function_decl 04478400 __builtin_sqrtf>) [0 __builtin_sqrtf S1 A8])
+            (const_int 4 [0x4]))) c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\cmath:487 -1
+     (expr_list:REG_EH_REGION (const_int 0 [0])
+        (nil))
+    (expr_list:SF (use (mem:SF (reg/f:SI 84 virtual-outgoing-args) [0  S4 A32]))
+        (nil)))
+(insn 8 7 11 2 (set (reg:SF 87 [ _4 ])
+        (reg:SF 8 st)) c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\cmath:487 -1
+     (nil))
+(insn 11 8 15 2 (set (reg:SF 88 [ <retval> ])
+        (reg:SF 87 [ _4 ])) c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\cmath:487 -1
+     (nil))
+(insn 15 11 16 2 (set (reg/i:SF 8 st)
+        (reg:SF 88 [ <retval> ])) c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\cmath:487 -1
+     (nil))
+(insn 16 15 0 2 (use (reg/i:SF 8 st)) c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\cmath:487 -1
+     (nil))
+;;  succ:       EXIT [100,0%]  (FALLTHRU)
+
+
+;; Function int main(int, char**) (main, funcdef_no=223, decl_uid=4354, cgraph_uid=152, symbol_order=152)
+
+int main(int, char**) (int argc, char * * argv)
+{
+  double r;
+  float Sx;
+  float Nx;
+  int D.4370;
+  double D.4367;
+  double D.4366;
+  bool retval.0;
+  float D.4364;
+  float D.4363;
+  int _1;
+  float _6;
+  float _7;
+  double _9;
+  double _11;
+  bool retval.0_12;
+  int _13;
+  int _14;
+
+;;   basic block 2, loop depth 0
+;;    pred:       ENTRY
+  Nx_2 = -1.37877070903778076171875e+0;
+  Sx_3 = 2.5e+1;
+  _6 = std::sqrt (Sx_3);
+  _7 = _6 + Nx_2;
+  r_8 = (double) _7;
+  _9 = r_8 - 3.62122900000000003117861524515319615602493286133e+0;
+  _11 = std::abs (_9);
+  retval.0_12 = _11 > 1.0000000000000000208166817117216851329430937767e-2;
+  if (retval.0_12 != 0)
+    goto <bb 3>;
+  else
+    goto <bb 4>;
+;;    succ:       3
+;;                4
+
+;;   basic block 3, loop depth 0
+;;    pred:       2
+  _13 = -1;
+  goto <bb 5> (<L2>);
+;;    succ:       5
+
+;;   basic block 4, loop depth 0
+;;    pred:       2
+  _14 = 0;
+;;    succ:       5
+
+;;   basic block 5, loop depth 0
+;;    pred:       3
+;;                4
+  # _1 = PHI <_13(3), _14(4)>
+<L2>:
+  return _1;
+;;    succ:       EXIT
+
+}
+
+
+
+Partition map 
+
+Partition 1 (_1 - 1 )
+Partition 2 (Nx_2 - 2 )
+Partition 3 (Sx_3 - 3 )
+Partition 6 (_6 - 6 )
+Partition 7 (_7 - 7 )
+Partition 8 (r_8 - 8 )
+Partition 9 (_9 - 9 )
+Partition 11 (_11 - 11 )
+Partition 12 (retval.0_12 - 12 )
+Partition 13 (_13 - 13 )
+Partition 14 (_14 - 14 )
+Partition 15 (argc_15(D) - 15 )
+Partition 16 (argv_16(D) - 16 )
+Partition 17 (_17(D) - 17 )
+
+
+Partition map 
+
+Partition 0 (_1 - 1 )
+Partition 1 (_13 - 13 )
+Partition 2 (_14 - 14 )
+Partition 3 (argc_15(D) - 15 )
+Partition 4 (argv_16(D) - 16 )
+Partition 5 (_17(D) - 17 )
+
+
+Conflict graph:
+
+After sorting:
+Coalesce List:
+
+Partition map 
+
+Partition 0 (_1 - 1 )
+Partition 1 (_13 - 13 )
+Partition 2 (_14 - 14 )
+Partition 3 (argc_15(D) - 15 )
+Partition 4 (argv_16(D) - 16 )
+Partition 5 (_17(D) - 17 )
+
+Coalesce list: (1)_1 & (14)_14 [map: 0, 2] : Success -> 0
+Coalesce list: (1)_1 & (13)_13 [map: 0, 1] : Success -> 0
+After Coalescing:
+
+Partition map 
+
+Partition 0 (_1 - 1 13 14 )
+Partition 1 (Nx_2 - 2 )
+Partition 2 (Sx_3 - 3 )
+Partition 3 (_6 - 6 )
+Partition 4 (_7 - 7 )
+Partition 5 (r_8 - 8 )
+Partition 6 (_9 - 9 )
+Partition 7 (_11 - 11 )
+Partition 8 (retval.0_12 - 12 )
+Partition 9 (argc_15(D) - 15 )
+Partition 10 (argv_16(D) - 16 )
+Partition 11 (_17(D) - 17 )
+
+int main(int, char**) (int argc, char * * argv)
+{
+  double r;
+  float Sx;
+  float Nx;
+  int D.4370;
+  double D.4367;
+  double D.4366;
+  bool retval.0;
+  float D.4364;
+  float D.4363;
+  int _1;
+  float _6;
+  float _7;
+  double _9;
+  double _11;
+  bool retval.0_12;
+  int _13;
+  int _14;
+
+;;   basic block 2, loop depth 0
+;;    pred:       ENTRY
+  Nx_2 = -1.37877070903778076171875e+0;
+  Sx_3 = 2.5e+1;
+  _6 = std::sqrt (Sx_3);
+  _7 = _6 + Nx_2;
+  r_8 = (double) _7;
+  _9 = r_8 - 3.62122900000000003117861524515319615602493286133e+0;
+  _11 = std::abs (_9);
+  retval.0_12 = _11 > 1.0000000000000000208166817117216851329430937767e-2;
+  if (retval.0_12 != 0)
+    goto <bb 3>;
+  else
+    goto <bb 4>;
+;;    succ:       3
+;;                4
+
+;;   basic block 3, loop depth 0
+;;    pred:       2
+  _13 = -1;
+  goto <bb 5> (<L2>);
+;;    succ:       5
+
+;;   basic block 4, loop depth 0
+;;    pred:       2
+  _14 = 0;
+;;    succ:       5
+
+;;   basic block 5, loop depth 0
+;;    pred:       3
+;;                4
+  # _1 = PHI <_13(3), _14(4)>
+<L2>:
+  return _1;
+;;    succ:       EXIT
+
+}
+
+
+
+;; Generating RTL for gimple basic block 2
+
+;; Nx_2 = -1.37877070903778076171875e+0;
+
+(insn 6 5 7 (set (reg:SF 94)
+        (mem/u/c:SF (symbol_ref/u:SI ("*LC0") [flags 0x2]) [2  S4 A32])) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:5 -1
+     (nil))
+
+(insn 7 6 0 (set (mem/c:SF (plus:SI (reg/f:SI 82 virtual-stack-vars)
+                (const_int -4 [0xfffffffffffffffc])) [2 Nx+0 S4 A32])
+        (reg:SF 94)) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:5 -1
+     (nil))
+
+;; Sx_3 = 2.5e+1;
+
+(insn 8 7 9 (set (reg:SF 95)
+        (mem/u/c:SF (symbol_ref/u:SI ("*LC1") [flags 0x2]) [2  S4 A32])) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:6 -1
+     (nil))
+
+(insn 9 8 0 (set (mem/c:SF (plus:SI (reg/f:SI 82 virtual-stack-vars)
+                (const_int -8 [0xfffffffffffffff8])) [2 Sx+0 S4 A32])
+        (reg:SF 95)) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:6 -1
+     (nil))
+
+;; _6 = std::sqrt (Sx_3);
+
+(insn 10 9 11 (set (reg:SF 96)
+        (mem/c:SF (plus:SI (reg/f:SI 82 virtual-stack-vars)
+                (const_int -8 [0xfffffffffffffff8])) [2 Sx+0 S4 A32])) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:7 -1
+     (nil))
+
+(insn 11 10 12 (set (mem:SF (reg/f:SI 84 virtual-outgoing-args) [0  S4 A32])
+        (reg:SF 96)) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:7 -1
+     (nil))
+
+(call_insn 12 11 13 (set (reg:SF 8 st)
+        (call (mem:QI (symbol_ref:SI ("_ZSt4sqrtf") [flags 0x1]  <function_decl 04478380 sqrt>) [0 sqrt S1 A8])
+            (const_int 4 [0x4]))) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:7 -1
+     (expr_list:REG_EH_REGION (const_int 0 [0])
+        (nil))
+    (expr_list:SF (use (mem:SF (reg/f:SI 84 virtual-outgoing-args) [0  S4 A32]))
+        (nil)))
+
+(insn 13 12 0 (set (reg:SF 88 [ _6 ])
+        (reg:SF 8 st)) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:7 -1
+     (nil))
+
+;; _7 = _6 + Nx_2;
+
+(insn 14 13 0 (set (reg:SF 89 [ _7 ])
+        (plus:SF (reg:SF 88 [ _6 ])
+            (mem/c:SF (plus:SI (reg/f:SI 82 virtual-stack-vars)
+                    (const_int -4 [0xfffffffffffffffc])) [2 Nx+0 S4 A32]))) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:7 -1
+     (nil))
+
+;; r_8 = (double) _7;
+
+(insn 15 14 0 (set (mem/c:DF (plus:SI (reg/f:SI 82 virtual-stack-vars)
+                (const_int -16 [0xfffffffffffffff0])) [1 r+0 S8 A64])
+        (float_extend:DF (reg:SF 89 [ _7 ]))) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:7 -1
+     (nil))
+
+;; _9 = r_8 - 3.62122900000000003117861524515319615602493286133e+0;
+
+(insn 16 15 17 (set (reg:DF 97)
+        (mem/c:DF (plus:SI (reg/f:SI 82 virtual-stack-vars)
+                (const_int -16 [0xfffffffffffffff0])) [1 r+0 S8 A64])) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:8 -1
+     (nil))
+
+(insn 17 16 18 (set (reg:DF 98)
+        (mem/u/c:DF (symbol_ref/u:SI ("*LC2") [flags 0x2]) [1  S8 A64])) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:8 -1
+     (expr_list:REG_EQUAL (const_double:DF 3.62122900000000003117861524515319615602493286133e+0 [0x0.e7c2374794ea08p+2])
+        (nil)))
+
+(insn 18 17 0 (set (reg:DF 90 [ _9 ])
+        (minus:DF (reg:DF 97)
+            (reg:DF 98))) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:8 -1
+     (nil))
+
+;; _11 = std::abs (_9);
+
+(insn 19 18 20 (set (mem:DF (reg/f:SI 84 virtual-outgoing-args) [0  S8 A32])
+        (reg:DF 90 [ _9 ])) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:8 -1
+     (nil))
+
+(call_insn 20 19 21 (set (reg:DF 8 st)
+        (call (mem:QI (symbol_ref:SI ("_ZSt3absd") [flags 0x1]  <function_decl 044a4080 abs>) [0 abs S1 A8])
+            (const_int 8 [0x8]))) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:8 -1
+     (expr_list:REG_EH_REGION (const_int 0 [0])
+        (nil))
+    (expr_list:DF (use (mem:DF (reg/f:SI 84 virtual-outgoing-args) [0  S8 A32]))
+        (nil)))
+
+(insn 21 20 0 (set (reg:DF 91 [ _11 ])
+        (reg:DF 8 st)) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:8 -1
+     (nil))
+
+;; retval.0_12 = _11 > 1.0000000000000000208166817117216851329430937767e-2;
+
+(insn 22 21 23 (set (reg:DF 99)
+        (mem/u/c:DF (symbol_ref/u:SI ("*LC3") [flags 0x2]) [1  S8 A64])) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:8 -1
+     (expr_list:REG_EQUAL (const_double:DF 1.0000000000000000208166817117216851329430937767e-2 [0x0.a3d70a3d70a3d8p-6])
+        (nil)))
+
+(insn 23 22 24 (set (reg:CCFPU 17 flags)
+        (compare:CCFPU (reg:DF 91 [ _11 ])
+            (reg:DF 99))) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:8 -1
+     (nil))
+
+(insn 24 23 0 (set (reg:QI 92 [ retval.0_12 ])
+        (gt:QI (reg:CCFPU 17 flags)
+            (const_int 0 [0]))) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:8 -1
+     (nil))
+
+;; if (retval.0_12 != 0)
+
+(insn 25 24 26 (set (reg:CCZ 17 flags)
+        (compare:CCZ (reg:QI 92 [ retval.0_12 ])
+            (const_int 0 [0]))) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:8 -1
+     (nil))
+
+(jump_insn 26 25 0 (set (pc)
+        (if_then_else (eq (reg:CCZ 17 flags)
+                (const_int 0 [0]))
+            (label_ref 0)
+            (pc))) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:8 -1
+     (nil))
+
+;; Generating RTL for gimple basic block 3
+
+;; _13 = -1;
+
+(insn 28 27 0 (set (reg:SI 87 [ _1 ])
+        (const_int -1 [0xffffffffffffffff])) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:10 -1
+     (nil))
+
+;; Generating RTL for gimple basic block 4
+
+;; 
+
+(code_label 31 30 32 6 "" [0 uses])
+
+(note 32 31 0 NOTE_INSN_BASIC_BLOCK)
+
+;; _14 = 0;
+
+(insn 33 32 0 (set (reg:SI 87 [ _1 ])
+        (const_int 0 [0])) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:12 -1
+     (nil))
+
+;; Generating RTL for gimple basic block 5
+
+;; <L2>:
+
+(code_label 34 33 35 7 "" [0 uses])
+
+(note 35 34 0 NOTE_INSN_BASIC_BLOCK)
+
+;; return _1;
+
+(insn 36 35 37 (set (reg:SI 93 [ <retval> ])
+        (reg:SI 87 [ _1 ])) -1
+     (nil))
+
+(jump_insn 37 36 38 (set (pc)
+        (label_ref 0)) -1
+     (nil))
+
+(barrier 38 37 0)
+
+
+try_optimize_cfg iteration 1
+
+Merging block 3 into block 2...
+Merged blocks 2 and 3.
+Merged 2 and 3 without moving.
+Removing jump 37.
+Merging block 7 into block 6...
+Merged blocks 6 and 7.
+Merged 6 and 7 without moving.
+
+
+try_optimize_cfg iteration 2
+
+fix_loop_structure: fixing up loops for function
+
+
+;;
+;; Full RTL generated for this function:
+;;
+(note 1 0 4 NOTE_INSN_DELETED)
+;; basic block 2, loop depth 0, count 0, freq 0, maybe hot
+;;  prev block 0, next block 4, flags: (NEW, REACHABLE, RTL)
+;;  pred:       ENTRY (FALLTHRU)
+(note 4 1 2 2 [bb 2] NOTE_INSN_BASIC_BLOCK)
+(note 2 4 3 2 NOTE_INSN_FUNCTION_BEG)
+(call_insn 3 2 6 2 (call (mem:QI (symbol_ref:SI ("__main") [flags 0x43]) [0  S1 A8])
+        (const_int 0 [0])) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:4 -1
+     (expr_list:REG_EH_REGION (const_int -2147483648 [0xffffffff80000000])
+        (nil))
+    (nil))
+(insn 6 3 7 2 (set (reg:SF 94)
+        (mem/u/c:SF (symbol_ref/u:SI ("*LC0") [flags 0x2]) [2  S4 A32])) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:5 -1
+     (nil))
+(insn 7 6 8 2 (set (mem/c:SF (plus:SI (reg/f:SI 82 virtual-stack-vars)
+                (const_int -4 [0xfffffffffffffffc])) [2 Nx+0 S4 A32])
+        (reg:SF 94)) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:5 -1
+     (nil))
+(insn 8 7 9 2 (set (reg:SF 95)
+        (mem/u/c:SF (symbol_ref/u:SI ("*LC1") [flags 0x2]) [2  S4 A32])) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:6 -1
+     (nil))
+(insn 9 8 10 2 (set (mem/c:SF (plus:SI (reg/f:SI 82 virtual-stack-vars)
+                (const_int -8 [0xfffffffffffffff8])) [2 Sx+0 S4 A32])
+        (reg:SF 95)) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:6 -1
+     (nil))
+(insn 10 9 11 2 (set (reg:SF 96)
+        (mem/c:SF (plus:SI (reg/f:SI 82 virtual-stack-vars)
+                (const_int -8 [0xfffffffffffffff8])) [2 Sx+0 S4 A32])) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:7 -1
+     (nil))
+(insn 11 10 12 2 (set (mem:SF (reg/f:SI 84 virtual-outgoing-args) [0  S4 A32])
+        (reg:SF 96)) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:7 -1
+     (nil))
+(call_insn 12 11 13 2 (set (reg:SF 8 st)
+        (call (mem:QI (symbol_ref:SI ("_ZSt4sqrtf") [flags 0x1]  <function_decl 04478380 sqrt>) [0 sqrt S1 A8])
+            (const_int 4 [0x4]))) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:7 -1
+     (expr_list:REG_EH_REGION (const_int 0 [0])
+        (nil))
+    (expr_list:SF (use (mem:SF (reg/f:SI 84 virtual-outgoing-args) [0  S4 A32]))
+        (nil)))
+(insn 13 12 14 2 (set (reg:SF 88 [ _6 ])
+        (reg:SF 8 st)) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:7 -1
+     (nil))
+(insn 14 13 15 2 (set (reg:SF 89 [ _7 ])
+        (plus:SF (reg:SF 88 [ _6 ])
+            (mem/c:SF (plus:SI (reg/f:SI 82 virtual-stack-vars)
+                    (const_int -4 [0xfffffffffffffffc])) [2 Nx+0 S4 A32]))) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:7 -1
+     (nil))
+(insn 15 14 16 2 (set (mem/c:DF (plus:SI (reg/f:SI 82 virtual-stack-vars)
+                (const_int -16 [0xfffffffffffffff0])) [1 r+0 S8 A64])
+        (float_extend:DF (reg:SF 89 [ _7 ]))) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:7 -1
+     (nil))
+(insn 16 15 17 2 (set (reg:DF 97)
+        (mem/c:DF (plus:SI (reg/f:SI 82 virtual-stack-vars)
+                (const_int -16 [0xfffffffffffffff0])) [1 r+0 S8 A64])) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:8 -1
+     (nil))
+(insn 17 16 18 2 (set (reg:DF 98)
+        (mem/u/c:DF (symbol_ref/u:SI ("*LC2") [flags 0x2]) [1  S8 A64])) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:8 -1
+     (expr_list:REG_EQUAL (const_double:DF 3.62122900000000003117861524515319615602493286133e+0 [0x0.e7c2374794ea08p+2])
+        (nil)))
+(insn 18 17 19 2 (set (reg:DF 90 [ _9 ])
+        (minus:DF (reg:DF 97)
+            (reg:DF 98))) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:8 -1
+     (nil))
+(insn 19 18 20 2 (set (mem:DF (reg/f:SI 84 virtual-outgoing-args) [0  S8 A32])
+        (reg:DF 90 [ _9 ])) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:8 -1
+     (nil))
+(call_insn 20 19 21 2 (set (reg:DF 8 st)
+        (call (mem:QI (symbol_ref:SI ("_ZSt3absd") [flags 0x1]  <function_decl 044a4080 abs>) [0 abs S1 A8])
+            (const_int 8 [0x8]))) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:8 -1
+     (expr_list:REG_EH_REGION (const_int 0 [0])
+        (nil))
+    (expr_list:DF (use (mem:DF (reg/f:SI 84 virtual-outgoing-args) [0  S8 A32]))
+        (nil)))
+(insn 21 20 22 2 (set (reg:DF 91 [ _11 ])
+        (reg:DF 8 st)) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:8 -1
+     (nil))
+(insn 22 21 23 2 (set (reg:DF 99)
+        (mem/u/c:DF (symbol_ref/u:SI ("*LC3") [flags 0x2]) [1  S8 A64])) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:8 -1
+     (expr_list:REG_EQUAL (const_double:DF 1.0000000000000000208166817117216851329430937767e-2 [0x0.a3d70a3d70a3d8p-6])
+        (nil)))
+(insn 23 22 24 2 (set (reg:CCFPU 17 flags)
+        (compare:CCFPU (reg:DF 91 [ _11 ])
+            (reg:DF 99))) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:8 -1
+     (nil))
+(insn 24 23 25 2 (set (reg:QI 92 [ retval.0_12 ])
+        (gt:QI (reg:CCFPU 17 flags)
+            (const_int 0 [0]))) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:8 -1
+     (nil))
+(insn 25 24 26 2 (set (reg:CCZ 17 flags)
+        (compare:CCZ (reg:QI 92 [ retval.0_12 ])
+            (const_int 0 [0]))) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:8 -1
+     (nil))
+(jump_insn 26 25 27 2 (set (pc)
+        (if_then_else (eq (reg:CCZ 17 flags)
+                (const_int 0 [0]))
+            (label_ref 31)
+            (pc))) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:8 -1
+     (nil)
+ -> 31)
+;;  succ:       4 (FALLTHRU)
+;;              5
+
+;; basic block 4, loop depth 0, count 0, freq 0, maybe hot
+;;  prev block 2, next block 5, flags: (NEW, REACHABLE, RTL)
+;;  pred:       2 (FALLTHRU)
+(note 27 26 28 4 [bb 4] NOTE_INSN_BASIC_BLOCK)
+(insn 28 27 29 4 (set (reg:SI 87 [ _1 ])
+        (const_int -1 [0xffffffffffffffff])) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:10 -1
+     (nil))
+(jump_insn 29 28 30 4 (set (pc)
+        (label_ref 34)) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:10 -1
+     (nil)
+ -> 34)
+;;  succ:       6
+
+(barrier 30 29 31)
+;; basic block 5, loop depth 0, count 0, freq 0, maybe hot
+;;  prev block 4, next block 6, flags: (NEW, REACHABLE, RTL)
+;;  pred:       2
+(code_label 31 30 32 5 6 "" [1 uses])
+(note 32 31 33 5 [bb 5] NOTE_INSN_BASIC_BLOCK)
+(insn 33 32 34 5 (set (reg:SI 87 [ _1 ])
+        (const_int 0 [0])) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:12 -1
+     (nil))
+;;  succ:       6 (FALLTHRU)
+
+;; basic block 6, loop depth 0, count 0, freq 0, maybe hot
+;;  prev block 5, next block 1, flags: (NEW, REACHABLE, RTL)
+;;  pred:       4
+;;              5 (FALLTHRU)
+(code_label 34 33 35 6 7 "" [1 uses])
+(note 35 34 36 6 [bb 6] NOTE_INSN_BASIC_BLOCK)
+(insn 36 35 40 6 (set (reg:SI 93 [ <retval> ])
+        (reg:SI 87 [ _1 ])) -1
+     (nil))
+(insn 40 36 41 6 (set (reg/i:SI 0 ax)
+        (reg:SI 93 [ <retval> ])) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:13 -1
+     (nil))
+(insn 41 40 0 6 (use (reg/i:SI 0 ax)) c:\users\kurliana\appdata\local\temp\try_march_z2z8rt.c:13 -1
+     (nil))
+;;  succ:       EXIT [100,0%]  (FALLTHRU)
+

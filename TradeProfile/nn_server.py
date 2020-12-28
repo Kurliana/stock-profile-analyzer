@@ -21,7 +21,7 @@ class NNServer():
         self.monitoring_path=monitoring_path
         self.file_name_template=file_name_template
         self.file_mon_dict={}
-        self.nnt = NNTrader(model_path = "nn_trade_test_model3.h5", init_model = False)
+        self.nnt = NNTrader(model_path = "nn_trade_test_model4.h5", init_model = False)
 
     def update_single_file_direction(self, full_file_path):
         try:
@@ -35,13 +35,13 @@ class NNServer():
             log.error("NNServer: Failed to get direction for file %s" % full_file_path)
         else:
             trade_file_name=full_file_path.replace(self.file_name_template,"trade_")
-            if result_direction[-1]*result_direction[-2] == 1:
-                try:
+            try:
+                if result_direction[-1]*result_direction[-2] == 1:
                     with open(trade_file_name,'w') as trade_file:
                         trade_file.write("%d" % result_direction[-1])
-                    log.info("NNServer: direction %s was written to file %s" % (result_direction[-1],trade_file_name))
-                except Exception as e:
-                    log.error("NNServer: Exception during write file %s - %s" % (trade_file_name,e))
+                log.info("NNServer: direction %s was written to file %s" % (result_direction[-1],trade_file_name))
+            except Exception as e:
+                log.error("NNServer: Exception during write file %s - %s" % (trade_file_name,e))
             
     def search_for_ticker_files(self):
         for single_file in os.listdir(self.monitoring_path):

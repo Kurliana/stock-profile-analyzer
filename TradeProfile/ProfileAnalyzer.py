@@ -68,8 +68,8 @@ class ProfileAnalyser():
                 candle[3]=numpy.int32(candle[3])
                 candle[4]=float(candle[4])
                 # in real life close value is equals to open value of next case
-                if len(self.tickers) > 0 and self.tickers[-1][2] == candle[2]:
-                    self.tickers[-1][7]=float(candle[4])
+                #if len(self.tickers) > 0 and self.tickers[-1][2] == candle[2]:
+                #    self.tickers[-1][7]=float(candle[4])
                 candle[5]=float(candle[5])
                 candle[6]=float(candle[6])
                 candle[7]=float(candle[7])
